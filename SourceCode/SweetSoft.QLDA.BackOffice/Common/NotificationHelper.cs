@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Web;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.EnumHelper;
@@ -23,6 +23,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 case ThongBaoTypes.DuAn:
                     if (idDuAn.HasValue && idDuAn.Value != Guid.Empty)
                         return RewriteURLHelper.ProjectDetail(idDuAn.Value);
+                    return RewriteURLHelper.Projects;
+
+                case ThongBaoTypes.VanDe:
+                    if (idDuAn.HasValue && idDuAn.Value != Guid.Empty)
+                        return RewriteURLHelper.ProjectIssues(idDuAn.Value);
                     return RewriteURLHelper.Projects;
 
                 case ThongBaoTypes.LichHop:
@@ -87,25 +92,44 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
             string actionName = duongDanLienKet.Trim();
 
-            // KBG20: Thong bao PM chot/dieu chinh gio luu mot URL noi bo kem ma ban chot.
-            // Khong dien giai URL nay thanh ten action cua TaskList.
-            // Chi chap nhan duong dan dung trang KBG, dung du an/Task va GUID ban chot.
-            string applicationPath = (HttpRuntime.AppDomainAppVirtualPath ?? "/").TrimEnd('/');
-            string pmFinalPrefix = applicationPath + "/fKhaiBaoGio/KhaiBaoGio.aspx?";
-            if (actionName.StartsWith(pmFinalPrefix, StringComparison.OrdinalIgnoreCase))
+            // Loai thong bao VAN_DE co action rieng, KHONG dua vao enum ThongBaoAction Task.
+            if (string.Equals(loaiThongBao, ThongBaoTypes.VanDe, StringComparison.OrdinalIgnoreCase)
+                && actionName.StartsWith("GioXuLyVanDe:", StringComparison.OrdinalIgnoreCase))
             {
-                var query = HttpUtility.ParseQueryString(actionName.Substring(pmFinalPrefix.Length));
-                Guid linkProjectId, linkTaskId, linkEventId;
-                if (idDuAn.HasValue && idCongViec.HasValue &&
-                    Guid.TryParse(query["ProjectId"], out linkProjectId) &&
-                    Guid.TryParse(query["pmFinalTaskId"], out linkTaskId) &&
-                    Guid.TryParse(query["pmFinalEventId"], out linkEventId) &&
-                    linkProjectId == idDuAn.Value &&
-                    linkTaskId == idCongViec.Value &&
-                    linkEventId != Guid.Empty)
+                Guid issueId;
+                string rest=actionName.Substring("GioXuLyVanDe:".Length);
+                string[] parts=rest.Split(':');
+                if (Guid.TryParse(parts[0], out issueId) && issueId != Guid.Empty)
                 {
-                    return actionName;
+                    // ProjectId in KhaiBaoGio is protected by the existing project URL rewrite.
+                    // Never send an unprotected Guid in ?ProjectId: that query does not resolve.
+                    if (!idDuAn.HasValue || idDuAn.Value == Guid.Empty) return url;
+                    string issueAction=parts.Length>1?parts[1]:"detail";
+                    if (string.Equals(issueAction,"pm-final",StringComparison.OrdinalIgnoreCase)
+                        && idThongBao.HasValue && idThongBao.Value!=Guid.Empty)
+                    {
+                        string pmUrl=AppendQueryParameter(
+                            RewriteURLHelper.ProjectDetail(idDuAn.Value).TrimEnd('/') + "/TimeTracking",
+                            "pmFinalIssueId",issueId.ToString("D"));
+                        return AppendQueryParameter(pmUrl,"pmFinalNotificationId",idThongBao.Value.ToString("D"));
+                    }
+                    if (string.Equals(issueAction,"review",StringComparison.OrdinalIgnoreCase))
+                        return AppendQueryParameter(RewriteURLHelper.ProjectIssues(idDuAn.Value),
+                            "reviewIssueId",issueId.ToString("D"));
+                    if (string.Equals(issueAction,"detail",StringComparison.OrdinalIgnoreCase) &&
+                        idThongBao.HasValue && idThongBao.Value!=Guid.Empty)
+                    {
+                        string result=AppendQueryParameter(RewriteURLHelper.ProjectIssues(idDuAn.Value),
+                            "resultIssueId",issueId.ToString("D"));
+                        return AppendQueryParameter(result,"notificationId",idThongBao.Value.ToString("D"));
+                    }
+                    string dest=AppendQueryParameter(
+                        RewriteURLHelper.ProjectDetail(idDuAn.Value).TrimEnd('/') + "/TimeTracking",
+                        "vanDeId", issueId.ToString("D"));
+                    return AppendQueryParameter(dest,"gvAction",
+                        string.Equals(issueAction,"report",StringComparison.OrdinalIgnoreCase)?"report":"detail");
                 }
+                return url;
             }
 
             // Action này dùng ID bản ghi thông báo để mở popup kết quả lịch sử.
@@ -125,6 +149,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
                         (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
                         return actionName;
 
+                    // Keep legacy internal URLs. Previously the bell returned them verbatim.
+                    // Do not accept protocol-relative URLs (//...), backslashes or javascript:.
+                    if (actionName.StartsWith("~/", StringComparison.Ordinal))
+                        return VirtualPathUtility.ToAbsolute(actionName);
+                    if (actionName.StartsWith("/", StringComparison.Ordinal)
+                        && !actionName.StartsWith("//", StringComparison.Ordinal)
+                        && actionName.IndexOf('\\') < 0)
+                        return actionName;
                     return url;
                 }
 

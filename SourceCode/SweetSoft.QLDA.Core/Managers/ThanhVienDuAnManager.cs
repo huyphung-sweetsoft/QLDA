@@ -40,7 +40,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         private sealed class GioTask
         {
-            public Guid IdTask, IdDuAn, IdPhase;
+            public Guid IdTask, IdDuAn;
             public int TrangThai;
             public readonly List<GioPerson> Nguoi = new List<GioPerson>();
             public bool DaChot
@@ -65,9 +65,9 @@ namespace SweetSoft.QLDA.Core.Managers
         private static bool B(DataRow row,string col) { return L(row,col)!=0; }
         private static byte By(DataRow row,string col) { object v=Val(row,col);return v==null?(byte)0:Convert.ToByte(v); }
 
-        private Dictionary<Guid,List<GioTask>> LayGioV2(Guid idNhanVien,Guid? idDuAn)
+        private Dictionary<Guid,List<GioTask>> LayGioV2(Guid idNhanVien,IEnumerable<Guid> idDuAns)
         {
-            DataTable dt=_repository.GetGioCongNhanVienV2Data(idNhanVien,idDuAn);
+            DataTable dt=_repository.GetGioCongNhanVienV2TheoDanhSachDuAnData(idNhanVien,idDuAns);
             var result=new Dictionary<Guid,List<GioTask>>();
             if(dt==null || dt.Rows.Count==0)return result;
             foreach(var projectGroup in dt.AsEnumerable().GroupBy(r=>G(r,"IdDuAn")))
@@ -77,7 +77,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     DataRow first=taskGroup.First();
                     var task=new GioTask { IdDuAn=projectGroup.Key,IdTask=taskGroup.Key,
-                        IdPhase=G(first,"IdGiaiDoanDuAn"),TrangThai=Convert.ToInt32(Val(first,"TrangThaiTask")??0) };
+                        TrangThai=Convert.ToInt32(Val(first,"TrangThaiTask")??0) };
                     foreach(DataRow row in taskGroup)
                     {
                         task.Nguoi.Add(new GioPerson {
@@ -141,20 +141,60 @@ namespace SweetSoft.QLDA.Core.Managers
             DuAnStatus status=(DuAnStatus)item.TrangThai;
             item.LaDuAnKetThuc=status==DuAnStatus.HoanThanh || status==DuAnStatus.KetThuc;
         }
+        // One lightweight summary row per project; detailed report stays on the V5 query.
         public List<NhanVienProjectSummaryDTO> GetDanhSachDuAnCuaNhanVien(Guid idNhanVien,string keyword=null,byte? statusId=null)
         {
+            var watch=System.Diagnostics.Stopwatch.StartNew();
             DataTable dt=_repository.GetDanhSachDuAnCuaNhanVienData(idNhanVien,keyword,statusId);
+            long listMs=watch.ElapsedMilliseconds;
             var result=new List<NhanVienProjectSummaryDTO>();
-            if(dt==null || dt.Rows.Count==0)return result;
-            var hours=LayGioV2(idNhanVien,null);
+            if(dt==null || dt.Rows.Count==0)
+            {
+                GhiThoiGianTruyVan("list",listMs,0,watch.ElapsedMilliseconds,0);
+                return result;
+            }
+            var ids=dt.AsEnumerable().Select(r=>G(r,"IdDuAn")).Where(x=>x!=Guid.Empty).Distinct().ToList();
+            DataTable summary=_repository.GetTongHopGioCongNhanVienV2DanhSachData(idNhanVien,ids);
+            long hourMs=watch.ElapsedMilliseconds-listMs;
+            var byProject=summary.AsEnumerable().ToDictionary(r=>G(r,"IdDuAn"),r=>r);
             foreach(DataRow row in dt.Rows)
             {
                 var project=new NhanVienProjectSummaryDTO();DocProject(row,project);
-                List<GioTask> tasks;
-                TongHop(project,hours.TryGetValue(project.IdDuAn,out tasks)?tasks:Enumerable.Empty<GioTask>(),idNhanVien,true);
+                DataRow data;
+                if(byProject.TryGetValue(project.IdDuAn,out data))
+                {
+                    project.SoTaskToanDuAnCanChot=Convert.ToInt32(L(data,"SoTaskToanDuAnCanChot"));
+                    project.SoTaskToanDuAnDaChot=Convert.ToInt32(L(data,"SoTaskToanDuAnDaChot"));
+                    project.CoPhienDangMo=B(data,"CoPhienDangMo");
+                    project.TongPhutPmChotDuAn=L(data,"TongPhutPmChotDuAn");
+                    project.SoTaskLienQuan=Convert.ToInt32(L(data,"SoTaskLienQuan"));
+                    project.GiayThuongHeThong=L(data,"GiayThuongHeThong");
+                    project.GiayTangCaHeThong=L(data,"GiayTangCaHeThong");
+                    project.CoGioHeThong=B(data,"CoGioHeThong");
+                    project.SoTaskCoTuKhai=Convert.ToInt32(L(data,"SoTaskCoTuKhai"));
+                    project.CoTuKhai=project.SoTaskCoTuKhai>0;
+                    project.PhutThuongTuKhai=L(data,"PhutThuongTuKhai");
+                    project.PhutTangCaTuKhai=L(data,"PhutTangCaTuKhai");
+                    project.SoTaskDaChot=Convert.ToInt32(L(data,"SoTaskDaChot"));
+                    project.CoPmChot=project.SoTaskDaChot>0;
+                    project.PhutThuongPmChot=L(data,"PhutThuongPmChot");
+                    project.PhutTangCaPmChot=L(data,"PhutTangCaPmChot");
+                    project.DaKetToanDuAn=project.LaDuAnKetThuc && project.SoTaskToanDuAnCanChot>0
+                        && project.SoTaskToanDuAnDaChot==project.SoTaskToanDuAnCanChot && !project.CoPhienDangMo;
+                }
                 result.Add(project);
             }
+            GhiThoiGianTruyVan("list",listMs,hourMs,watch.ElapsedMilliseconds,result.Count);
             return result;
+        }
+
+        private static void GhiThoiGianTruyVan(string action,long listMs,long summaryMs,long totalMs,int projects)
+        {
+            // Diagnostic opt-in: add NvdPerfDiagnostics=true to appSettings on TEST only.
+            // No request data, employee ID, or search keyword goes into diagnostics.
+            if(!string.Equals(System.Configuration.ConfigurationManager.AppSettings["NvdPerfDiagnostics"],"true",StringComparison.OrdinalIgnoreCase))return;
+            System.Diagnostics.Trace.WriteLine(string.Format("[NVD PERF] {0} projects={1} listSql={2}ms summarySql={3}ms total={4}ms",
+                action,projects,listMs,summaryMs,totalMs));
         }
 
         public NhanVienProjectDTO GetChiTietDuAnCuaNhanVien(Guid idNhanVien,Guid idDuAn)
@@ -162,44 +202,41 @@ namespace SweetSoft.QLDA.Core.Managers
             DataTable dt=_repository.GetChiTietDuAnCuaNhanVienData(idNhanVien,idDuAn);
             if(dt==null || dt.Rows.Count==0)return null;
             var project=new NhanVienProjectDTO();DocProject(dt.Rows[0],project);
-            var report=LayGioV2(idNhanVien,idDuAn);
+            var report=LayGioV2(idNhanVien,new[]{idDuAn});
             List<GioTask> facts;
             if(!report.TryGetValue(idDuAn,out facts))facts=new List<GioTask>();
             TongHop(project,facts,idNhanVien,true);
             var byTask=facts.ToDictionary(x=>x.IdTask);
-            var taskRows=dt.AsEnumerable().Where(x=>Val(x,"IdTask")!=null).GroupBy(x=>G(x,"IdTask")).Select(x=>x.First());
-            var phases=new Dictionary<Guid,NhanVienPhaseDTO>();
-            foreach(DataRow row in taskRows)
+            var taskRows = dt.AsEnumerable().Where(x => Val(x,"IdTask") != null)
+                .GroupBy(x => G(x,"IdTask")).Select(x => x.First());
+            foreach (DataRow row in taskRows)
             {
-                Guid idTask=G(row,"IdTask"),idPhase=G(row,"IdPhase");
-                NhanVienPhaseDTO phase;
-                if(!phases.TryGetValue(idPhase,out phase))
-                {
-                    phase=new NhanVienPhaseDTO { IdPhase=idPhase,MaPhase=S(row,"MaPhase"),TenPhase=S(row,"TenPhase") };
-                    phases[idPhase]=phase;
-                }
-                var task=new NhanVienTaskDTO {
-                    IdTask=idTask,IdPhase=idPhase,MaTask=S(row,"MaTask"),TenTask=S(row,"TenTask"),
-                    NgayBatDau=DT(row,"NgayBatDau"),NgayKetThuc=DT(row,"NgayKetThuc"),
-                    NgayHoanThanhThucTe=DT(row,"NgayHoanThanhThucTe"),ThoiHanNgay=Convert.ToInt32(L(row,"ThoiHanNgay")),
+                Guid idTask = G(row,"IdTask");
+                var task = new NhanVienTaskDTO {
+                    IdTask=idTask, MaTask=S(row,"MaTask"), TenTask=S(row,"TenTask"),
+                    NgayBatDau=DT(row,"NgayBatDau"), NgayKetThuc=DT(row,"NgayKetThuc"),
+                    NgayHoanThanhThucTe=DT(row,"NgayHoanThanhThucTe"),
+                    ThoiHanNgay=Convert.ToInt32(L(row,"ThoiHanNgay")),
                     DiemUuTien=Convert.ToInt32(L(row,"DiemUuTien")),TenDoUuTien=S(row,"TenDoUuTien"),
-                    TrangThaiTask=By(row,"TrangThaiTask"),MaTaskCha=S(row,"MaTaskCha"),
-                    TenTaskCha=S(row,"TenTaskCha"),TenPhaseGoc=phase.TenPhase,LyDoTreHan=S(row,"LyDoTre"),IsMyTask=true
+                    TrangThaiTask=By(row,"TrangThaiTask"),LyDoTreHan=S(row,"LyDoTre"),
+                    IsMyTask=true,IsCurrentAssignee=B(row,"IsCurrentAssignee"),
+                    IsArchivedTask=B(row,"IsArchivedTask")
                 };
                 GioTask source;
-                if(byTask.TryGetValue(idTask,out source))
+                if (byTask.TryGetValue(idTask,out source))
                 {
                     TongHop(task,new[]{source},idNhanVien,false);
                     task.DaChotTask=source.DaChot;
                 }
-                phase.Tasks.Add(task);
+                project.Tasks.Add(task);
             }
-            foreach(NhanVienPhaseDTO phase in phases.Values)
-            {
-                TongHop(phase,facts.Where(t=>t.IdPhase==phase.IdPhase),idNhanVien,false);
-                project.Phases.Add(phase);
-            }
-            project.Phases=project.Phases.OrderBy(p=>p.MaPhase).ToList();
+            // Sap xep de nhan vien tim viec dang lam/cho duyet nhanh, roi theo han.
+            project.Tasks=project.Tasks
+                .OrderBy(t => t.IsArchivedTask ? 1 : 0)
+                .ThenBy(t => t.TrangThaiTask == 1 ? 0 : t.TrangThaiTask == 4 ? 1 : t.TrangThaiTask == 0 ? 2 : 3)
+                .ThenBy(t => t.NgayKetThuc ?? DateTime.MaxValue)
+                .ThenBy(t => t.MaTask ?? string.Empty, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
             return project;
         }
 

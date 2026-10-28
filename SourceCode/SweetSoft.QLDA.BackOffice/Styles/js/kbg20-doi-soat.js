@@ -21,8 +21,13 @@ function response(r){return r.text().then(function(raw){
  var data=null;try{data=JSON.parse(raw);}catch(e){var err=new Error('Máy chủ không trả JSON (HTTP '+r.status+').');err.status=r.status;throw err;}
  if(!r.ok||!data.ok){var err2=new Error(data.error||data.message||'Không xử lý được.');err2.status=r.status;throw err2;}return data;
 });}
-function kbgNotify(text,type){if(window.CMSMasterJs&&typeof window.CMSMasterJs.ShowNotify==='function')
- window.CMSMasterJs.ShowNotify(text,type||'error');else if(window.toastr)window.toastr.error(text);}
+function kbgNotify(text,type){
+ if(!text)return;
+ var severity=type||'error';
+ if(window.CMSMasterJs&&typeof window.CMSMasterJs.ShowNotify==='function')window.CMSMasterJs.ShowNotify(text,severity);
+ else if(window.toastr&&typeof window.toastr[severity]==='function')window.toastr[severity](text);
+ else if(window.console)window.console.warn('KBG20:',text);
+}
 function authNavigation(e){if(!e||(e.status!==401&&e.status!==403))return false;
  var uri=root.getAttribute('data-kbg20-access-error-url')||'/fKhaiBaoGio/Kbg20AccessDenied.aspx';
  window.location.replace(uri+(uri.indexOf('?')>=0?'&':'?')+'code='+e.status);return true;}
@@ -51,7 +56,7 @@ function canModify(t){return !t.deleted&&(t.status===1||t.status===3||t.status==
 function note(text,isError){var n=box.querySelector('.kbg20-dot2-notice');if(!n)n=add(box,'p','kbg20-dot2-notice');n.textContent=text||'';n.classList.toggle('is-error',!!isError);}
 function footerAction(isEditable,label){footer.hidden=!isEditable;save.disabled=false;if(isEditable)save.textContent=label||'Lưu thay đổi';if(back)back.hidden=true;}
 function refreshAfterSave(){hideModal();if(window.Kbg20PageUI&&window.Kbg20PageUI.refresh)window.Kbg20PageUI.refresh();if(window.KbgFloatingTimer)window.KbgFloatingTimer.notifyChanged();renderTab();}
-function actionSubmit(name,task,round,version,reader){save.onclick=function(){if(busy)return;var data=reader();if(!data)return;busy=true;save.disabled=true;note('Đang lưu thay đổi...',false);var req={action:name,taskId:task,expectedRound:round,expectedVersion:version};Object.keys(data).forEach(function(k){req[k]=data[k];});post(req).then(function(r){busy=false;refreshAfterSave();var message=r.message||'Đã lưu thành công.';if(window.CMSMasterJs&&typeof window.CMSMasterJs.ShowNotify==='function')window.CMSMasterJs.ShowNotify(message,'success');else{var n=document.getElementById('kbg20Message');if(n){n.textContent=message;n.className='kbg20-ok';}}}).catch(function(e){busy=false;save.disabled=false;note('Chưa lưu được thay đổi. Vui lòng kiểm tra lại và thử lại.',true);kbgNotify(e.message||'Chưa lưu được giờ công. Vui lòng thử lại.','error');});};}
+function actionSubmit(name,task,round,version,reader){save.onclick=function(){if(busy)return;var data=reader();if(!data)return;busy=true;save.disabled=true;note('Đang lưu thay đổi...',false);var req={action:name,taskId:task,expectedRound:round,expectedVersion:version};Object.keys(data).forEach(function(k){req[k]=data[k];});post(req).then(function(r){busy=false;refreshAfterSave();var message=r.message||'Đã lưu thành công.';kbgNotify(message,'success');}).catch(function(e){busy=false;save.disabled=false;note('Chưa lưu được thay đổi. Vui lòng kiểm tra lại và thử lại.',true);kbgNotify(e.message||'Chưa lưu được giờ công. Vui lòng thử lại.','error');});};}
 function timeField(host,title,totalMinutes){
  if(!window.Kbg20HourInput||!window.Kbg20HourInput.createPair)throw new Error('Chưa tải bộ nhập Giờ/Phút. Vui lòng tải lại trang.');
  return window.Kbg20HourInput.createPair(host,title,totalMinutes);
@@ -65,11 +70,38 @@ function historyPanel(host,data){var pane=add(host,'aside','kbg20-ui-history-pan
  if(x.regular!=null||x.overtime!=null)add(item,'div','kbg20-ui-history-hours','Giờ tự khai: '+(x.regular==null?'—':format(x.regular))+' làm theo lịch · '+(x.overtime==null?'—':format(x.overtime))+' tăng ca');if(x.reason)add(item,'p','kbg20-ui-history-reason',x.reason);});}
 function infoCard(host,title,desc){var e=add(host,'section','kbg20-ui-hours-card');add(e,'h4','',title);add(e,'p','kbg20-ui-hours-caption',desc);return e;}
 function displayPair(host,regular,overtime){var wrap=add(host,'div','kbg20-ui-hour-pair');var r=add(wrap,'div','');add(r,'span','', 'Giờ làm theo lịch');add(r,'strong','',regular==null?'—':format(regular));var o=add(wrap,'div','');add(o,'span','', 'Tăng ca');add(o,'strong','',overtime==null?'—':format(overtime));}
-function load(task,mode,employee){if(busy)return;var id=++seq;current=task;try{openModal();}catch(e){kbgNotify(e.message,'error');return;}footerAction(false);box.textContent='';add(box,'p','kbg20-ui-loading','Đang tải giờ công và lịch sử...');
- get(employee?'pm-personal':'personal',task,employee).then(function(d){if(current!==task||seq!==id)return;renderDetail(task,d,employee?'pm-read':mode);}).catch(function(e){if(seq!==id)return;
- // Lỗi quyền xem thông báo PM chỉ là quyền THAO TÁC; không đổi trang đang xem.
- box.textContent='';note('Không tải được chi tiết.');kbgNotify(e.message||'Không tải được chi tiết.','error');});}
-function renderDetail(task,data,mode){
+// Reuse the read-only PM result API in the personal-hours popup. Never pass employeeId:
+// pm-final authorizes the user from the server session and checks the selected event.
+function getPersonalPmFinal(task,eventId){
+ var apiUrl=url+'?view=pm-final&projectId='+encodeURIComponent(project)+'&taskId='+encodeURIComponent(task)+
+  (eventId?'&eventId='+encodeURIComponent(eventId):'');
+ return window.fetch(apiUrl,{credentials:'same-origin',cache:'no-store'}).then(response);
+}
+function load(task,mode,employee,finalEventId){
+ if(busy)return;
+ var id=++seq;current=task;
+ try{openModal('Khai báo giờ cá nhân');}catch(e){kbgNotify(e.message,'error');return;}
+ footerAction(false);box.textContent='';add(box,'p','kbg20-ui-loading','Đang tải giờ công và lịch sử...');
+ var mustShowPmResult=!!finalEventId;
+ get(employee?'pm-personal':'personal',task,employee).then(function(d){
+  if(employee || (!mustShowPmResult && !d.pmLocked && d.status!==4))return {personal:d,pm:null,pmError:null};
+  return getPersonalPmFinal(task,finalEventId).then(function(approved){
+   return {personal:d,pm:approved,pmError:null};
+  }).catch(function(error){
+   // Never downgrade an explicit PM notification to an unrelated/latest record.
+   if(mustShowPmResult)throw error;
+   return {personal:d,pm:null,pmError:error};
+  });
+ }).then(function(result){
+  if(current!==task||seq!==id)return;
+  renderDetail(task,result.personal,employee?'pm-read':mode,result.pm,result.pmError,finalEventId);
+ }).catch(function(e){
+  if(current!==task||seq!==id)return;
+  box.textContent='';note('Không tải được chi tiết giờ công.');
+  if(!authNavigation(e))kbgNotify(e.message||'Không tải được chi tiết.','error');
+ });
+}
+function renderDetail(task,data,mode,pmFinal,pmError,finalEventId){
  var taskPage=window.Kbg20PageUI&&window.Kbg20PageUI.getTask&&window.Kbg20PageUI.getTask(task),item=all.filter(function(x){return x.taskId===task;})[0];
  var name=taskPage?('['+(taskPage.code||'CV')+'] '+(taskPage.name||'')):item?('['+(item.code||'CV')+'] '+(item.name||'')):'Công việc đã chọn';
  if(mode==='pm-read'){
@@ -96,11 +128,11 @@ function renderDetail(task,data,mode){
  var systemReg=Number(data.systemRegularMinutes)||0,systemOt=Number(data.systemOvertimeMinutes)||0;
  if(report&&window.Kbg20PageUI&&window.Kbg20PageUI.getLiveMinutes){var live=window.Kbg20PageUI.getLiveMinutes(task);if(live){systemReg=Math.max(systemReg,live.regular);systemOt=Math.max(systemOt,live.overtime);}}
  var cards=add(left,'div','kbg20-ui-cards');var sys=infoCard(cards,'Giờ hệ thống','Thời gian hệ thống đã ghi nhận');displayPair(sys,systemReg,systemOt);
- var manual=infoCard(cards,pmRead?'Giờ nhân viên báo':'Giờ tôi tự khai',report||confirmHours?'Mặc định theo giờ hệ thống cuối cùng; có thể điều chỉnh.':editing?'Đây là bản báo giờ đang có hiệu lực.':'Bản giờ đã được xác nhận (chưa PM chốt).');
+ var manual=infoCard(cards,pmRead?'Giờ nhân viên báo':'Giờ tôi tự khai',report||confirmHours?'Mặc định theo giờ hệ thống cuối cùng; có thể điều chỉnh.':editing?'Đây là bản báo giờ đang có hiệu lực.':data.pmLocked?'Số giờ bạn đã báo trước khi quản lý chốt.':'Bản giờ đã được xác nhận (chưa PM chốt).');
  var rInput=null,oInput=null;
  if(isForm){var rrow=add(manual,'div','kbg20-ui-input-pair');rInput=timeField(rrow,'Giờ làm theo lịch',report||confirmHours?systemReg:data.declaredRegular);oInput=timeField(rrow,'Giờ tăng ca',report||confirmHours?systemOt:data.declaredOvertime);}
  else displayPair(manual,data.declaredRegular,data.declaredOvertime);
- if(withdraw){var help=add(left,'div','kbg20-ui-help is-warning');add(help,'strong','', 'Ông/bà muốn tiếp tục thực hiện công việc này?');add(help,'p','', 'Thao tác sẽ hủy xác nhận hoàn thành hiện tại, lưu lịch sử và thông báo PM. Đồng hồ sẽ không tự chạy lại; hãy chủ động bấm Bắt đầu khi tiếp tục làm.');}
+ if(withdraw){var help=add(left,'div','kbg20-ui-help is-warning');add(help,'strong','', 'Bạn muốn tiếp tục thực hiện công việc này?');add(help,'p','', 'Thao tác sẽ hủy xác nhận hoàn thành hiện tại, lưu lịch sử và thông báo cho quản lý. Đồng hồ sẽ không tự chạy lại; hãy chủ động bấm Bắt đầu khi tiếp tục làm.');}
  if(report){var info=add(left,'div','kbg20-ui-help');add(info,'p','', 'Báo xong phần việc chỉ dừng đồng hồ của bạn trên công việc này; không dừng đồng nghiệp.');}
  if(confirmHours){var info2=add(left,'div','kbg20-ui-help is-warning');add(info2,'strong','', 'Công việc chung đã chờ duyệt hoặc hoàn thành');add(info2,'p','', 'Bạn báo hoàn thành phần việc và khai số giờ đã làm. Thao tác không mở đồng hồ và không thay đổi trạng thái chung của công việc.');}
  if(pmRead){var only=add(left,'div','kbg20-ui-help');add(only,'strong','', 'PM chỉ xem · bản ghi từ thông báo');
@@ -110,6 +142,31 @@ function renderDetail(task,data,mode){
    if(data.hasNewerRecord){var update=add(left,'div','kbg20-ui-help is-warning');add(update,'strong','','Nhân viên đã cập nhật sau thông báo này');add(update,'p','','Bản đang xem là lịch sử. Giờ tự khai mới nhất: '+(data.newestRegular==null?'—':format(data.newestRegular))+' làm theo lịch; '+(data.newestOvertime==null?'—':format(data.newestOvertime))+' tăng ca. PM phải làm mới popup duyệt giờ công trước khi chốt.');}}
  var reason=null;
  if(report||editing||withdraw||confirmHours){var field=add(left,'label','kbg20-ui-reason');add(field,'span','',withdraw?'Lý do rút báo (bắt buộc)':editing?'Lý do / ghi chú sửa giờ':'Ghi chú / lý do chênh lệch (nếu có)');reason=add(field,'textarea','');reason.rows=2;reason.maxLength=2000;reason.placeholder=withdraw?'Ví dụ: Tôi cần hoàn thiện thêm một số nội dung...':editing?'Ví dụ: Điều chỉnh số giờ tự khai sau khi kiểm tra...':'Ghi chú thêm nếu cần...';}
+ // The personal popup also shows the official PM result, without replacing its own history.
+ // An older notification remains distinguishable from the newest official result.
+ if(pmFinal && pmFinal.latest){
+  var selected=pmFinal.selected||pmFinal.latest,latest=pmFinal.latest;
+  var historical=!!finalEventId && selected.id!==latest.id;
+  if(historical){
+   var older=add(left,'div','kbg20-ui-help is-warning');
+   add(older,'strong','','Kết quả trong thông báo đã được điều chỉnh sau đó');
+   add(older,'p','','Thông báo này ghi nhận '+format(selected.regularMinutes)+' làm theo lịch và '+format(selected.overtimeMinutes)+' tăng ca lúc '+when(selected.createdUtc)+'. Bên dưới là kết quả chính thức mới nhất.');
+  }
+  var pmCard=infoCard(left,'Giờ quản lý đã chốt','Kết quả chính thức mới nhất · Lưu lúc '+when(latest.createdUtc));
+  displayPair(pmCard,latest.regularMinutes,latest.overtimeMinutes);
+  var notePm=add(left,'div','kbg20-ui-help');
+  add(notePm,'strong','','Lý do / ghi chú của quản lý');
+  add(notePm,'p','',latest.reason||'Quản lý chốt theo số giờ đã báo, không có ghi chú điều chỉnh.');
+  if(historical && selected.reason){
+   var priorReason=add(left,'div','kbg20-ui-help is-warning');
+   add(priorReason,'strong','','Ghi chú thuộc lần chốt trong thông báo');
+   add(priorReason,'p','',selected.reason);
+  }
+ }else if(pmError){
+  var pmUnavailable=add(left,'div','kbg20-ui-help is-warning');
+  add(pmUnavailable,'strong','','Chưa tải được kết quả giờ quản lý đã chốt');
+  add(pmUnavailable,'p','','Giờ hệ thống, giờ tự khai và lịch sử vẫn được hiển thị. Bạn có thể đóng và mở lại để tải kết quả PM.');
+ }
  if(data.deleted){var archived=add(left,'div','kbg20-ui-help is-warning');add(archived,'strong','','Công việc đã xóa — chỉ xem lịch sử');add(archived,'p','','Bạn vẫn xem được giờ hệ thống và các bản báo đã lưu, nhưng không thể sửa, rút báo hoặc báo hoàn thành thêm.');}
  if(data.pmLocked){var lock=add(left,'div','kbg20-ui-help is-locked');add(lock,'strong','', 'PM đã chốt giờ công');add(lock,'p','', 'Bản tự khai hiện chỉ được xem. Bạn không thể sửa hoặc rút báo hoàn thành sau khi PM đã chốt giờ.');}
  historyPanel(right,data);
@@ -142,51 +199,9 @@ function renderTab(){if(!list||busy)return;busy=true;list.textContent='';add(lis
 var filters=document.getElementById('kbg20ManualFilters');if(filters)filters.addEventListener('click',function(e){var b=e.target.closest('[data-manual-filter]');if(b){filter=b.getAttribute('data-manual-filter');renderItems();}});
 if(back)back.onclick=hideModal;
 window.Kbg20DoiSoatUI={renderTab:renderTab,openReport:function(task){origin='work';load(task,'report');},openWithdraw:function(task){origin='work';load(task,'withdraw');},openConfirm:function(task){origin='manual';load(task,'confirm');},openTask:function(task){origin='manual';load(task,'edit');}};
-// Kết quả PM chốt: chỉ đọc và chỉ trả dữ liệu của user trong session, không nhận employeeId từ browser.
-function openPmFinal(task,eventId){
- var request=++seq;current=task;
- try{openModal('Chi tiết giờ công đã chốt');}catch(e){kbgNotify(e.message,'error');return;}
- footerAction(false);box.textContent='';add(box,'p','kbg20-ui-loading','Đang tải kết quả giờ công đã chốt...');
- var apiUrl=url+'?view=pm-final&projectId='+encodeURIComponent(project)+'&taskId='+encodeURIComponent(task)+
-  (eventId?'&eventId='+encodeURIComponent(eventId):'');
- window.fetch(apiUrl,{credentials:'same-origin',cache:'no-store'}).then(response).then(function(d){
-  if(seq!==request)return;box.textContent='';footerAction(false);
-  var currentRecord=d.selected,latest=d.latest;
-  var top=add(box,'div','kbg20-ui-top');var header=add(top,'div','kbg20-ui-top-title');
-  add(header,'div','kbg20-ui-eyebrow','KẾT QUẢ GIỜ CÔNG CHÍNH THỨC · CHỈ XEM');
-  add(header,'h3','', '['+(d.code||'CV')+'] '+(d.name||''));
-  var workspace=add(box,'div','kbg20-ui-workspace'),left=add(workspace,'div','kbg20-ui-main'),right=add(workspace,'div','kbg20-ui-side');
-  if(currentRecord.id!==latest.id){
-   var banner=add(left,'div','kbg20-ui-help is-warning');
-   add(banner,'strong','','Kết quả trong thông báo này đã được điều chỉnh sau đó');
-   add(banner,'p','','Bạn đang xem kết quả tại thời điểm thông báo. Kết quả mới nhất được hiển thị bên dưới.');
-  }
-  var cards=add(left,'div','kbg20-ui-cards');
-  var system=infoCard(cards,'Giờ hệ thống ghi nhận','Dữ liệu thời gian gốc, không thay đổi khi quản lý điều chỉnh');
-  displayPair(system,currentRecord.systemRegularMinutes,currentRecord.systemOvertimeMinutes);
-  var report=infoCard(cards,'Giờ bạn đã báo','Số giờ bạn xác nhận khi báo hoàn thành phần việc');
-  displayPair(report,currentRecord.declaredRegular,currentRecord.declaredOvertime);
-  var approved=infoCard(left,'Giờ quản lý đã chốt','Lưu lúc '+when(currentRecord.createdUtc));
-  displayPair(approved,currentRecord.regularMinutes,currentRecord.overtimeMinutes);
-  var why=add(left,'div','kbg20-ui-help');add(why,'strong','','Lý do / ghi chú của quản lý');
-  add(why,'p','',currentRecord.reason||'Quản lý chốt theo số giờ đã báo, không có ghi chú điều chỉnh.');
-  if(currentRecord.id!==latest.id){var now=infoCard(left,'Kết quả chính thức mới nhất','Cập nhật lúc '+when(latest.createdUtc));
-   displayPair(now,latest.regularMinutes,latest.overtimeMinutes);
-   var reason=add(left,'div','kbg20-ui-help');add(reason,'strong','','Lý do điều chỉnh mới nhất');
-   add(reason,'p','',latest.reason||'Không có');}
-  var historyBox=add(right,'aside','kbg20-ui-history-panel');
-  var head=add(historyBox,'div','kbg20-ui-history-head');add(head,'strong','','Lịch sử PM chốt và điều chỉnh');
-  add(head,'span','',String((d.history||[]).length)+' lần');
-  var listBox=add(historyBox,'div','kbg20-ui-history-list');
-  (d.history||[]).forEach(function(x,i){var item=add(listBox,'div','kbg20-ui-history-item');
-   var h=add(item,'div','kbg20-ui-history-item-head');add(h,'strong','',i===0?'Kết quả mới nhất':'Bản chốt trước');
-   add(h,'time','',when(x.createdUtc));
-   add(item,'div','kbg20-ui-history-hours',format(x.regularMinutes)+' làm theo lịch · '+format(x.overtimeMinutes)+' tăng ca');
-   if(x.reason)add(item,'p','kbg20-ui-history-reason',x.reason);
-  });
- }).catch(function(e){if(seq!==request)return;box.textContent='';add(box,'p','kbg20-ui-empty',e.message||'Không thể tải kết quả.');
-  kbgNotify(e.message||'Không thể tải kết quả giờ công.','error');});
-}
+// Notification about PM approval now opens the SAME personal-hour popup as "Xem giờ".
+// Keep eventId, so the backend can validate and distinguish historical approvals.
+function openPmFinal(task,eventId){origin='manual';load(task,'read',null,eventId||'');}
 // Link thong bao PM den dung Task/nhan vien, API kiem tra quyen PM thuc su.
 function fromPmNotification(){
  var q=new URLSearchParams(window.location.search);

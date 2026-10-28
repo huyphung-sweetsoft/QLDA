@@ -479,7 +479,7 @@
 .kbg20-v41-workbar .kbg20-search>i{position:absolute;left:10px;color:#998bb0;font-size:10.5px;pointer-events:none}
 .kbg20-v41-workbar .kbg20-search input{min-height:31px;height:31px;font-size:10.7px;padding:6px 8px 6px 27px;width:100%;min-width:0;margin:0}
 .kbg20-v41-table{border:1px solid #e5deec;border-radius:11px;overflow:hidden;background:#fff}
-.kbg20-page .kbg20-v41-taskgrid{display:grid;grid-template-columns:minmax(210px,3fr) minmax(74px,.84fr) minmax(56px,.64fr) minmax(78px,.91fr) minmax(111px,1.15fr) minmax(105px,1.15fr) minmax(105px,1.1fr) minmax(95px,.99fr);gap:10px;align-items:center}
+.kbg20-page .kbg20-v41-taskgrid{display:grid;grid-template-columns:minmax(210px,2.65fr) minmax(74px,.76fr) minmax(56px,.58fr) minmax(78px,.84fr) minmax(108px,1.03fr) minmax(110px,1.12fr) minmax(105px,1.07fr) minmax(105px,1.07fr) minmax(135px,1.35fr);gap:10px;align-items:center}
 .kbg20-v41-table-head{background:#f8f6fa;padding:11px 12px;font-size:10px;font-weight:800;color:#807a8b;letter-spacing:.08px;text-transform:uppercase}
 .kbg20-v41-table-head span{min-width:0}
 .kbg20-v41-table-head i{font-size:10px;color:#8557af;margin-right:3px}
@@ -603,7 +603,7 @@
  .kbg20-page .kbg20-v41-tools .kbg20-task-filters{justify-content:flex-start}
 }
 @media(max-width:1160px){
- .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(195px,2.4fr) minmax(110px,1.1fr) minmax(98px,1.12fr) minmax(96px,1.08fr) minmax(86px,.87fr)}
+ .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(170px,2.3fr) minmax(85px,.95fr) minmax(94px,1.02fr) minmax(103px,1.12fr) minmax(103px,1.12fr) minmax(122px,1.3fr)}
  .kbg20-v41-taskgrid>:nth-child(2),.kbg20-v41-taskgrid>:nth-child(3),.kbg20-v41-taskgrid>:nth-child(4){display:none}
  .kbg20-v41-manual-grid{grid-template-columns:minmax(190px,2fr) minmax(98px,.9fr) minmax(98px,.9fr) minmax(78px,.7fr)}
  .kbg20-v41-manual-grid>:nth-child(2),.kbg20-v41-manual-grid>:nth-child(5){display:none}
@@ -612,9 +612,9 @@
  .kbg20-page .kbg20-v41-table-head,.kbg20-v41-hist-head,.kbg20-v41-manual-head{display:none}
  .kbg20-page .kbg20-v41-task-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:11px 13px;gap:9px}
  .kbg20-v41-task-row>:nth-child(1){grid-column:1/-1}
- .kbg20-v41-task-row>:nth-child(5){grid-column:1/-1}
+ .kbg20-v41-task-row>:nth-child(5){grid-column:auto}
  .kbg20-v41-task-row>:nth-child(6),.kbg20-v41-task-row>:nth-child(7){grid-column:auto}
- .kbg20-v41-task-row>:nth-child(8){grid-column:1/-1;justify-content:flex-start;border-top:1px dashed #ece5f3;padding-top:6px}
+ .kbg20-v41-task-row>:nth-child(9){grid-column:1/-1;justify-content:flex-start;border-top:1px dashed #ece5f3;padding-top:6px}
  .kbg20-v41-mobile-label{display:block!important;font-size:9.5px;color:#9698a8;margin-bottom:4px}
  .kbg20-v41-clock-cell{justify-content:flex-start;gap:10px}
  .kbg20-v41-taskname{flex-wrap:wrap}
@@ -682,9 +682,9 @@
 .kbg20-page .kbg20-v42-reload{flex:0 0 31px;width:31px;min-width:31px;height:31px;min-height:31px;padding:0;display:inline-grid;place-items:center;border-radius:7px}
 /* Header and every data row share EXACTLY the same grid tracks. */
 .kbg20-page .kbg20-v41-taskgrid{
-  grid-template-columns:minmax(220px,2.85fr) minmax(79px,.8fr) minmax(64px,.65fr)
-  minmax(88px,.88fr) minmax(120px,1.12fr) minmax(135px,1.24fr)
-  minmax(135px,1.24fr) minmax(152px,1.5fr);
+  grid-template-columns:minmax(220px,2.75fr) minmax(79px,.77fr) minmax(64px,.62fr)
+  minmax(88px,.83fr) minmax(120px,1.08fr) minmax(115px,1.05fr)
+  minmax(115px,1.1fr) minmax(110px,1.08fr) minmax(136px,1.25fr);
   column-gap:8px;
 }
 .kbg20-v41-table-head>span,.kbg20-v41-task-row>div{min-width:0}
@@ -721,7 +721,7 @@
  .kbg20-v41-workbar .kbg20-search{max-width:none;flex:1 1 145px}
 }
 @media (max-width:1160px) and (min-width:761px){
- .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(195px,2.5fr) minmax(112px,1.2fr) minmax(112px,1.2fr) minmax(112px,1.25fr) minmax(145px,1.45fr)}
+ .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(170px,2.3fr) minmax(85px,.95fr) minmax(94px,1.02fr) minmax(103px,1.12fr) minmax(103px,1.12fr) minmax(122px,1.3fr)}
  .kbg20-v41-task-row .kbg20-v41-clock-cell{gap:6px}
 }
 @media (max-width:760px){
@@ -732,7 +732,7 @@
  .kbg20-v41-task-row .kbg20-v41-status-cell{align-items:flex-start;text-align:left;justify-content:flex-start}
  .kbg20-v41-task-row .kbg20-v41-clock-cell{justify-content:flex-start;gap:8px}
  .kbg20-v41-task-row .kbg20-v41-actions{justify-content:flex-start}
- .kbg20-page .kbg20-v41-task-row>:nth-child(8){justify-content:flex-start}
+ .kbg20-page .kbg20-v41-task-row>:nth-child(9){justify-content:flex-start}
  .kbg20-v41-workbar .kbg20-search{max-width:none;flex:1 1 100%}
 }
 
@@ -834,3 +834,26 @@
  .kbg20-v41-hist-name{grid-column:1/-1}
  .kbg20-v45-hist-share{align-items:flex-start;text-align:left}
 }
+
+.kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"] {
+    background: #fff1f2 !important;
+    color: #be123c !important;
+    border: 1px solid #fecdd3 !important;
+    box-shadow: none;
+}
+
+    .kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"]:hover:not(:disabled) {
+        background: #ffe4e6 !important;
+        color: #9f1239 !important;
+        border-color: #fda4af !important;
+    }
+
+    .kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"]:focus-visible {
+        outline: 2px solid #e11d48;
+        outline-offset: 2px;
+    }
+
+    .kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"]:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }

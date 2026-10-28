@@ -1,4 +1,4 @@
-<%@ Page Title="Tính giờ công việc" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="KhaiBaoGio.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fKhaiBaoGio.KhaiBaoGio" %>
+﻿<%@ Page Title="Tính giờ công việc" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="KhaiBaoGio.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fKhaiBaoGio.KhaiBaoGio" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <%@ Register Src="~/fTasks/Controls/CtrlStartTask.ascx" TagPrefix="SweetSoft" TagName="CtrlStartTask" %>
@@ -187,14 +187,370 @@
             .ks-journal-body { padding:10px; }
             .ks-journal-table th,.ks-journal-table td { padding:8px 5px; }
         }
-    </style>
+    
+        /* Issue time tracking: isolated component; Task selectors unchanged. */
+        .gv-switch { display:flex; align-items:center; width:max-content; max-width:100%; gap:3px; padding:4px; margin:2px 0 13px; border:1px solid #e5dbf2; background:#f7f3fc; border-radius:10px; }
+.gv-switch-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:33px; padding:7px 16px; border:1px solid transparent; border-radius:7px; color:#6b587e; background:transparent; font-size:12.5px; font-weight:750; cursor:pointer; white-space:nowrap; }
+.gv-switch-btn.is-active { color:#54248a; background:#fff; border-color:#ded2ef; box-shadow:0 1px 3px #2b124018; }
+.gv-switch-btn:hover:not(.is-active) { color:#532688; background:#f0e8fb; }
+.gv-switch-count { display:inline-grid; place-items:center; height:18px; min-width:18px; padding:0 5px; background:#eee5fa; color:#5d2e8d; border-radius:10px; font-size:10px; }
+#kbg20Page.gv-mode-issue #kbg20WorkView .gv-only-task { display:none!important; }
+.kbg20-page .gv-issue[hidden], .kbg20-page .gv-only-task[hidden], .gv-modal [hidden], .gv-issue [hidden] { display:none!important; }
+.gv-issue { border:1px solid #e8e3ef; border-radius:10px; background:#fff; overflow:hidden; }
+.gv-toolbar { display:flex; gap:12px; align-items:center; justify-content:space-between; padding:13px 15px; background:#fff; border-bottom:1px solid #ebe7f2; }
+.gv-toolbar-left { min-width:165px; flex:1 1 auto; }
+.gv-heading { display:flex; align-items:center; gap:7px; color:#452278; font-size:14px; font-weight:800; white-space:nowrap; }
+.gv-heading span { color:#937eab; font-weight:650; font-size:11px; }
+.gv-toolbar-left p { margin:3px 0 0; color:#87909e; font-size:11px; line-height:1.4; }
+.gv-toolbar-right { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+.gv-filters { display:flex; gap:3px; padding:3px; border:1px solid #e9e4f1; border-radius:8px; background:#f8f7fa; }
+.gv-filters button { background:transparent; color:#6b7280; border:1px solid transparent; border-radius:6px; padding:5px 8px; font-size:10.5px; font-weight:700; white-space:nowrap; cursor:pointer; }
+.gv-filters button.is-active { background:#eee5fb; color:#56248b; border-color:#e0d0f4; }
+.gv-filters button:hover:not(.is-active) { background:#f1eaf9; }
+.gv-search { display:flex; align-items:center; gap:7px; padding:0 9px; height:33px; width:192px; color:#8c83a1; border:1px solid #e4ddeb; border-radius:8px; background:#fff; }
+.gv-search input { flex:1 1 auto; width:0; min-width:0; border:0; outline:0; box-shadow:none; color:#334155; background:transparent; font-size:11px; }
+.gv-icon-button { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1px solid #e5dded; border-radius:7px; background:#fff; color:#674090; cursor:pointer; }
+.gv-icon-button:disabled { opacity:.35; cursor:not-allowed; }
+.gv-icon-button:hover:not(:disabled) { background:#f7f2fc; }
+.gv-table-scroll { width:100%; overflow-x:auto; }
+.gv-table { min-width:760px; width:100%; }
+.gv-th, .gv-tr { display:grid; grid-template-columns:minmax(230px,2.65fr) minmax(105px,.95fr) minmax(105px,.95fr) minmax(120px,1fr) minmax(150px,1.15fr); align-items:center; gap:10px; padding:0 14px; }
+.gv-th { min-height:39px; background:#f7f5fb; border-bottom:1px solid #e9e3f1; color:#6d5888; font-size:10.5px; font-weight:800; }
+.gv-th span:not(:first-child) { text-align:center; }
+.gv-tr { min-height:67px; border-bottom:1px solid #f0edf4; background:#fff; transition:background-color .15s; }
+.gv-tr:hover { background:#faf8fe; }
+.gv-tr:last-child { border-bottom:0; }
+.gv-name { display:flex; flex-direction:column; align-items:flex-start; gap:5px; min-width:0; }
+.gv-name-line { display:flex; align-items:center; gap:6px; width:100%; min-width:0; }
+.gv-code { flex:0 0 auto; border:1px solid #e8d9f8; border-radius:5px; padding:2px 5px; color:#642b97; background:#f7f1fd; font-size:10.5px; font-weight:800; }
+.gv-name-title { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#334155; font-size:12px; font-weight:750; }
+.gv-mini { color:#99a1ad; font-size:10px; }
+.gv-time { color:#334155; font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; text-align:center; white-space:nowrap; }
+.gv-time small { display:block; margin-top:4px; font-size:10px; font-weight:600; color:#8995a3; }
+.gv-time.is-running { color:#198453; }
+.gv-status-wrap { text-align:center; }
+.gv-state { display:inline-flex; justify-content:center; align-items:center; gap:5px; padding:5px 8px; border:1px solid #e5e7eb; border-radius:7px; background:#f5f6f8; color:#667085; font-size:10.5px; font-weight:750; white-space:nowrap; }
+.gv-state.is-active { border-color:#c5d9f8; background:#eef5ff; color:#245cb3; }
+.gv-state.is-running { border-color:#bce5ce; background:#edf9f1; color:#168457; }
+.gv-state.is-pending { border-color:#f4dea0; background:#fffae8; color:#9b680b; }
+.gv-state.is-done { border-color:#bae5c5; background:#effaf2; color:#247c43; }
+.gv-state.is-rejected { border-color:#f4c4ca; background:#fff3f3; color:#bc394b; }
+.gv-actions { display:flex; align-items:center; justify-content:center; gap:6px; }
+.gv-action { display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:6px 10px; border-radius:7px; border:1px solid #d8c9e9; background:#f5effb; color:#592f87; min-height:31px; font-size:11px; font-weight:800; line-height:1.15; white-space:nowrap; cursor:pointer; }
+.gv-action:hover:not(:disabled) { filter:brightness(.97); }
+.gv-action:disabled { opacity:.45; cursor:not-allowed; }
+.gv-actions .gv-action { min-width:102px; }
+.gv-actions .gv-icon-button { width:31px; height:31px; }
+.gv-action-start { border-color:#b9e3c4; color:#167343; background:#ecf9ef; }
+.gv-action-stop { border-color:#f0c4c7; color:#b33448; background:#fff2f3; }
+.gv-action-submit { border-color:#d9c4ef; color:#61269c; background:#f6f0fd; }
+.gv-empty { padding:36px 16px; color:#93909d; text-align:center; font-size:12px; }
+.gv-foot { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px; color:#85909e; border-top:1px solid #eeebf3; background:#fdfcff; font-size:10.5px; }
+.gv-foot-actions { display:flex; align-items:center; gap:9px; }
+.gv-modal { display:flex; flex-direction:column; gap:13px; color:#334155; }
+#mdlGioXuLyVanDe .modal-dialog, #mdlGioXuLyVanDe.modal-dialog { width:calc(100vw - 36px)!important; max-width:960px!important; margin-left:auto!important; margin-right:auto!important; }
+#mdlGioXuLyVanDe .modal-body { max-height:calc(100vh - 180px); overflow-y:auto; }
+.gv-modal-title { font-size:16px; font-weight:800; color:#542589; }
+.gv-modal-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.gv-modal-stats>div { display:flex; flex-direction:column; gap:8px; padding:12px; border:1px solid #e6e0ee; border-radius:8px; min-width:0; background:#faf9fc; }
+.gv-modal-stats small { color:#7c8592; font-size:10.5px; font-weight:700; }
+.gv-modal-stats strong { color:#283547; font-size:18px; font-variant-numeric:tabular-nums; font-weight:800; }
+.gv-modal-state { color:#674096; font-size:12px; font-weight:800; }
+.gv-modal-note { padding:10px 12px; border:1px solid #e7dbf3; border-radius:7px; color:#624186; background:#f9f5fd; font-size:11.5px; }
+.gv-modal-section { padding:12px; border:1px solid #e7e3ec; border-radius:9px; background:#fff; }
+.gv-modal-section h4, .gv-history-head h4 { margin:0 0 7px; font-size:12.5px; color:#374151; font-weight:800; }
+.gv-modal-section p { color:#818997; font-size:11.5px; margin:0 0 9px; }
+.gv-modal-section textarea { display:block; width:100%; padding:8px 10px; border:1px solid #dedbe6; border-radius:7px; font:inherit; font-size:12px; resize:vertical; box-sizing:border-box; }
+.gv-history-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.gv-history-head span { color:#9b94a4; font-size:11px; }
+.gv-history-scroll { max-height:248px; overflow:auto; border:1px solid #ebe7f0; border-radius:7px; }
+.gv-history-scroll table { border-collapse:collapse; width:100%; min-width:590px; font-size:11.5px; }
+.gv-history-scroll th { position:sticky; top:0; background:#f7f5fa; text-align:left; padding:9px 11px; color:#7b688e; font-size:10.5px; white-space:nowrap; }
+.gv-history-scroll td { padding:9px 11px; border-top:1px solid #f0edf3; color:#4c5564; }
+.gv-right { text-align:right!important; font-variant-numeric:tabular-nums; }
+.gv-modal-buttons { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+.gv-modal-buttons .gv-action { min-width:116px; }
+.gv-modal-buttons .gv-action[hidden] { display:none!important; }
+@media (max-width:1220px) { .gv-toolbar { align-items:flex-start; flex-wrap:wrap; } .gv-toolbar-right { flex:1 1 100%; justify-content:flex-start; } }
+@media (max-width:680px) { .gv-toolbar { padding:10px; } .gv-toolbar-right { flex-wrap:wrap; } .gv-filters { width:100%; overflow-x:auto; } .gv-search { width:calc(100% - 44px); } .gv-modal-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .gv-switch { width:100%; } .gv-switch-btn { flex:1 1 50%; padding:7px 9px; } }
+    
+        /* ISSUE: giu style hien tai, chi bo sung ngay trong KhaiBaoGio.aspx */
+        .gv-th,.gv-tr { grid-template-columns:minmax(200px,2.3fr) minmax(125px,1.05fr) minmax(100px,.86fr) minmax(110px,1fr) minmax(110px,1fr) minmax(153px,1.3fr); }
+        .gv-table { min-width:950px; }
+        .gv-state.is-reported { border-color:#bde4c8; background:#eefaf1; color:#147a46; }
+        .gv-state.is-unreported { border-color:#e1e5ed; background:#f6f7f9; color:#667085; }
+        .gv-personal-panel { background:#fbf9ff; }
+        .gv-section-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+        .gv-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:11px; }
+        .gv-form-grid label,.gv-form-label { display:flex; flex-direction:column; gap:5px; color:#6b5a85; font-size:11.5px; font-weight:700; }
+        .gv-form-grid input { width:100%; height:36px; border:1px solid #dcd4e8; border-radius:7px; padding:6px 10px; background:#fff; color:#312047; font:inherit; font-weight:750; }
+        .gv-form-label textarea { margin-top:3px; }
+        .gv-report-people { display:flex; flex-direction:column; gap:7px; max-height:195px; overflow:auto; }
+        .gv-report-person { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid #eee8f4; border-radius:7px; padding:9px 11px; background:#fff; }
+        .gv-report-person strong { color:#413454; font-size:11.5px; }
+        .gv-report-person small { display:block; color:#8e91a0; font-size:10.5px; }
+        .gv-pm-table-wrap { overflow-x:auto; }
+        .gv-pm-table { width:100%; border-collapse:collapse; min-width:680px; font-size:11px; }
+        .gv-pm-table th,.gv-pm-table td { padding:8px 7px; border-bottom:1px solid #eee8f4; text-align:left; }
+        .gv-pm-table th { background:#f7f4fb; color:#6b5288; }
+        .gv-pm-table input[type=number] { width:84px; max-width:100%; border:1px solid #e1d6ed; border-radius:6px; padding:5px; }
+        .gv-pm-table input[type=text] { width:145px; max-width:100%; border:1px solid #e1d6ed; border-radius:6px; padding:5px; }
+        .gv-confirm-body { padding:6px; color:#4e445a; font-size:12.5px; }
+        .gv-confirm-warning { background:#fff6e7; color:#936012; border:1px solid #f6d69b; padding:10px; border-radius:8px; }
+        .gv-modal-buttons { gap:7px; flex-wrap:wrap; }
+        .gv-modal-buttons .gv-action { min-width:152px; }
+        .gv-cross-filter { display:inline-flex; gap:3px; border:1px solid #e7dced; background:#f8f5fc; border-radius:9px; padding:3px; margin:13px 0 8px; }
+        .gv-cross-filter button { padding:6px 14px; border:1px solid transparent; border-radius:7px; color:#695683; background:transparent; font-size:11px; font-weight:750; cursor:pointer; }
+        .gv-cross-filter button.is-selected { background:#fff; color:#53248b; border-color:#e2d3f2; box-shadow:0 1px 3px #32134810; }
+        .gv-cross-title { margin:9px 0 7px; color:#533080; font-size:12.5px; font-weight:800; }
+        .gv-type-tag { display:inline-block; padding:2px 6px; border:1px solid #cfe5fb; border-radius:5px; background:#f1f8ff; color:#246eac; font-size:10px; }
+        .gv-type-tag.is-issue { border-color:#e7d6f5; color:#6b3094; background:#f9f2ff; }
+        .gv-cross-list { display:flex; flex-direction:column; gap:7px; }
+        .gv-cross-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 13px; background:#fff; border:1px solid #ece5f4; border-radius:8px; font-size:12px; }
+        .gv-cross-item strong { color:#4b2d73; }
+        .gv-cross-item small { display:block; color:#7f8798; margin-top:4px; }
+        .gv-cross-item button { border:1px solid #e2d5f1; background:#f8f2ff; color:#65378f; padding:6px 11px; border-radius:6px; font-size:11px; cursor:pointer; }
+        #gvHistoryIssueTitle[hidden],#gvHistoryTaskTitle[hidden],#gvLedgerIssueTitle[hidden],#gvLedgerTaskTitle[hidden],#gvHistoryIssues[hidden],#gvLedgerIssues[hidden],#kbg20History[hidden],#kbg20ManualList[hidden] { display:none!important; }
+        /* Dong nhat Issue voi Soft Table V4.1 Task; moi selector/moi khai bao tren mot dong. */
+        .gv-issue { border:0; border-radius:0; background:transparent; overflow:visible; }
+        .gv-workbar { justify-content:space-between; flex-wrap:wrap; gap:9px; padding:8px 10px; }
+        .gv-workbar-summary { display:flex; align-items:flex-start; flex-direction:column; flex:0 0 auto; gap:3px; min-width:120px; }
+        .gv-workbar-summary strong { font-size:12px; color:#56258e; font-weight:800; }
+        .gv-workbar-summary small { font-size:10.5px; color:#8b93a2; }
+        .gv-workbar-tools { min-width:0; flex:1 1 600px; justify-content:flex-end; }
+        #gvFilters .kbg20-filter-chip { white-space:nowrap; }
+        .gv-tasklike-table { overflow-x:auto; }
+        .gv-tasklike-grid { display:grid; grid-template-columns:minmax(205px,2.15fr) minmax(98px,.9fr) minmax(128px,1.04fr) minmax(122px,1.08fr) minmax(122px,1.08fr) minmax(112px,.95fr) minmax(155px,1.25fr); align-items:center; gap:7px; min-width:1040px; padding:0 12px; }
+        .gv-tasklike-rows { min-width:1040px; }
+        .gv-tasklike-rows .gv-tasklike-grid { min-height:76px; border-bottom:1px solid #e9e8f0; background:#fff; padding-top:9px; padding-bottom:9px; }
+        .gv-tasklike-rows .gv-tasklike-grid:hover { background:#fbf9ff; }
+        .gv-tasklike-rows .gv-tasklike-grid > div:not(:first-child) { text-align:center; }
+        .gv-tasklike-identity { display:flex; flex-direction:column; min-width:0; gap:5px; }
+        .gv-tasklike-name { display:flex; align-items:center; gap:6px; min-width:0; }
+        .gv-tasklike-name strong { color:#334155; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .gv-tasklike-note { font-size:10.5px; color:#93a0ae; }
+        .gv-tasklike-hours { display:flex; flex-direction:column; align-items:center; gap:3px; font-variant-numeric:tabular-nums; }
+        .gv-tasklike-hours strong { font-size:14px; font-weight:800; color:#53268d; }
+        .gv-tasklike-hours.is-overtime strong { color:#73518f; }
+        .gv-tasklike-hours small { font-size:10px; color:#8b94a4; }
+        .gv-tasklike-clock { display:flex; justify-content:center; gap:4px; align-items:center; }
+        .gv-tasklike-clock .gv-timer-button { display:inline-flex; justify-content:center; align-items:center; min-width:27px; height:28px; padding:0 6px; border:1px solid #e1d4ef; border-radius:7px; background:#f7f1ff; color:#64309b; cursor:pointer; }
+        .gv-tasklike-clock .gv-timer-button.is-stop { border-color:#f0c7d1; background:#fff0f3; color:#b3394a; }
+        .gv-tasklike-clock .gv-timer-button:disabled { opacity:.42; cursor:not-allowed; }
+        .gv-row-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:5px; }
+        .gv-row-actions .kbg20-btn { font-size:11px; padding:6px 8px; min-height:30px; white-space:nowrap; }
+        .gv-workfoot { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; }
+        .gv-pager { display:inline-flex; align-items:center; justify-content:center; padding:0; min-width:30px; height:30px; }
+        .gv-tasklike-grid .gv-state { font-size:10.5px; }
+        .gv-history-grid { display:grid; grid-template-columns:minmax(235px,2.2fr) repeat(3,minmax(120px,1fr)) minmax(100px,.9fr); align-items:center; gap:10px; }
+        .gv-history-row { min-height:56px; padding:9px 13px; border-bottom:1px solid #eeeaf3; background:#fff; }
+        .gv-history-row > div:not(:first-child) { text-align:center; font-variant-numeric:tabular-nums; }
+        .gv-history-row .kbg20-btn { white-space:nowrap; }
+        #gvHistoryIssues .gv-history-head { padding:10px 13px; background:#f8f5fb; color:#6f5885; font-size:10.5px; font-weight:800; }
+        .gv-issue-modal-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+        .gv-issue-modal-head strong { color:#522a88; font-size:15px; }
+        .gv-issue-modal-head span { color:#778399; font-size:11px; }
+        .gv-issue-form { display:flex; flex-direction:column; gap:12px; }
+        .gv-issue-form .kbg20-reconcile-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        .gv-issue-form input,.gv-issue-form textarea { box-sizing:border-box; }
+        .gv-issue-inline-action { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:10px; }
+        .gv-issue-section { padding:12px; border:1px solid #ece4f4; border-radius:9px; background:#fff; }
+        .gv-issue-section h4 { margin:0 0 9px; color:#643792; font-size:12px; }
+        .gv-issue-pm-table { width:100%; border-collapse:collapse; font-size:11px; }
+        .gv-issue-pm-table th,.gv-issue-pm-table td { border-bottom:1px solid #eee7f6; padding:8px; text-align:left; }
+        .gv-issue-pm-table input { max-width:100px; width:100%; padding:5px; border:1px solid #dad5e6; border-radius:6px; }
+        .gv-issue-people { display:flex; flex-direction:column; gap:5px; max-height:180px; overflow-y:auto; }
+        .gv-issue-person { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 8px; border-bottom:1px solid #eee8f4; }
+        .gv-issue-hist-item { border:1px solid #eee8f4; border-radius:8px; padding:10px; margin-top:8px; background:#fff; }
+        .gv-issue-hist-item h4 { margin:0 0 7px; color:#5e3986; font-size:11.5px; }
+        .gv-issue-hist-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+        .gv-issue-hist-fields small { display:block; font-size:10px; color:#8c91a0; margin-bottom:3px; }
+        .gv-issue-hist-fields strong { font-size:12px; color:#344154; }
+        #gvHistoryTotalsCombined[hidden] { display:none!important; }
+        @media(max-width:1000px) { .gv-workbar-tools { justify-content:flex-start; } .gv-tasklike-table { max-width:100%; } }
+        @media(max-width:670px) { .gv-issue-form .kbg20-reconcile-grid { grid-template-columns:1fr; } .gv-issue-hist-fields { grid-template-columns:1fr; } }
+        @media(max-width:800px) { .gv-form-grid { grid-template-columns:1fr; } .gv-modal-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .gv-cross-item { flex-wrap:wrap; } }
+</style>
     <style>
         .ks-page.is-project-scoped { max-width:none; width:100%; padding:8px 0 18px; margin:0; }
         .ks-page.is-project-scoped .ks-header { display:none; }
         .kbg-project-shell { min-width:0; }
         .kbg20-feature-off { margin:12px 4px; padding:15px; border:1px solid #dcd4ed; background:#f8f5ff; border-radius:10px; color:#58338a; font-size:13px; }
     </style>
-    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261026stateSync1" rel="stylesheet" type="text/css" />
+    <style>
+    /* Issue dùng đúng các class Task: chỉ định nghĩa 6 cột sau khi bỏ 3 cột ngày. */
+    #kbg20Page #gvIssuePane .kbg20-v41-taskgrid { grid-template-columns:minmax(155px,1.36fr) minmax(114px,1fr) minmax(140px,1.12fr) minmax(165px,1.46fr) minmax(165px,1.46fr) minmax(174px,1.40fr)!important;column-gap:8px; }
+    #kbg20Page #gvIssuePane .kbg20-v41-actions.is-multi-action { flex-direction:column;gap:5px; }
+    /* Ô nhập PM cũng là bộ Giờ/Phút của Task, thu gọn trong bảng duyệt. */
+    /* Đồng bộ đúng hành động Task. Issue dùng data-gv-action (không đặt data-action để tránh sự kiện Task bắt nhầm). */
+    #kbg20Page #gvIssuePane .kbg20-v41-actions .kbg20-dot2-row-btn[data-gv-action="withdraw"] { background:#fff1f2!important;color:#be123c!important;border:1px solid #fecdd3!important;box-shadow:none; }
+    #kbg20Page #gvIssuePane .kbg20-v41-actions .kbg20-dot2-row-btn[data-gv-action="withdraw"]:hover:not(:disabled) { background:#ffe4e6!important;color:#9f1239!important;border-color:#fda4af!important; }
+    #kbg20Page #gvIssuePane .kbg20-v41-actions .kbg20-dot2-row-btn[data-gv-action="submit"] { background:#f6f0ff!important;color:#59228f!important;border:1px solid #d7bfed!important;box-shadow:none; }
+    #kbg20Page #gvIssuePane .kbg20-v41-actions .kbg20-dot2-row-btn[data-gv-action="submit"]:hover:not(:disabled) { background:#ede1fc!important;color:#491a7c!important;border-color:#ba99e0!important; }
+    #kbg20Page #gvIssuePane .kbg20-v41-identity,#kbg20Page #gvIssuePane .kbg20-v41-taskname { min-width:0;max-width:100%; }
+    #kbg20Page #gvIssuePane .kbg20-v41-taskname { display:flex;width:100%; }
+    #kbg20Page #gvIssuePane .kbg20-v41-tasktext { flex:1 1 auto;min-width:0;max-width:100%;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help; }
+    /* Đầu cột, giờ hệ thống/tự khai và hành động đều nằm giữa cột tương ứng ở cả Task/Issue Tab 3. */
+    #kbg20Page #kbg20ManualList .kbg20-ui-table-grid,#kbg20Page #gvLedgerIssues .kbg20-ui-table-grid { grid-template-columns:minmax(215px,2.45fr) minmax(145px,1.10fr) minmax(145px,1.10fr) minmax(155px,1.20fr) minmax(145px,1.15fr);column-gap:9px; }
+    #kbg20Page #kbg20ManualList .kbg20-ui-table-head>span:not(:first-child),#kbg20Page #gvLedgerIssues .kbg20-ui-table-head>span:not(:first-child) { text-align:center; }
+    #kbg20Page #kbg20ManualList .kbg20-ui-cell-sys,#kbg20Page #kbg20ManualList .kbg20-ui-cell-self,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-sys,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-self { display:grid;grid-template-columns:64px minmax(62px,max-content);align-items:baseline;justify-content:center;column-gap:8px; }
+    #kbg20Page #kbg20ManualList .kbg20-ui-cell-sys span,#kbg20Page #kbg20ManualList .kbg20-ui-cell-self span,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-sys span,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-self span { text-align:right; }
+    #kbg20Page #kbg20ManualList .kbg20-ui-cell-sys strong,#kbg20Page #kbg20ManualList .kbg20-ui-cell-self strong,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-sys strong,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-self strong { text-align:right; }
+    #kbg20Page #kbg20ManualList .kbg20-ui-cell-status,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-status { align-items:center;text-align:center; }
+    #kbg20Page #kbg20ManualList .kbg20-ui-cell-actions,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-actions { justify-content:center; }
+
+    /* Chỉ Issue Tab 3: các nút dùng đúng bộ is-primary/is-secondary/is-neutral của Task.
+       Nút Rút báo vẫn hiện nhưng khóa khi chờ/đã duyệt, theo giới hạn của server. */
+    #kbg20Page #gvLedgerIssues .kbg20-ui-cell-actions { gap:7px; flex-wrap:wrap; }
+    #kbg20Page #gvLedgerIssues .gv-ledger-action-lock { display:inline-flex; align-items:center; justify-content:center; border-radius:7px; cursor:help; }
+    #kbg20Page #gvLedgerIssues .gv-ledger-action-lock .kbg20-ui-action:disabled { opacity:.46;cursor:not-allowed;filter:none;pointer-events:none; }
+
+    /* Task 9 cột ẩn ba cột ngày trên tablet; Issue 6 cột KHÔNG có ba cột ngày đó. */
+    @media(max-width:1160px) { #kbg20Page #gvIssuePane .kbg20-v41-taskgrid>:nth-child(2),#kbg20Page #gvIssuePane .kbg20-v41-taskgrid>:nth-child(3),#kbg20Page #gvIssuePane .kbg20-v41-taskgrid>:nth-child(4) { display:flex; } }
+    @media(max-width:760px) { #kbg20Page #gvIssuePane .kbg20-v41-table-head { display:none!important; } #kbg20Page #gvIssuePane .gv-tasklike-rows { min-width:0; } #kbg20Page #gvIssuePane .kbg20-v41-task-row { grid-template-columns:repeat(2,minmax(0,1fr))!important;min-width:0; } #kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(6) { grid-column:1/-1;justify-content:center; } #kbg20Page #gvIssuePane .kbg20-v41-task-row .kbg20-v41-taskname { max-width:100%; } }
+    #mdlKbg20Manual .gv-issue-workspace { min-height:410px; }
+    #mdlKbg20HistoryDetails .gv-issue-session .kbg20-ux-session-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    @media(max-width:1190px) and (min-width:781px) { #kbg20Page #kbg20ManualList .kbg20-ui-table-grid,#kbg20Page #gvLedgerIssues .kbg20-ui-table-grid { grid-template-columns:minmax(180px,2.2fr) minmax(132px,1fr) minmax(132px,1fr) minmax(145px,1fr); } #kbg20Page #kbg20ManualList .kbg20-ui-table-grid>:nth-child(4),#kbg20Page #gvLedgerIssues .kbg20-ui-table-grid>:nth-child(4) { display:none; } }
+    @media(max-width:780px) { #kbg20Page #kbg20ManualList .kbg20-ui-table-grid,#kbg20Page #gvLedgerIssues .kbg20-ui-table-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #kbg20Page #kbg20ManualList .kbg20-ui-cell-actions,#kbg20Page #gvLedgerIssues .kbg20-ui-cell-actions { justify-content:flex-start; } #mdlKbg20Manual .gv-issue-workspace { min-height:0; } #mdlKbg20HistoryDetails .gv-issue-session .kbg20-ux-session-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    #mdlKbg20Manual .gv-issue-pm .kbg20-split-heading,#mdlKbg20Manual .gv-issue-pm .kbg20-split-preview { display:none; }
+    #mdlKbg20Manual .gv-issue-pm .kbg20-split-time { gap:3px; }
+    #mdlKbg20Manual .gv-issue-pm .kbg20-split-row { gap:5px; }
+    #mdlKbg20Manual .gv-issue-pm .kbg20-split-minutes { flex:0 0 48px; }
+    #mdlKbg20Manual .gv-issue-pm .kbg20-split-input { height:34px;padding:5px 4px;font-size:13px; }
+    #mdlKbg20Manual .gv-issue-pm, #mdlKbg20Manual .gv-issue-review { padding:12px 14px; }
+    #mdlKbg20Manual .gv-issue-review-actions { display:flex;justify-content:flex-end;gap:8px;padding:12px 0 0; }
+    #mdlKbg20Manual .gv-issue-review .kbg20-ui-reason { display:block;max-width:100%; }
+    #mdlKbg20Manual .gv-issue-review .kbg20-ui-reason textarea { width:100%; }
+    @media(max-width:1160px) { #kbg20Page #gvIssuePane .kbg20-v41-taskgrid { grid-template-columns:minmax(152px,1.36fr) minmax(100px,1fr) minmax(112px,1.1fr) minmax(134px,1.35fr) minmax(134px,1.35fr) minmax(145px,1.35fr)!important; } }
+    @media(max-width:1160px) { #kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(2),#kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(3),#kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(4) { display:flex!important; } #kbg20Page #gvIssuePane .kbg20-v41-table-head>:nth-child(2),#kbg20Page #gvIssuePane .kbg20-v41-table-head>:nth-child(3),#kbg20Page #gvIssuePane .kbg20-v41-table-head>:nth-child(4){display:block!important;} }
+    @media(max-width:760px) { #kbg20Page #gvIssuePane .kbg20-v41-table-head{display:none;} #kbg20Page #gvIssuePane .kbg20-v41-task-row {grid-template-columns:repeat(2,minmax(0,1fr))!important;} #kbg20Page #gvIssuePane .kbg20-v41-task-row>:first-child{grid-column:1/-1;} #kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(4),#kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(5){display:flex;grid-column:auto;} #kbg20Page #gvIssuePane .kbg20-v41-task-row>:nth-child(6){display:flex;grid-column:1/-1;} }
+    /* CLOCK FIX: place the icon at the same x-coordinate inside both time columns.
+       Earlier flex + justify-content:center moved the icon when the text length changed (Task 1.2.1).
+       Applies to Task and Issue rows only, preserving the exact Task icon styles and all click handlers. */
+    #kbg20Page .kbg20-v41-task-row .kbg20-v41-clock-cell { display:grid;grid-template-columns:29px minmax(0,1fr);column-gap:7px;align-items:center;justify-content:stretch;width:100%;min-width:0; }
+    #kbg20Page .kbg20-v41-task-row .kbg20-v41-icon-action { grid-column:1;grid-row:1;width:29px;min-width:29px;height:30px;justify-self:start;align-self:center; }
+    #kbg20Page .kbg20-v41-task-row .kbg20-v41-clock-main { grid-column:2;grid-row:1;display:flex;flex-direction:column;justify-self:stretch;align-items:flex-start;text-align:left;min-width:0;width:100%;max-width:100%; }
+    #kbg20Page .kbg20-v41-task-row .kbg20-v41-clock { white-space:nowrap;font-variant-numeric:tabular-nums; }
+    #kbg20Page #gvIssuePane .gv-issue-approval-note { display:block;margin-top:3px;font-size:10px;line-height:1.3;color:#80629c;text-align:center; }
+    @media(max-width:760px) { #kbg20Page .kbg20-v41-task-row .kbg20-v41-clock-cell>.kbg20-v41-mobile-label { grid-column:1/-1;grid-row:auto; } #kbg20Page .kbg20-v41-task-row .kbg20-v41-icon-action,#kbg20Page .kbg20-v41-task-row .kbg20-v41-clock-main { grid-row:auto; } #kbg20Page #gvIssuePane .gv-issue-approval-note { text-align:left; } }
+    </style>
+
+<style>
+/* PM styles preserved from the running page; Task CSS untouched. */
+.qlpm-shell{--qlpm-line:#e7e2ed;display:flex;flex-direction:column;min-height:0;max-height:calc(100dvh - 141px);font-size:12.5px;color:#263246;background:#fff;overflow:hidden}
+.qlpm-overview{flex:none;padding:11px 17px;background:linear-gradient(110deg,#fbf8ff,#fff);border-bottom:1px solid var(--qlpm-line)}
+.qlpm-task-title{font-size:15px;font-weight:800;color:#33224e;line-height:1.35;overflow-wrap:anywhere;margin:0 0 6px}
+.qlpm-context{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.qlpm-task-overdue{font-size:10.5px;font-weight:750;color:#dc2626}
+.qlpm-shell .badge-pill-custom{padding:4px 8px!important;border-radius:4px!important;font-size:11px!important;font-weight:600!important;display:inline-block!important;white-space:nowrap!important;line-height:1.2!important}
+.qlpm-shell .badge-status-todo{background:#f1f5f9!important;color:#475569!important;border:1px solid #cbd5e1!important}
+.qlpm-shell .badge-status-doing{background:#e0f2fe!important;color:#0369a1!important;border:1px solid #bae6fd!important}
+.qlpm-shell .badge-status-done{background:#dcfce7!important;color:#15803d!important;border:1px solid #bbf7d0!important}
+.qlpm-shell .badge-status-review{background:#fef3c7!important;color:#92400e!important;border:1px solid #fcd34d!important}
+.qlpm-pm-status{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;font-size:10.5px;font-weight:750;color:#68408c;border:1px solid #e8d8f4;background:#f6effd;border-radius:5px}
+.qlpm-pm-status.is-final{color:#13784b;background:#eefaf2;border-color:#c2e8d4}
+.qlpm-count{font-size:11.5px;font-weight:650;color:#718096}
+.qlpm-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.qlpm-stat{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;background:#fff;border:1px solid #ece6f3;border-radius:8px;padding:8px 12px}
+.qlpm-stat small{font-size:11px;font-weight:650;color:#727987}
+.qlpm-stat strong{font-size:16px;font-weight:800;color:#57228e;font-variant-numeric:tabular-nums;white-space:nowrap}
+.qlpm-alert{flex:none;margin:8px 15px 2px;border-radius:7px;padding:8px 10px;background:#fff8e7;border:1px solid #efd9a7;color:#805917;font-size:11.5px;font-weight:600}
+.qlpm-list-title{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 17px 5px;color:#4a2774;font-weight:800;font-size:12.5px}
+.qlpm-list-actions{display:flex;align-items:center;gap:8px;color:#748093;font-size:10.5px;font-weight:500}
+.qlpm-collapse-all{border:1px solid #dcd0ea;border-radius:6px;padding:4px 8px;background:#fff;color:#653294;font-size:11px;font-weight:700;cursor:pointer}
+.qlpm-collapse-all:hover{background:#f6effd;border-color:#b696d7}
+.qlpm-list{flex:1 1 auto;min-height:100px;overflow-y:auto;overscroll-behavior:contain;padding:0 14px 11px;scrollbar-width:thin;scrollbar-color:#d6c6e7 transparent}
+.qlpm-employee-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:9px}
+.qlpm-employee{min-width:0;border:1px solid #e8e1f0;border-radius:10px;overflow:hidden;background:#fff;transition:border-color .18s ease,box-shadow .18s ease}
+.qlpm-employee:hover{border-color:#d8c5ec}
+.qlpm-employee.is-open{border-color:#cbb3e8;box-shadow:0 3px 10px rgba(74,35,119,.045)}
+.qlpm-employee-head{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:10px 11px;border:0;background:#f9f7fc;cursor:pointer;font:inherit;color:inherit}
+.qlpm-employee-head:hover{background:#f4eef9}
+.qlpm-avatar-wrap{position:relative;width:36px;height:36px;flex:0 0 36px}
+.qlpm-avatar-image,.qlpm-avatar-fallback{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;object-fit:cover}
+.qlpm-avatar-image{position:absolute;inset:0;background:#fff}
+.qlpm-person{display:flex;flex-direction:column;flex:1;min-width:0;gap:1px}
+.qlpm-person strong{font-size:12px;font-weight:800;color:#2e3545;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qlpm-person small{color:#7b8291;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qlpm-person-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:1px}
+.qlpm-person-role{color:#61738b;font-size:10px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qlpm-person-pm{color:#b17a00;font-weight:800;font-size:10px;border:1px solid #f3db9b;border-radius:5px;background:#fff7df;padding:1px 5px}
+.qlpm-person-state{font-size:9.5px;color:#a35d10;border:1px solid #f6dfac;background:#fff9ec;padding:2px 5px;border-radius:5px;white-space:nowrap}
+.qlpm-person-state.is-reported{color:#16784f;background:#eefbf4;border-color:#c8ecd8}
+.qlpm-head-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none;max-width:40%;color:#806b95;font-size:10px}
+.qlpm-card-summary{font-size:10px;color:#6d597f;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
+.qlpm-chevron{font-size:12px;transition:transform .15s ease}
+.qlpm-employee.is-open .qlpm-chevron{transform:rotate(180deg)}
+.qlpm-employee-body{display:none}
+.qlpm-employee.is-open .qlpm-employee-body{display:block}
+.qlpm-compare{border-collapse:collapse;width:100%;table-layout:fixed}
+.qlpm-compare td,.qlpm-compare th{border-bottom:1px solid #f1edf6;padding:6px 10px;vertical-align:middle}
+.qlpm-compare th{color:#778197;font-size:10.5px;font-weight:700;text-align:left;background:#fff}
+.qlpm-compare .qlpm-label{width:32%;color:#5c6472;font-size:10.5px;font-weight:680}
+.qlpm-compare td{font-size:11.5px;color:#354052;font-variant-numeric:tabular-nums}
+.qlpm-compare .qlpm-edit-row{background:#faf6ff}
+.qlpm-compare .qlpm-edit-row td{border-bottom:0}
+.qlpm-time-group{display:flex;align-items:flex-end;gap:6px;max-width:230px}
+.qlpm-part{display:flex;flex-direction:column-reverse;gap:3px;flex:1;min-width:0;color:#776884;font-size:9.5px;font-weight:700}
+.qlpm-part span{padding-left:2px}
+.qlpm-minutes-part{flex:0 0 54px}
+.qlpm-hours{box-sizing:border-box!important;min-width:0;width:100%!important;max-width:none!important;height:34px!important;min-height:34px!important;padding:4px 6px!important;font-size:14px!important;font-family:inherit!important;font-weight:750!important;text-align:center!important;font-variant-numeric:tabular-nums!important;color:#4f237f!important;border:1px solid #ceb7e9!important;border-radius:7px!important;background:#fff!important;outline-offset:2px}
+.qlpm-hours:focus{border-color:#8051b2!important;box-shadow:0 0 0 2px rgba(120,73,171,.14)!important}
+.qlpm-hours.is-invalid{border-color:#dc3545!important;background:#fff7f7!important}
+.qlpm-hours[readonly]{background:#f1f2f5!important;border-color:#e1e1e6!important;color:#596276!important}
+.qlpm-reason{padding:7px 10px 9px}
+.qlpm-reason label{display:block;font-size:10.5px;font-weight:700;color:#657087;margin-bottom:4px}
+.qlpm-reason textarea{min-height:37px!important;max-height:100px!important;resize:vertical!important;font-size:11.5px!important;border-color:#e1d6ef!important;border-radius:7px!important}
+.qlpm-hint{flex:none;padding:7px 15px;background:#faf7fd;color:#786c82;border-top:1px solid #f0eaf4;font-size:10px;line-height:1.4}
+.qlpm-footer-total{font-size:11px;font-weight:650;color:#768196;margin-right:auto}
+@media(max-width:900px){.qlpm-employee-grid{grid-template-columns:1fr}.qlpm-person-state{display:inline-block}.qlpm-list-actions span{display:none}}
+#mdlKbg20Manual .gv-issue-pm .qlpm-shell { max-height:70vh; }
+#mdlKbg20Manual .gv-issue-pm.qlpm-shell { max-height:65vh;overflow-y:auto; }
+#mdlKbg20Manual .gv-issue-pm .qlpm-overview { margin-bottom:8px; }
+#mdlKbg20Manual .gv-issue-pm .qlpm-compare .qlpm-hours { max-width:105px!important; }
+#mdlKbg20Manual .gv-issue-pm .qlpm-employee-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media(max-width:840px){#mdlKbg20Manual .gv-issue-pm .qlpm-employee-grid { grid-template-columns:1fr; }}
+</style>
+    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261027task-popup-label" rel="stylesheet" type="text/css" />
+    <%-- KBG20: Styles scoped to name/approval controls; CSS goc giu nguyen. --%>
+    <style type="text/css">
+        /* Chỉ thêm các quy tắc dưới đây vào CUỐI file kbg20-page.css hiện tại. Không thay toàn bộ CSS. */
+        /* Tên công việc co giãn nhưng không tràn; tooltip dùng hệ thống JS đang có. */
+        @media (min-width:1161px) { .kbg20-page .kbg20-v41-taskgrid { grid-template-columns:minmax(165px,2.2fr) minmax(70px,.68fr) minmax(56px,.53fr) minmax(83px,.78fr) minmax(103px,.98fr) minmax(123px,1.14fr) minmax(146px,1.42fr) minmax(129px,1.2fr) minmax(172px,1.25fr); column-gap:7px; } }
+        .kbg20-page .kbg20-v41-identity, .kbg20-page .kbg20-v41-taskname, .kbg20-page .kbg20-v41-tasktext { min-width:0; }
+        .kbg20-page .kbg20-v41-taskname { display:flex; align-items:center; gap:5px; flex-wrap:nowrap; width:max-content; max-width:100%; }
+        .kbg20-page .kbg20-v41-taskcode { flex:0 0 auto; }
+        .kbg20-page .kbg20-v41-tasktext { flex:0 1 auto; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; overflow-wrap:normal; cursor:help; }
+        .kbg20-page .kbg20-v41-taskname .kbg20-d6-badge { flex:0 0 auto; }
+        /* Khôi phục badge cột Báo cáo phần việc, không thay màu Trạng thái công việc. */
+        .kbg20-page .kbg20-v41-personal-cell { display:flex; align-items:center; justify-content:center; min-width:0; }
+        .kbg20-page .kbg20-v41-personal-cell .kbg20-dot2-personal { display:inline-flex; align-items:center; justify-content:center; text-align:center; max-width:100%; padding:5px 8px; border:1px solid #dfe3e9; border-radius:7px; background:#f6f7fa; color:#657085; font-size:10.4px; line-height:1.25; font-weight:650; }
+        .kbg20-page .kbg20-v41-personal-cell .kbg20-dot2-personal.is-reported { background:#edf8ef; border-color:#bce7c9; color:#187347; }
+        .kbg20-page .kbg20-v41-personal-cell .kbg20-dot2-personal.is-withdrawn { background:#fff4f4; border-color:#f2d1d1; color:#ab4848; }
+        .kbg20-page .kbg20-v41-personal-cell .kbg20-dot2-personal.is-not-reported { background:#f6f7fa; border-color:#e1e3e9; color:#677085; }
+        /* Giữ nút Báo hoàn thành một dòng, không tự kéo chiều cao hàng; hai hành động sau báo tách gọn. */
+        .kbg20-page .kbg20-v41-actions { min-width:0; width:100%; display:flex; align-items:center; justify-content:center; }
+        .kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; min-width:0; width:164px; max-width:100%; min-height:31px; padding:6px 8px; border-radius:7px; font-size:10.5px; font-weight:750; letter-spacing:-.12px; line-height:1.2; white-space:nowrap; text-align:center; box-shadow:none; }
+        .kbg20-page .kbg20-v41-actions.is-multi-action { display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .kbg20-page .kbg20-v41-clock-cell { min-width:0; }
+        .kbg20-page .kbg20-v41-clock-sub { display:block; min-width:0; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn[data-action="withdrawPersonal"] { background:#fff1f2; color:#be123c; border:1px solid #fecdd3; }
+        .kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn[data-action="withdrawPersonal"]:hover:not(:disabled) { background:#ffe4e6; border-color:#fda4af; }
+        .kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn[data-action="sendTaskApproval"] { background:#f6f0ff; color:#59228f; border:1px solid #d7bfed; }
+        .kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn[data-action="sendTaskApproval"]:hover:not(:disabled) { background:#ede1fc; border-color:#ba99e0; }
+        @media (max-width:760px) { .kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn { white-space:normal; width:164px; max-width:100%; } }
+        /* CHỈ popup chi tiết các lần tính giờ: tự co theo nội dung ngắn. */
+        #mdlKbg20HistoryDetails .modal-dialog, #mdlKbg20HistoryDetails.modal-dialog { width:calc(100vw - 40px)!important; max-width:930px!important; margin-left:auto!important; margin-right:auto!important; }
+        #mdlKbg20HistoryDetails .modal-content { min-height:0!important; height:auto!important; }
+        #mdlKbg20HistoryDetails .modal-body { min-height:0!important; height:auto!important; max-height:calc(100vh - 180px); overflow-y:auto; }
+        #mdlKbg20HistoryDetails .kbg20-ux-modal-content { min-height:0; padding:10px 12px; }
+        #mdlKbg20HistoryDetails .kbg20-ux-modal-title { padding-bottom:9px; margin-bottom:9px; }
+        #mdlKbg20HistoryDetails .kbg20-ux-session-list { max-height:min(48vh,400px); }
+        #mdlKbg20HistoryDetails .kbg20-ux-session-item { padding:10px 12px; }
+        #mdlKbg20HistoryDetails .kbg20-ux-session-grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+        @media (max-width:760px) { #mdlKbg20HistoryDetails .kbg20-ux-session-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media (max-width:480px) { #mdlKbg20HistoryDetails .kbg20-ux-session-grid { grid-template-columns:minmax(0,1fr); } }
+    </style>
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -326,7 +682,11 @@
                  data-api-url="<%= ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio20.ashx") %>"
                  data-kbg20-floating-url="<%= ResolveUrl("~/fKhaiBaoGio/FloatingWorkTimer.ashx") %>"
                  data-kbg20-access-error-url="<%= ResolveUrl("~/fKhaiBaoGio/Kbg20AccessDenied.aspx") %>"
+                 data-task-list-url="<%= ResolveUrl(SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(SweetSoft.QLDA.Core.Managers.ThongBaoTypes.CongViec, CurrentProjectId, null)) %>"
+                 data-issue-list-url="<%= ResolveUrl(SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(SweetSoft.QLDA.Core.Managers.ThongBaoTypes.VanDe, CurrentProjectId, null)) %>"
                  data-project-id="<%= CurrentProjectId.ToString("D") %>"
+                 data-gv-api-url="<%= ResolveUrl("~/fKhaiBaoGio/GioXuLyVanDe.ashx") %>"
+                 data-gv-issue-id="<%= System.Web.HttpUtility.HtmlAttributeEncode(Request.QueryString["vanDeId"] ?? "") %>"
                  data-request-token="<%= Kbg20RequestToken() %>">
             <%-- KBG20 V4.1: soft-table layout; preserve V1 branch and Task partner controls. --%>
             <div id="kbg20Message" role="status" aria-live="polite"></div>
@@ -336,7 +696,13 @@
                 <button type="button" id="kbg20TabManual" class="kbg20-view-tab" role="tab" aria-selected="false" aria-controls="kbg20ManualView"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Bảng kê giờ công</button>
             </div>
             <div id="kbg20WorkView" role="tabpanel" aria-labelledby="kbg20TabWork">
-                <div class="kbg20-v41-workbar">
+                <%-- Sub-filter of the first existing tab; Task markup/logic below is preserved. --%>
+                <div class="gv-switch" role="group" aria-label="Loại đối tượng khai báo giờ">
+                    <button type="button" class="gv-switch-btn is-active" id="gvTabTask" aria-pressed="true"><i class="fas fa-tasks" aria-hidden="true"></i> Công việc</button>
+                    <button type="button" class="gv-switch-btn" id="gvTabIssue" aria-pressed="false"><i class="fas fa-exclamation-circle" aria-hidden="true"></i> Vấn đề</button>
+                </div>
+
+                <div class="kbg20-v41-workbar gv-only-task">
                     <div class="kbg20-schedule" id="kbg20Schedule" aria-label="Lịch làm việc hôm nay"></div>
                     <div class="kbg20-v41-tools">
                         <div id="kbg20TaskFilters" class="kbg20-task-filters" role="group" aria-label="Lọc công việc">
@@ -355,21 +721,44 @@
                             aria-label="Làm mới dữ liệu tính giờ" title="Làm mới dữ liệu"><i class="fas fa-sync-alt" aria-hidden="true"></i></button>
                     </div>
                 </div>
-                <div class="kbg20-v41-table" aria-label="Danh sách công việc tính giờ">
+                <div class="kbg20-v41-table gv-only-task" aria-label="Danh sách công việc tính giờ">
                     <div class="kbg20-v41-table-head kbg20-v41-taskgrid" aria-hidden="true">
                         <span>Công việc</span><span>Ngày bắt đầu</span><span>Thời hạn</span><span>Kết thúc dự kiến</span>
                         <span>Trạng thái công việc</span><span>Báo cáo phần việc</span><span>Giờ làm theo lịch</span><span><i class="fas fa-moon" aria-hidden="true"></i> Giờ tăng ca</span><span>Hành động</span>
                     </div>
                     <div id="kbg20Tasks" class="kbg20-tasks"></div>
                 </div>
-                <div class="kbg20-v41-foot">
+                <div class="kbg20-v41-foot gv-only-task">
                     <span><span id="kbg20ListTitle">Công việc hôm nay</span> <span id="kbg20TaskCount"></span> · Thời gian đã ghi nhận được cộng từ tất cả các phiên làm việc.</span>
                     <div id="kbg20Summary" class="kbg20-summary" aria-label="Số phiên đang mở"></div>
                 </div>
-                <div id="kbg20LoadMoreWrap" class="kbg20-load-more" hidden="hidden">
+                <div id="kbg20LoadMoreWrap" class="kbg20-load-more gv-only-task" hidden="hidden">
                     <button type="button" class="kbg20-btn kbg20-outline" id="kbg20LoadMore">Xem thêm công việc</button>
                     <span id="kbg20LoadMoreHint"></span>
                 </div>
+                <%-- Issue dung chung hinh thuc thanh loc + bang + thao tac cua Task, khong su dung bang/popup chi tiet rieng. --%>
+                <section class="gv-issue" id="gvIssuePane" hidden="hidden" aria-label="Giờ xử lý vấn đề">
+                    <div class="kbg20-v41-workbar gv-workbar">
+                        <div class="gv-workbar-summary"><strong><i class="fas fa-exclamation-circle" aria-hidden="true"></i> Vấn đề được phân công</strong><small id="gvCountLabel"></small></div>
+                        <div class="kbg20-v41-tools gv-workbar-tools">
+                            <div id="gvFilters" class="kbg20-task-filters" role="group" aria-label="Lọc vấn đề">
+                                <button type="button" data-gv-filter="active" class="kbg20-filter-chip is-selected" aria-pressed="true">Đang xử lý <span data-gv-count="active">0</span></button>
+                                <button type="button" data-gv-filter="all" class="kbg20-filter-chip" aria-pressed="false">Tất cả <span data-gv-count="all">0</span></button>
+                                <button type="button" data-gv-filter="reported" class="kbg20-filter-chip" aria-pressed="false">Đã báo hoàn thành <span data-gv-count="reported">0</span></button>
+                                <button type="button" data-gv-filter="running" class="kbg20-filter-chip" aria-pressed="false">Đồng hồ đang bật <span data-gv-count="running">0</span></button>
+                                <button type="button" data-gv-filter="pending" class="kbg20-filter-chip" aria-pressed="false">Vấn đề chờ duyệt <span data-gv-count="pending">0</span></button>
+                                <button type="button" data-gv-filter="done" class="kbg20-filter-chip" aria-pressed="false">Đã xử lý <span data-gv-count="done">0</span></button>
+                            </div>
+                            <div class="kbg20-search"><label class="visually-hidden" for="gvSearch">Tìm vấn đề</label><i class="fas fa-search" aria-hidden="true"></i><input type="search" id="gvSearch" placeholder="Tìm mã hoặc tên vấn đề" autocomplete="off" /></div>
+                            <button type="button" id="gvReload" class="kbg20-btn kbg20-outline kbg20-icon-refresh kbg20-v42-reload" title="Làm mới danh sách vấn đề" aria-label="Làm mới vấn đề"><i class="fas fa-sync-alt" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="kbg20-v41-table gv-tasklike-table" role="table" aria-label="Danh sách giờ xử lý vấn đề">
+                        <div class="kbg20-v41-table-head kbg20-v41-taskgrid gv-tasklike-grid" role="row"><span>Vấn đề</span><span>Trạng thái vấn đề</span><span>Báo cáo phần việc</span><span>Giờ làm theo lịch</span><span><i class="fas fa-moon" aria-hidden="true"></i> Giờ tăng ca</span><span>Hành động</span></div>
+                        <div id="gvRows" class="gv-tasklike-rows" aria-live="polite"></div>
+                    </div>
+                    <div class="kbg20-v41-foot gv-workfoot"><span id="gvListInfo">Đang tải vấn đề...</span><div class="gv-foot-actions"><button type="button" id="gvPrev" class="kbg20-btn kbg20-outline gv-pager" aria-label="Trang trước"><i class="fas fa-chevron-left"></i></button><span id="gvPageNumber">1 / 1</span><button type="button" id="gvNext" class="kbg20-btn kbg20-outline gv-pager" aria-label="Trang sau"><i class="fas fa-chevron-right"></i></button></div></div>
+                </section>
             </div>
             <div id="kbg20HistoryView" role="tabpanel" aria-labelledby="kbg20TabHistory" hidden="hidden">
                 <div class="kbg20-history-toolbar">
@@ -385,7 +774,16 @@
                 </div>
                 <div id="kbg20HistoryStatus" class="kbg20-history-status" role="status" aria-live="polite"></div>
                 <div id="kbg20HistoryTotals" class="kbg20-history-totals"></div>
+                <div id="gvHistoryTotalsCombined" class="kbg20-history-totals" hidden="hidden"></div>
+                <div class="gv-cross-filter" id="gvHistoryFilter" role="group" aria-label="Lọc loại đối tượng trong nhật ký">
+                    <button type="button" data-gv-cross="all" class="is-selected">Tất cả</button>
+                    <button type="button" data-gv-cross="task">Công việc</button>
+                    <button type="button" data-gv-cross="issue">Vấn đề</button>
+                </div>
+                <div class="gv-cross-title" id="gvHistoryTaskTitle">Công việc</div>
                 <div id="kbg20History" class="kbg20-history-list"></div>
+                <div class="gv-cross-title" id="gvHistoryIssueTitle">Vấn đề</div>
+                <div id="gvHistoryIssues" class="kbg20-history-list" aria-live="polite"></div>
                 <p class="kbg20-history-footnote">Tổng thời gian được ghi nhận theo từng công việc. Nếu hai đồng hồ chạy trùng thời gian, thời lượng vẫn được cộng độc lập cho từng công việc; đây không phải tổng số giờ đồng hồ thực trôi qua.</p>
             </div>
             <div id="kbg20ManualView" role="tabpanel" aria-labelledby="kbg20TabManual" hidden="hidden">
@@ -398,7 +796,15 @@
                         <button type="button" class="kbg20-filter-chip" data-manual-filter="withdrawn">Đã rút báo hoàn thành</button>
                     </div>
                 </div>
+                <div class="gv-cross-filter" id="gvLedgerFilter" role="group" aria-label="Lọc loại đối tượng trong bảng kê">
+                    <button type="button" data-gv-cross="all" class="is-selected">Tất cả</button>
+                    <button type="button" data-gv-cross="task">Công việc</button>
+                    <button type="button" data-gv-cross="issue">Vấn đề</button>
+                </div>
+                <div class="gv-cross-title" id="gvLedgerTaskTitle">Công việc</div>
                 <div class="kbg20-v41-manual-table" id="kbg20ManualList" aria-live="polite"></div>
+                <div class="gv-cross-title" id="gvLedgerIssueTitle">Vấn đề</div>
+                <div id="gvLedgerIssues" class="kbg20-v41-manual-table" aria-live="polite"></div>
                 <p class="kbg20-v41-disclaimer">Báo hoàn thành phần việc không làm thay đổi trạng thái chung của công việc. Số giờ đã báo có hiệu lực ngay; sau khi quản lý chốt công sẽ không thể chỉnh sửa.</p>
                 <button type="button" id="kbg20ReconcileListOpen" class="kbg20-v41-reconcile-hidden" hidden="hidden" aria-label="Mở bảng kê giờ công">Mở bảng kê giờ công</button>
             </div>
@@ -580,6 +986,7 @@
     </div>
     <% if (CurrentProjectId != Guid.Empty) { %>
     </div></div></div>
+
     <% } %>
 </asp:Content>
 
@@ -694,6 +1101,23 @@
         </SweetSoft:ExtraModal>
           </ContentTemplate>
         </asp:UpdatePanel>
+        <%-- Khong con modal 'Xem chi tiet Issue' rieng: Issue dung mdlKbg20Manual o Tab 1/3
+             va mdlKbg20HistoryDetails o Tab 2 nhu Task. Chi giu popup xac nhan gui duyet ca nhom. --%>
+        <SweetSoft:ExtraModal runat="server" ID="mdlGioXuLyVanDeConfirm" ClientIDMode="Static" Type="Primary" Size="Large" Title="Xác nhận gửi duyệt hoàn thành vấn đề">
+          <ContentTemplate>
+            <div class="gv-confirm-body">
+                <p>Thao tác này gửi yêu cầu duyệt cho PM. Đồng hồ đang chạy của nhân viên khác sẽ tự dừng; họ được thông báo theo trạng thái báo phần việc.</p>
+                <div id="gvConfirmPeople" class="gv-report-people"></div>
+                <p class="gv-confirm-warning">Nhân viên đang bấm giờ hoặc đã dừng nhưng chưa báo phần việc vẫn được báo giờ sau thao tác này; họ sẽ không được Start thêm khi Issue đang chờ duyệt.</p>
+            </div>
+          </ContentTemplate>
+          <FooterTemplate>
+            <div class="gv-modal-buttons">
+                <button type="button" id="gvCancelConfirm" class="gv-action">Hủy</button>
+                <button type="button" id="gvConfirmSubmit" class="gv-action gv-action-submit">Xác nhận gửi duyệt</button>
+            </div>
+          </FooterTemplate>
+        </SweetSoft:ExtraModal>
         <%-- Dot 2: ket qua hien thi tai trang va CSS modal duoc giu nguyen cua ExtraModal. --%>
     <% } %>
 </asp:Content>
@@ -706,8 +1130,12 @@
     <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-hour-split.css") %>?v=20261024p1" />
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-hour-input.js") %>?v=20261024p1"></script>
     <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261025parallelchoice3" />
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261026stateSync1"></script>
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261025pmfinal1"></script>
+    <%-- Giữ hai lớp CSS khôi phục đã dùng trong quá trình kiểm thử, không ghi đè stylesheet gốc. --%>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-doi-soat-ui-restore.css") %>?v=20261026repair1" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-regression-badge-journal-restore.css") %>?v=20261026restorefinal1" />
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261027task-popup-label"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/gio-xu-ly-van-de.js") %>?v=20261028issue-unified-history"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261028pm-personal-task"></script>
     <% } else { %>
     <script type="text/javascript">
         var KhaiBaoGioJs = (function ($) {

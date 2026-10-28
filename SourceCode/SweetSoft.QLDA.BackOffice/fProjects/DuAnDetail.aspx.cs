@@ -1,4 +1,4 @@
-using SweetCMS.Controls.Helpers;
+﻿using SweetCMS.Controls.Helpers;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fProjects.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
@@ -174,7 +174,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
         // =========================================================================================
         // PHẦN VIỆC CỦA TÔI - chỉ đọc thông tin, giới hạn cả @ProjectId và @UserId.
-        // Không phụ thuộc vào các bảng KhaiBaoGio: giờ công tạm hiển thị 0 theo yêu cầu.
+        // Giờ công chính thức từ bảng đối soát KBG20; Task/Issue tách khóa và chỉ cộng PM chốt.
         // =========================================================================================
         private static Control FindProjectDetailControl(Control root, string id)
         {
@@ -240,61 +240,88 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
         // KBG 2.0: CHI doc ban hien tai moi nhat cua tung cong viec/nhan vien/du an.
         // So phut PM la ket qua DUY NHAT; khong tu dong su dung so giay he thong hay so phut tu khai.
+        // KBG20: Task va Issue co DOI SOAT RIENG. Khong dung IdCongViecBiAnhHuong de lay gio Issue.
+        // Chi gio do PM chot (event 4 Task; event 4/6 Issue) moi duoc tinh vao tong.
         private sealed class PdDoiSoat
         {
-            public Guid IdCongViec;
+            public Guid IdDoiTuong;
             public decimal? ThuongTuKhai, TangCaTuKhai;
             public decimal ThuongPm, TangCaPm;
             public bool DaPmChot;
             public decimal PhutPm { get { return DaPmChot ? ThuongPm + TangCaPm : 0m; } }
         }
 
-        private static Dictionary<Guid, PdDoiSoat> LoadDoiSoat(SqlConnection conn, Guid projectId, Guid userId)
+        private static Dictionary<Guid, PdDoiSoat> LoadDoiSoat(SqlConnection conn, Guid projectId, Guid userId, bool isIssue)
         {
-            const string sql = @"WITH HienTai AS (
-    SELECT s.IdCongViec, s.SoPhutThuongTuKhai, s.SoPhutTangCaTuKhai,
-        s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot, s.IdPmChot,
-        ROW_NUMBER() OVER (PARTITION BY s.IdCongViec
-           ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) AS rn
-    FROM dbo.TblKhaiBaoGioDoiSoat AS s
-    INNER JOIN dbo.TblCongViec AS t ON t.IdCongViec=s.IdCongViec
-      AND t.IdDuAn=s.IdDuAn AND ISNULL(t.DaXoa,0)=0
-    WHERE s.IdDuAn=@ProjectId AND s.IdNhanVien=@UserId AND s.LaBanHienTai=1
+            // Tach hai cau SQL co dieu kien co dinh, KHONG noi ten bang/column tu input.
+            // LaBanHienTai=1 va latest theo doi tuong de khong cong ca ban lich su.
+            const string sqlTask = @"WITH HienTai AS (
+    SELECT s.IdCongViec AS IdDoiTuong, s.SoPhutThuongTuKhai, s.SoPhutTangCaTuKhai,
+           s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot, s.IdPmChot, s.LoaiSuKien,
+           ROW_NUMBER() OVER (PARTITION BY s.IdCongViec
+             ORDER BY s.LanDoiSoat DESC, s.PhienBan DESC, s.NgayTao DESC, s.IdDoiSoat DESC) AS rn
+    FROM dbo.TblKhaiBaoGioDoiSoat s
+    INNER JOIN dbo.TblCongViec t ON t.IdCongViec=s.IdCongViec
+       AND t.IdDuAn=s.IdDuAn AND ISNULL(t.DaXoa,0)=0
+    WHERE s.IdDuAn=@ProjectId AND s.IdNhanVien=@UserId
+      AND s.IdCongViec IS NOT NULL AND s.IdVanDe IS NULL AND s.LaBanHienTai=1
+) SELECT * FROM HienTai WHERE rn=1;";
+            const string sqlIssue = @"WITH HienTai AS (
+    SELECT s.IdVanDe AS IdDoiTuong, s.SoPhutThuongTuKhai, s.SoPhutTangCaTuKhai,
+           s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot, s.IdPmChot, s.LoaiSuKien,
+           ROW_NUMBER() OVER (PARTITION BY s.IdVanDe
+             ORDER BY s.LanDoiSoat DESC, s.PhienBan DESC, s.NgayTao DESC, s.IdDoiSoat DESC) AS rn
+    FROM dbo.TblKhaiBaoGioDoiSoat s
+    INNER JOIN dbo.TblVanDe v ON v.IdVanDe=s.IdVanDe
+       AND v.IdDuAn=s.IdDuAn AND ISNULL(v.DaXoa,0)=0
+    WHERE s.IdDuAn=@ProjectId AND s.IdNhanVien=@UserId
+      AND s.IdVanDe IS NOT NULL AND s.IdCongViec IS NULL AND s.LaBanHienTai=1
 ) SELECT * FROM HienTai WHERE rn=1;";
             var result = new Dictionary<Guid, PdDoiSoat>();
-            DataTable table = PersonalQuery(conn, sql, projectId, userId);
+            DataTable table = PersonalQuery(conn, isIssue ? sqlIssue : sqlTask, projectId, userId);
             foreach (DataRow r in table.Rows)
             {
-                Guid id = (Guid)r["IdCongViec"];
-                bool chot = r["IdPmChot"] != DBNull.Value &&
-                            (Guid)r["IdPmChot"] != Guid.Empty;
+                Guid id = (Guid)r["IdDoiTuong"];
+                int evt = r["LoaiSuKien"] == DBNull.Value ? 0 : Convert.ToInt32(r["LoaiSuKien"]);
+                bool hasPmMinutes = r["SoPhutThuongPmChot"] != DBNull.Value &&
+                                    r["SoPhutTangCaPmChot"] != DBNull.Value;
+                // Task: event 4 va IdPmChot. Issue: event 4 chot, 6 dieu chinh;
+                // manager Issue luu IdNguoiThaoTacVanDe thay vi IdPmChot.
+                bool approved = hasPmMinutes && (isIssue
+                    ? evt == 4 || evt == 6
+                    : evt == 4 && r["IdPmChot"] != DBNull.Value && (Guid)r["IdPmChot"] != Guid.Empty);
                 result[id] = new PdDoiSoat
                 {
-                    IdCongViec = id,
-                    DaPmChot = chot,
+                    IdDoiTuong = id,
+                    DaPmChot = approved,
                     ThuongTuKhai = r["SoPhutThuongTuKhai"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(r["SoPhutThuongTuKhai"]),
                     TangCaTuKhai = r["SoPhutTangCaTuKhai"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(r["SoPhutTangCaTuKhai"]),
-                    ThuongPm = r["SoPhutThuongPmChot"] == DBNull.Value ? 0 : Convert.ToDecimal(r["SoPhutThuongPmChot"]),
-                    TangCaPm = r["SoPhutTangCaPmChot"] == DBNull.Value ? 0 : Convert.ToDecimal(r["SoPhutTangCaPmChot"])
+                    ThuongPm = approved ? Convert.ToDecimal(r["SoPhutThuongPmChot"]) : 0m,
+                    TangCaPm = approved ? Convert.ToDecimal(r["SoPhutTangCaPmChot"]) : 0m
                 };
             }
             return result;
         }
-        private static void AttachDoiSoat(DataTable table, Dictionary<Guid, PdDoiSoat> byTask, string idColumn)
+
+        private static void AttachDoiSoat(DataTable table, Dictionary<Guid, PdDoiSoat> records, string idColumn)
         {
-            string[] names = { "DsThuongTuKhai", "DsTangCaTuKhai", "DsThuongPm", "DsTangCaPm", "DsPhutPm", "DsDaChot", "DsIdCongViec" };
+            string[] names = { "DsThuongTuKhai", "DsTangCaTuKhai", "DsThuongPm", "DsTangCaPm", "DsPhutPm", "DsDaChot" };
             foreach (string name in names)
-                if (!table.Columns.Contains(name)) table.Columns.Add(name, name == "DsDaChot" ? typeof(bool) : name == "DsIdCongViec" ? typeof(Guid) : typeof(decimal));
+                if (!table.Columns.Contains(name)) table.Columns.Add(name, name == "DsDaChot" ? typeof(bool) : typeof(decimal));
             foreach (DataRow row in table.Rows)
             {
-                Guid id = row.Table.Columns.Contains(idColumn) && row[idColumn] != DBNull.Value ? (Guid)row[idColumn] : Guid.Empty;
-                row["DsIdCongViec"] = id == Guid.Empty ? (object)DBNull.Value : id;
+                Guid id = row.Table.Columns.Contains(idColumn) && row[idColumn] != DBNull.Value
+                    ? (Guid)row[idColumn] : Guid.Empty;
                 PdDoiSoat item;
-                if (!byTask.TryGetValue(id, out item)) { row["DsDaChot"] = false; row["DsPhutPm"] = 0m; continue; }
-                row["DsDaChot"] = item.DaPmChot;
-                row["DsPhutPm"] = item.PhutPm;
-                row["DsThuongPm"] = item.DaPmChot ? item.ThuongPm : 0m;
-                row["DsTangCaPm"] = item.DaPmChot ? item.TangCaPm : 0m;
+                // Chua chot KHAC voi PM chot bang 0 phut. Khong lay gio tu khai lam gio PM.
+                row["DsDaChot"] = records.TryGetValue(id, out item) && item.DaPmChot;
+                row["DsPhutPm"] = item != null ? item.PhutPm : 0m;
+                if (item == null) continue;
+                if (item.DaPmChot)
+                {
+                    row["DsThuongPm"] = item.ThuongPm;
+                    row["DsTangCaPm"] = item.TangCaPm;
+                }
                 if (item.ThuongTuKhai.HasValue) row["DsThuongTuKhai"] = item.ThuongTuKhai.Value;
                 if (item.TangCaTuKhai.HasValue) row["DsTangCaTuKhai"] = item.TangCaTuKhai.Value;
             }
@@ -310,25 +337,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         }
 
 
+        // Neu truy van doi soat loi thi KHONG the coi so gio la 0 hay la chua PM chot.
+        private static void DanhDauGioChuaTaiDuoc(DataTable table)
+        {
+            if (!table.Columns.Contains("DsKhongTaiDuoc")) table.Columns.Add("DsKhongTaiDuoc", typeof(bool));
+            foreach (DataRow row in table.Rows) row["DsKhongTaiDuoc"] = true;
+        }
+
         private static string DsCompact(DataRow row)
         {
-            return "Giờ công: " + PersonalHourValue(DsHour(row));
+            if (row.Table.Columns.Contains("DsKhongTaiDuoc") && row["DsKhongTaiDuoc"] != DBNull.Value && Convert.ToBoolean(row["DsKhongTaiDuoc"]))
+                return "Giờ công: Chưa tải được";
+            return !row.Table.Columns.Contains("DsDaChot") || row["DsDaChot"] == DBNull.Value || !Convert.ToBoolean(row["DsDaChot"])
+                ? "Giờ công: Chưa chốt" : "Giờ công: " + PersonalHourValue(DsHour(row));
         }
         private static decimal DsSum(List<DataRow> rows)
         {
-            // Nhieu van de co the cung tham chieu 1 cong viec: chi tinh 1 lan trong nhom.
-            return DsUniqueSum(rows, new List<DataRow>());
-        }
-        private static decimal DsUniqueSum(List<DataRow> tasks, List<DataRow> issues)
-        {
-            var minutes = new Dictionary<Guid, decimal>();
-            foreach (DataRow row in tasks.Concat(issues))
-            {
-                if (!row.Table.Columns.Contains("DsIdCongViec") || row["DsIdCongViec"] == DBNull.Value) continue;
-                Guid id = (Guid)row["DsIdCongViec"];
-                if (!minutes.ContainsKey(id)) minutes[id] = DsMinute(row, "DsPhutPm");
-            }
-            return minutes.Values.Sum() / 60m;
+            // Task/Issue la hai doi tuong co phien gio doc lap; cong dong thoi van cong du ca hai.
+            return rows.Sum(row => DsMinute(row, "DsPhutPm")) / 60m;
         }
 
         private static readonly string PersonalTasksSql = @"
@@ -366,13 +392,44 @@ ORDER BY CASE COLUMN_NAME
             return PersonalQuery(connection, PersonalTasksSql.Replace("{COMPLETION_DATE}", actualDateExpr), projectId, userId);
         }
 
+        // Giữ TẤT CẢ lịch họp để hiển thị, nhưng giờ công chỉ ghi khi đã kết thúc và đã tham gia.
+        // Override của PM có độ ưu tiên cao nhất, cùng hợp đồng với Công thành viên / CtrlMeet.
         private static readonly string PersonalMeetingsSql = @"
+SELECT DISTINCT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc,
+       ISNULL((SELECT MAX(CAST(g.DaThamGiaOverride AS INT))
+               FROM dbo.TblLichHopGioCong g
+               WHERE g.IdLichHop=m.IdLichHop AND g.IdNhanVien=@UserId),
+              ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia,0) AS INT))
+                      FROM dbo.TblLichHop_NhanVien p
+                      WHERE p.IdLichHop=m.IdLichHop AND p.IdNhanVien=@UserId),0)) AS XacNhanThamGia
+FROM dbo.TblLichHop m
+WHERE m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0 AND
+      (m.IdNguoiTao=@UserId OR EXISTS
+         (SELECT 1 FROM dbo.TblLichHop_NhanVien attendees
+          WHERE attendees.IdLichHop=m.IdLichHop AND attendees.IdNhanVien=@UserId));";
+
+        // Chi dung de hien thi DANH SACH lich hop khi query diem danh loi.
+        // Khi fallback KHONG duoc tinh gio hop vi chua xac minh tham gia.
+        private static readonly string PersonalMeetingsBasicSql = @"
 SELECT DISTINCT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc
 FROM dbo.TblLichHop m
 WHERE m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0 AND
       (m.IdNguoiTao=@UserId OR EXISTS
         (SELECT 1 FROM dbo.TblLichHop_NhanVien attendees
          WHERE attendees.IdLichHop=m.IdLichHop AND attendees.IdNhanVien=@UserId));";
+
+        private static DataTable LoadPersonalMeetingsSafe(SqlConnection connection, Guid projectId, Guid userId, out bool laborAvailable)
+        {
+            laborAvailable = true;
+            try { return PersonalQuery(connection, PersonalMeetingsSql, projectId, userId); }
+            catch (SqlException ex)
+            {
+                // Neu DB da thay doi schema diem danh, van giu danh sach hop; KHONG tinh cong ao.
+                SysLogger.LogError(ex, "DuAnDetail Phan viec cua toi: query tham gia hop khong tuong thich. Dang tai lich hop chi de hien thi.");
+                laborAvailable = false;
+                return PersonalQuery(connection, PersonalMeetingsBasicSql, projectId, userId);
+            }
+        }
 
         private static readonly string PersonalIssuesSql = @"
 SELECT DISTINCT v.IdVanDe,v.TenVanDe,v.TrangThai,v.MucDoAnhHuong,
@@ -394,6 +451,14 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
             DateTime? end = PersonalDate(row, "ThoiGianKetThuc");
             if (!start.HasValue || !end.HasValue || end.Value <= start.Value) return 0m;
             return (decimal)(end.Value - start.Value).TotalMinutes / 60m;
+        }
+
+        private static decimal PersonalMeetingLaborHours(DataRow row, DateTime now)
+        {
+            DateTime? end = PersonalDate(row, "ThoiGianKetThuc");
+            // Cuoc hop dang dien ra/chua den ngay va nhan vien chua xac nhan deu khong tinh cong.
+            return end.HasValue && end.Value <= now && PersonalInt(row, "XacNhanThamGia") == 1
+                ? Math.Round(PersonalMeetingHours(row), 2, MidpointRounding.AwayFromZero) : 0m;
         }
 
         // Số giờ ở badge: "Giờ công: 1". Thời lượng cuộc họp: "(1 giờ)".
@@ -630,33 +695,58 @@ WHERE ISNULL(DaXoa, 0) = 0 AND LaNgayLamViec = 0
                 literal.Text = "<div class='pd-personal-empty'>Không xác định được người dùng hoặc dự án.</div>";
                 return;
             }
+            string step = "Mở kết nối";
             try
             {
                 using (SqlConnection connection = new SqlConnection(PersonalConnectionString()))
                 {
                     connection.Open();
+                    step = "Tải công việc";
                     DataTable tasks = LoadPersonalTasks(connection, QueryId, userId);
-                    DataTable meetings = PersonalQuery(connection, PersonalMeetingsSql, QueryId, userId);
+                    step = "Tải cuộc họp";
+                    bool meetingHoursAvailable;
+                    DataTable meetings = LoadPersonalMeetingsSafe(connection, QueryId, userId, out meetingHoursAvailable);
+                    step = "Tải vấn đề";
                     DataTable issues = PersonalQuery(connection, PersonalIssuesSql, QueryId, userId);
-                    var snapshots = LoadDoiSoat(connection, QueryId, userId);
-                    AttachDoiSoat(tasks, snapshots, "IdCongViec");
-                    AttachDoiSoat(issues, snapshots, "IdCongViecBiAnhHuong");
+                    bool taskHoursAvailable = true;
+                    bool issueHoursAvailable = true;
+                    step = "Đọc đối soát Task";
+                    try { AttachDoiSoat(tasks, LoadDoiSoat(connection, QueryId, userId, false), "IdCongViec"); }
+                    catch (Exception ex)
+                    {
+                        SysLogger.LogError(ex, "DuAnDetail Phan viec cua toi: tai doi soat TASK that bai");
+                        DanhDauGioChuaTaiDuoc(tasks);
+                        taskHoursAvailable = false;
+                    }
+                    step = "Đọc đối soát Issue";
+                    try { AttachDoiSoat(issues, LoadDoiSoat(connection, QueryId, userId, true), "IdVanDe"); }
+                    catch (Exception ex)
+                    {
+                        SysLogger.LogError(ex, "DuAnDetail Phan viec cua toi: tai doi soat ISSUE that bai");
+                        DanhDauGioChuaTaiDuoc(issues);
+                        issueHoursAvailable = false;
+                    }
+                    step = "Đọc lịch làm việc";
                     PersonalWorkCalendar workCalendar = tasks.Rows.Count > 0
                         ? LoadPersonalWorkCalendar(connection, tasks, DateTime.Now)
                         : new PersonalWorkCalendar();
-                    literal.Text = BuildPersonalHtml(tasks, meetings, issues, workCalendar);
+                    step = "Dựng giao diện";
+                    literal.Text = BuildPersonalHtml(tasks, meetings, issues, workCalendar,
+                        taskHoursAvailable, issueHoursAvailable, meetingHoursAvailable);
                 }
             }
             catch (Exception exception)
             {
-                SysLogger.LogError(exception, "Không thể tải Phần việc của tôi trong DuAnDetail");
-                literal.Text = "<div class='pd-personal-empty'><i class='fas fa-exclamation-circle me-2'></i>Không tải được danh sách cá nhân của dự án. Vui lòng thử tải lại trang.</div>";
+                SysLogger.LogError(exception, "Không thể tải Phần việc của tôi trong DuAnDetail; bước: " + step);
+                // Khong hien thong tin cau SQL hay duong dan may chu cho nguoi dung.
+                literal.Text = "<div class='pd-personal-empty'><i class='fas fa-exclamation-circle me-2'></i>"
+                    + "Không tải được danh sách cá nhân của dự án (bước: " + HttpUtility.HtmlEncode(step) + "). Vui lòng thử tải lại trang.</div>";
             }
         }
 
         // =========================================================================================
         // CONG CUA THANH VIEN - PM/Admin only; query always scoped to this project + selected staff.
-        // The current personal tab has NO tracked task/issue hours; meeting hours are schedule based.
+        // Cùng nguồn đối soát KBG20 với tab cá nhân, PM chốt Task/Issue tách biệt.
         // =========================================================================================
         private bool CanViewProjectTeamHours()
         {
@@ -753,6 +843,29 @@ WHERE m.IdDuAn=@ProjectId
        WHERE p.IdLichHop=m.IdLichHop AND p.IdNhanVien=@UserId))
 ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
 
+        // Giong LoadPersonalMeetingsSafe cua tab "Phan viec cua toi": neu query diem danh
+        // khong tuong thich schema, van hien danh sach hop DA KET THUC, khong suy doan gio cong.
+        private static DataTable LoadTeamMeetingsSafe(SqlConnection connection, Guid projectId, Guid userId, out bool laborAvailable)
+        {
+            laborAvailable = true;
+            try { return PersonalQuery(connection, TeamHoursEndedMeetingsSql, projectId, userId); }
+            catch (SqlException ex)
+            {
+                SysLogger.LogError(ex, "DuAnDetail Cong thanh vien: khong doc duoc diem danh hop, chi tai danh sach hop da ket thuc.");
+                laborAvailable = false;
+                // Su dung CHINH query danh sach hop fallback cua tab ca nhan, tranh 2 cong thuc.
+                DataTable all = PersonalQuery(connection, PersonalMeetingsBasicSql, projectId, userId);
+                DataTable ended = all.Clone();
+                DateTime now = DateTime.Now;
+                foreach (DataRow meeting in all.Rows)
+                {
+                    DateTime? end = PersonalDate(meeting, "ThoiGianKetThuc");
+                    if (end.HasValue && end.Value <= now) ended.ImportRow(meeting);
+                }
+                return ended;
+            }
+        }
+
         // Cong hop theo yeu cau: chi khi co tham gia, gio = THOI LUONG HOP.
         // SoGioThucTe cua CtrlMeet khong duoc su dung cho tong ly thuyet nay.
         private static decimal TeamMeetingLaborHours(DataRow meeting)
@@ -776,6 +889,10 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
         private void BindProjectTeamHours()
         {
             if (!CanViewProjectTeamHours()) return;
+            // Danh sach nhan su va bang cong PHAI co vong loi rieng.
+            // Khong xoa danh sach ben trai neu mot query gio ben phai bi loi.
+            string step = "Tải danh sách nhân viên";
+            TeamHoursPerson chosen;
             try
             {
                 var people = GetProjectTeamHoursPeople();
@@ -783,6 +900,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                 if (!Guid.TryParse(hfTeamHoursMember.Value, out selected)
                     || !people.Any(x => x.Id == selected)) selected = people.Count > 0 ? people[0].Id : Guid.Empty;
                 hfTeamHoursMember.Value = selected == Guid.Empty ? "" : selected.ToString("D");
+                step = "Dựng danh sách nhân viên";
                 StringBuilder left = new StringBuilder(people.Count * 320 + 150);
                 left.Append("<div class='pd-team-actual-count' data-pd-total='").Append(people.Count).Append("' hidden></div>");
                 if (people.Count == 0) left.Append("<div class='pd-team-record-empty'>Dự án chưa có nhân sự được phân công.</div>");
@@ -804,29 +922,65 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                     left.Append("</button>");
                 }
                 litProjectTeamMembers.Text = left.ToString();
-                var chosen = people.FirstOrDefault(x => x.Id == selected);
-                if (chosen == null)
-                {
-                    litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div><div class='pd-team-record-empty'>Chưa chọn được nhân viên.</div>";
-                    return;
-                }
+                chosen = people.FirstOrDefault(x => x.Id == selected);
+            }
+            catch (Exception exc)
+            {
+                SysLogger.LogError(exc, "DuAnDetail Cong thanh vien: " + step);
+                litProjectTeamMembers.Text = "<div class='pd-team-record-empty'>Không tải được danh sách thành viên (bước: "
+                    + HttpUtility.HtmlEncode(step) + ").</div>";
+                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div>"
+                    + "<div class='pd-team-record-empty'>Chưa tải được danh sách nhân viên để chọn.</div>";
+                return;
+            }
+            if (chosen == null)
+            {
+                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div>"
+                    + "<div class='pd-team-record-empty'>Chưa chọn được nhân viên.</div>";
+                return;
+            }
+            step = "Mở kết nối bảng công";
+            try
+            {
                 using (SqlConnection conn = new SqlConnection(PersonalConnectionString()))
                 {
                     conn.Open();
-                    DataTable tasks = LoadPersonalTasks(conn, QueryId, selected);
-                    DataTable meetings = PersonalQuery(conn, TeamHoursEndedMeetingsSql, QueryId, selected);
-                    DataTable issues = PersonalQuery(conn, PersonalIssuesSql, QueryId, selected);
-                    var snapshots = LoadDoiSoat(conn, QueryId, selected);
-                    AttachDoiSoat(tasks, snapshots, "IdCongViec");
-                    AttachDoiSoat(issues, snapshots, "IdCongViecBiAnhHuong");
-                    litProjectTeamHours.Text = BuildProjectTeamHoursHtml(chosen, tasks, meetings, issues);
+                    step = "Tải công việc của thành viên";
+                    DataTable tasks = LoadPersonalTasks(conn, QueryId, chosen.Id);
+                    step = "Tải cuộc họp của thành viên";
+                    bool meetingHoursAvailable;
+                    DataTable meetings = LoadTeamMeetingsSafe(conn, QueryId, chosen.Id, out meetingHoursAvailable);
+                    step = "Tải vấn đề của thành viên";
+                    DataTable issues = PersonalQuery(conn, PersonalIssuesSql, QueryId, chosen.Id);
+                    bool taskHoursAvailable = true, issueHoursAvailable = true;
+                    step = "Đọc giờ PM chốt Task";
+                    try { AttachDoiSoat(tasks, LoadDoiSoat(conn, QueryId, chosen.Id, false), "IdCongViec"); }
+                    catch (Exception ex)
+                    {
+                        SysLogger.LogError(ex, "DuAnDetail Cong thanh vien: doi soat TASK that bai");
+                        DanhDauGioChuaTaiDuoc(tasks);
+                        taskHoursAvailable = false;
+                    }
+                    step = "Đọc giờ PM chốt Issue";
+                    try { AttachDoiSoat(issues, LoadDoiSoat(conn, QueryId, chosen.Id, true), "IdVanDe"); }
+                    catch (Exception ex)
+                    {
+                        SysLogger.LogError(ex, "DuAnDetail Cong thanh vien: doi soat ISSUE that bai");
+                        DanhDauGioChuaTaiDuoc(issues);
+                        issueHoursAvailable = false;
+                    }
+                    step = "Dựng bảng công thành viên";
+                    litProjectTeamHours.Text = BuildProjectTeamHoursHtml(chosen, tasks, meetings, issues,
+                        taskHoursAvailable, issueHoursAvailable, meetingHoursAvailable);
                 }
             }
             catch (Exception exc)
             {
-                SysLogger.LogError(exc, "Lỗi nạp bảng công thành viên của dự án");
-                litProjectTeamMembers.Text = "<div class='pd-team-record-empty'>Không tải được danh sách thành viên.</div>";
-                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div><div class='pd-team-record-empty'>Không tải được bảng công. Vui lòng thử lại.</div>";
+                SysLogger.LogError(exc, "DuAnDetail Cong thanh vien: " + step);
+                // Khong xoa litProjectTeamMembers: danh sach DA tai thanh cong.
+                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div>"
+                    + "<div class='pd-team-record-empty'>Không tải được bảng công (bước: "
+                    + HttpUtility.HtmlEncode(step) + "). Vui lòng thử lại.</div>";
             }
         }
 
@@ -843,7 +997,8 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             upProjectDetail.Update();
         }
 
-        private string BuildProjectTeamHoursHtml(TeamHoursPerson member, DataTable tasks, DataTable meetings, DataTable issues)
+        private string BuildProjectTeamHoursHtml(TeamHoursPerson member, DataTable tasks, DataTable meetings, DataTable issues,
+            bool taskHoursAvailable, bool issueHoursAvailable, bool meetingHoursAvailable)
         {
             DateTime now = DateTime.Now;
             var taskRows = tasks.Rows.Cast<DataRow>().ToList();
@@ -851,12 +1006,13 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                 .OrderByDescending(r => PersonalDate(r, "ThoiGianBatDau") ?? DateTime.MinValue).ToList();
             var issueRows = issues.Rows.Cast<DataRow>()
                 .OrderByDescending(r => PersonalDate(r, "NgayTao") ?? DateTime.MinValue).ToList();
-            // Chi cong cho nguoi duoc xac nhan tham gia theo CtrlMeet (ke ca override cua PM).
-            // Tong la tong cac gia tri 2 chu so hien thi theo tung cuoc hop da ket thuc.
-            decimal meetingHours = meetingRows.Sum(TeamMeetingLaborHours);
-            decimal taskHours = DsSum(taskRows), issueHours = DsSum(issueRows);
-            decimal uniqueHours = DsUniqueSum(taskRows, issueRows);
-            decimal totalHours = uniqueHours + meetingHours;
+            // Chi cong gio hop khi da xac minh tham gia va cuoc hop da ket thuc.
+            // Khong tu ghi so 0 neu query diem danh bi loi.
+            decimal meetingHours = meetingHoursAvailable ? meetingRows.Sum(TeamMeetingLaborHours) : 0m;
+            decimal taskHours = taskHoursAvailable ? DsSum(taskRows) : 0m;
+            decimal issueHours = issueHoursAvailable ? DsSum(issueRows) : 0m;
+            bool totalAvailable = taskHoursAvailable && issueHoursAvailable && meetingHoursAvailable;
+            decimal totalHours = taskHours + issueHours + meetingHours;
             StringBuilder sb = new StringBuilder(14000);
             sb.Append("<div class='pd-team-detail-head'><div class='pd-team-detail-person'><i class='far fa-clock'></i><span style='min-width:0'><span class='pd-team-detail-name'>Bảng công: ")
                 .Append(EncodePersonal(member.Name))
@@ -866,17 +1022,19 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                 .Append("<button type='button' class='pd-ds-expand' data-pd-detail-source='pdTeamFullDetail' data-pd-detail-title='Bảng công đầy đủ' data-pd-detail-sub='Chi tiết tự khai, PM chốt và kết quả của thành viên này' aria-label='Mở rộng toàn bộ bảng công' title='Mở rộng bảng công'><i class='fas fa-expand-arrows-alt'></i></button>")
                 .Append("</div></div><div class='pd-team-detail-body'>");
 
-            AppendTeamHoursSection(sb, "task", "Công việc", TeamLaborHourText(taskHours), taskRows.Count, taskRows, now);
-            AppendTeamHoursSection(sb, "meeting", "Cuộc họp", TeamLaborHourText(meetingHours), meetingRows.Count, meetingRows, now);
-            AppendTeamHoursSection(sb, "issue", "Vấn đề", TeamLaborHourText(issueHours), issueRows.Count, issueRows, now);
+            if (!totalAvailable)
+                sb.Append("<div class='pd-team-record-empty' role='status'>Một phần dữ liệu giờ công chưa tải được; tổng giờ chưa thể xác nhận.</div>");
+            AppendTeamHoursSection(sb, "task", "Công việc", taskHoursAvailable ? TeamLaborHourText(taskHours) : "Chưa tải được", taskRows.Count, taskRows, now, taskHoursAvailable);
+            AppendTeamHoursSection(sb, "meeting", "Cuộc họp", meetingHoursAvailable ? TeamLaborHourText(meetingHours) : "Chưa tải được", meetingRows.Count, meetingRows, now, meetingHoursAvailable);
+            AppendTeamHoursSection(sb, "issue", "Vấn đề", issueHoursAvailable ? TeamLaborHourText(issueHours) : "Chưa tải được", issueRows.Count, issueRows, now, issueHoursAvailable);
             sb.Append("<div class='pd-team-accordion is-total'><div class='pd-team-accordion-header'><span class='pd-team-accordion-title'>Tổng giờ công (PM chốt + họp)</span><strong class='pd-team-hours-value'>")
-                .Append(TeamLaborHourText(totalHours))
-                .Append("</strong></div></div><div class='pd-team-hours-footnote'>Tổng chỉ cộng một lần mỗi công việc đã chốt, tránh cộng trùng với vấn đề liên kết. Giờ họp vẫn tính theo các cuộc họp kết thúc đã xác nhận tham gia.</div></div>");
+                .Append(totalAvailable ? TeamLaborHourText(totalHours) : "Chưa tải được")
+                .Append("</strong></div></div><div class='pd-team-hours-footnote'>Giờ Task và giờ Issue được PM chốt độc lập, kể cả khi Issue liên kết Task. Giờ họp chỉ tính cuộc họp đã kết thúc và xác nhận tham gia.</div></div>");
             return sb.ToString();
         }
 
         private void AppendTeamHoursSection(StringBuilder sb, string kind, string title, string hours,
-            int count, List<DataRow> rows, DateTime now)
+            int count, List<DataRow> rows, DateTime now, bool hoursAvailable)
         {
             sb.Append("<div class='pd-team-accordion' data-pd-team-kind='").Append(kind).Append("'>")
                 .Append("<button type='button' class='pd-team-accordion-header' data-pd-team-toggle='1' aria-expanded='false'>")
@@ -924,8 +1082,8 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                         + TeamMeetingDurationText(row);
                     // Tat ca rows da duoc loc ket thuc tai SQL. Badge the hien xac nhan.
                     // False tu CtrlMeet co the la "Khong tham gia" hoac chua tick Co.
-                    state = joined ? "Có tham gia" : "Không tham gia";
-                    stateCss = joined ? "pd-team-state-joined" : "pd-team-state-not-joined";
+                    state = !hoursAvailable ? "Chưa xác minh tham gia" : joined ? "Có tham gia" : "Không tham gia";
+                    stateCss = !hoursAvailable ? "pd-team-state-neutral" : joined ? "pd-team-state-joined" : "pd-team-state-not-joined";
                 }
                 else
                 {
@@ -946,8 +1104,11 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                 sb.Append(EncodePersonal(name)).Append("</div><div class='pd-team-record-meta'>")
                     .Append(EncodePersonal(meta)).Append("</div></div><span class='pd-team-record-aside'>")
                     .Append("<span class='pd-team-record-hours' title='")
-                    .Append(kind == "meeting" ? "Giờ công họp: chỉ tính khi có xác nhận tham gia" : "Giờ công lấy từ PM chốt; chưa chốt = 0")
-                    .Append("'>").Append(TeamLaborHourText(rowHours))
+                    .Append(kind == "meeting" ? "Giờ công họp: chỉ tính khi có xác nhận tham gia" : "Giờ công chính thức từ PM chốt; chưa chốt chưa được cộng vào tổng")
+                    .Append("'>").Append(!hoursAvailable ? "Chưa tải được" :
+                        (kind == "meeting" || (row.Table.Columns.Contains("DsDaChot") &&
+                        row["DsDaChot"] != DBNull.Value && Convert.ToBoolean(row["DsDaChot"])))
+                        ? TeamLaborHourText(rowHours) : "Chưa chốt")
                     .Append("</span><span class='pd-team-record-state ").Append(stateCss)
                     .Append("'>").Append(EncodePersonal(state))
                     .Append("</span></span></div>");
@@ -973,7 +1134,8 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
         }
 
 
-        private string BuildPersonalHtml(DataTable tasks, DataTable meetings, DataTable issues, PersonalWorkCalendar calendar)
+        private string BuildPersonalHtml(DataTable tasks, DataTable meetings, DataTable issues,
+            PersonalWorkCalendar calendar, bool taskHoursAvailable, bool issueHoursAvailable, bool meetingHoursAvailable)
         {
             DateTime now = DateTime.Now;
             StringBuilder builder = new StringBuilder(32000);
@@ -988,11 +1150,16 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             var ended = meetings.Rows.Cast<DataRow>().Where(r => PersonalMeetingEnd(r) <= now)
                 .OrderByDescending(r => PersonalDate(r, "ThoiGianBatDau") ?? DateTime.MinValue).ToList();
             var issueRows = issues.Rows.Cast<DataRow>().OrderByDescending(r => PersonalDate(r, "NgayTao") ?? DateTime.MinValue).ToList();
-            decimal taskHours = DsSum(taskRows), issueHours = DsSum(issueRows);
-            decimal meetingHours = meetings.Rows.Cast<DataRow>().Sum(PersonalMeetingHours);
-            // So doi soat gan voi IdCongViec, neu van de tham chieu cung task thi KHONG cong lap vao tong.
-            decimal totalHours = DsUniqueSum(taskRows, issueRows) + meetingHours;
+            decimal taskHours = taskHoursAvailable ? DsSum(taskRows) : 0m;
+            decimal issueHours = issueHoursAvailable ? DsSum(issueRows) : 0m;
+            decimal meetingHours = meetingHoursAvailable
+                ? meetings.Rows.Cast<DataRow>().Sum(row => PersonalMeetingLaborHours(row, now)) : 0m;
+            bool totalsAvailable = taskHoursAvailable && issueHoursAvailable && meetingHoursAvailable;
+            // Gia tri gio cong loi phai hien "Chua tai duoc", khong duoc gia lam 0 phut.
+            decimal totalHours = taskHours + issueHours + meetingHours;
 
+            if (!totalsAvailable)
+                builder.Append("<div class='pd-personal-empty' role='status'>Một phần dữ liệu giờ công hiện chưa tải được. Danh sách vẫn hiển thị; tổng giờ chính thức sẽ cập nhật sau khi khắc phục nguồn dữ liệu.</div>");
             builder.Append("<div class='pd-personal-grid'>");
 
             // Công việc
@@ -1013,8 +1180,8 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             if (meetings.Rows.Count == 0) builder.Append("<div class='pd-personal-empty'>Bạn chưa có cuộc họp nào trong dự án này.</div>");
             else
             {
-                foreach (DataRow meet in notEnded) AppendPersonalMeeting(builder, meet, now, false);
-                foreach (DataRow meet in ended) AppendPersonalMeeting(builder, meet, now, true);
+                foreach (DataRow meet in notEnded) AppendPersonalMeeting(builder, meet, now, false, meetingHoursAvailable);
+                foreach (DataRow meet in ended) AppendPersonalMeeting(builder, meet, now, true, meetingHoursAvailable);
             }
             if (meetings.Rows.Count > 0) builder.Append("<div class='pd-personal-empty pd-filter-empty' hidden>Không có cuộc họp chưa kết thúc.</div>");
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalMeetingDetail' data-pd-detail-title='Chi tiết cuộc họp của tôi' data-pd-detail-sub='Các cuộc họp bạn chủ trì hoặc tham gia trong dự án, ưu tiên hiển thị cuộc họp chưa kết thúc.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
@@ -1031,24 +1198,24 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
 
             // Giờ công
             builder.Append("<section class='pd-personal-card pd-personal-time'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-clock'></i><strong>Giờ công của bạn</strong></div></div><div class='pd-card-body'><div class='pd-personal-list'><div class='pd-personal-summary'>");
-            AppendSummaryRow(builder, "Tổng giờ làm công việc", taskHours, false);
-            AppendSummaryRow(builder, "Tổng giờ công cuộc họp", meetingHours, false);
-            AppendSummaryRow(builder, "Tổng giờ công xử lý vấn đề", issueHours, false);
-            AppendSummaryRow(builder, "Tổng giờ công", totalHours, true);
+            AppendSummaryRow(builder, "Tổng giờ làm công việc", taskHoursAvailable ? (decimal?)taskHours : null, false);
+            AppendSummaryRow(builder, "Tổng giờ công cuộc họp", meetingHoursAvailable ? (decimal?)meetingHours : null, false);
+            AppendSummaryRow(builder, "Tổng giờ công xử lý vấn đề", issueHoursAvailable ? (decimal?)issueHours : null, false);
+            AppendSummaryRow(builder, "Tổng giờ công", totalsAvailable ? (decimal?)totalHours : null, true);
             builder.Append("</div></div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalHourDetail' data-pd-detail-title='Chi tiết giờ công của bạn' data-pd-detail-sub='Công việc tính theo PM chốt, giờ họp theo quy tắc hiện tại, tránh cộng trùng với vấn đề liên kết.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
             builder.Append("</div>");
 
             return builder.ToString();
         }
 
-        private static void AppendSummaryRow(StringBuilder builder, string title, decimal hours, bool isTotal)
+        private static void AppendSummaryRow(StringBuilder builder, string title, decimal? hours, bool isTotal)
         {
             builder.Append("<div class='pd-summary-row")
                    .Append(isTotal ? " is-total" : string.Empty)
                    .Append("'><strong>")
                    .Append(HttpUtility.HtmlEncode(title))
                    .Append("</strong><span>")
-                   .Append(PersonalHourText(hours))
+                   .Append(hours.HasValue ? PersonalHourText(hours.Value) : "Chưa tải được")
                    .Append("</span></div>");
         }
 
@@ -1074,7 +1241,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append(PersonalTaskProgressBar(visual)).Append("</article>");
         }
 
-        private static void AppendPersonalMeeting(StringBuilder builder, DataRow meet, DateTime now, bool ended)
+        private static void AppendPersonalMeeting(StringBuilder builder, DataRow meet, DateTime now, bool ended, bool meetingHoursAvailable)
         {
             DateTime? start = PersonalDate(meet, "ThoiGianBatDau");
             DateTime? finish = PersonalDate(meet, "ThoiGianKetThuc");
@@ -1091,7 +1258,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append("</span></div><div class='pd-personal-schedule-line'><i class='far fa-clock'></i><span>")
                    .Append(PersonalMeetingTimeText(start, finish))
                    .Append("</span></div></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: ")
-                   .Append(PersonalHourValue(PersonalMeetingHours(meet)))
+                   .Append(meetingHoursAvailable ? PersonalHourValue(PersonalMeetingLaborHours(meet, now)) : "Chưa tải được")
                    .Append("</span></div></article>");
         }
 

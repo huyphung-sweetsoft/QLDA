@@ -399,6 +399,8 @@
             if(!canEarly && state.earlyStart && state.earlyStart.blockingTasks)
                 sub.title=state.earlyStart.blockingTasks.join('; ');
         }
+        // Giữ tooltip chi tiết cũ nếu server đã cung cấp lý do chặn Start sớm.
+        if(!sub.title)sub.title=sub.textContent;
         var todaySub=row(stats,node('small','kbg20-v43-today'));todaySub.setAttribute('data-today-task',task.id);
         todaySub.setAttribute('data-today-type',String(type));
         updateTodayLabel(todaySub,task.id,type);
@@ -494,14 +496,17 @@
         var identity=taskCell(item,'kbg20-v41-identity','Công việc');
         var name=row(identity,node('div','kbg20-v41-taskname'));
         row(name,node('strong','kbg20-v41-taskcode',task.code||'CV'));
-        row(name,node('strong','kbg20-v41-tasktext',task.name||'Chưa đặt tên công việc'));
+        var fullName=task.name||'Chưa đặt tên công việc';
+        var titleElement=row(name,node('strong','kbg20-v41-tasktext',fullName));
+        // Dùng tooltip chung đang có (có tự chọn hướng và hỗ trợ keyboard), không dùng native title.
+        ganTooltipNho(titleElement,'Tên công việc đầy đủ', '['+(task.code||'CV')+'] '+fullName);
         if(task.isEarly){
             var early=row(name,node('span','kbg20-d6-badge is-early'+(task.earlyInferred?' is-inferred':''),
                 task.earlyInferred?'Bắt đầu sớm?':'Bắt đầu sớm'));
             ganTooltipNho(early,task.earlyInferred?'Có dấu hiệu bắt đầu sớm':'Bắt đầu sớm',earlyStartTooltip(task));
         } else if(state.earlyStart && state.earlyStart.allowed && task.startDay &&
                   state.workCalendar && task.startDay>state.workCalendar.day &&
-                  task.status===0){
+                  taskMayStart(task) && !timerOf(task.id,1) && !timerOf(task.id,2)){
             row(name,node('span','kbg20-d6-badge is-can-early','Có thể bắt đầu sớm'));
         }
         var meta='';
@@ -537,8 +542,17 @@
             if(task.status===1 && !isPending(task) && task.personalStatus!==4){
                 var withdrawn=button('Rút báo hoàn thành','withdrawPersonal',task.id);
                 withdrawn.className+=' kbg20-dot2-row-btn is-danger';row(actions,withdrawn);
+                // Chỉ mở popup GỬI yêu cầu Task chung sau khi đã báo xong PHẦN VIỆC cá nhân.
+                // TaskList quyết định nghiệp vụ và kiểm tra lại dữ liệu, không tự gửi duyệt ở client.
+                if(task.assigned && state.workflowEnabled){
+                    actions.className+=' is-multi-action';
+                    var sendReview=button('Gửi duyệt hoàn thành','sendTaskApproval',task.id);
+                    sendReview.className+=' kbg20-dot2-row-btn is-submit-approval';
+                    sendReview.title='Mở yêu cầu hoàn thành công việc trên Danh sách công việc';
+                    row(actions,sendReview);
+                }
             }else{
-                var review=button('Xem / sửa giờ ở Tab 3','openPersonalHours',task.id);
+                var review=button('Xem / sửa giờ đã báo','openPersonalHours',task.id);
                 review.className+=' kbg20-dot2-row-btn';row(actions,review);
             }
         }else if((isPending(task)||isFinished(task)) && state.workflowEnabled && task.personalStatus!==4){
@@ -1107,7 +1121,7 @@
         var task=state && (state.tasks||[]).find(function(x){return x.id===id;});
         if(action==='confirmPersonalHours'||action==='openPersonalHours'){
             if(!window.Kbg20DoiSoatUI){notify('Giao diện báo hoàn thành chưa được tải.','error');return;}
-            setMode('manual');
+            // Mở thẳng popup xem/sửa, KHÔNG chuyển Tab 3 phía sau ExtraModal.
             if(action==='confirmPersonalHours')window.Kbg20DoiSoatUI.openConfirm(id);
             else window.Kbg20DoiSoatUI.openTask(id);
             return;
@@ -1118,8 +1132,27 @@
             else window.Kbg20DoiSoatUI.openWithdraw(id);
             return;
         }
-        // Bao xong ca nhan chi su dung 2 action rieng o tren.
-        // Khong cho action Task chung 'complete/review' di qua bridge cua Tab 1.
+        if(action==='sendTaskApproval'){
+            // Không thực hiện cập nhật trạng thái trực tiếp: chuyển đến CtrlFastCompleteTask sẵn có.
+            if(!task || !task.assigned || !state.workflowEnabled || task.status!==1 ||
+               [1,3,5].indexOf(Number(task.personalStatus))<0){
+                notify('Công việc đã thay đổi hoặc phần việc chưa được báo hoàn thành. Vui lòng làm mới dữ liệu.','error');
+                refresh(true);return;
+            }
+            var taskListUrl=root.getAttribute('data-task-list-url');
+            if(!taskListUrl){notify('Không xác định được đường dẫn Danh sách công việc.','error');return;}
+            try{
+                var target=new URL(taskListUrl,window.location.href);
+                if(target.origin!==window.location.origin)throw new Error('Địa chỉ không hợp lệ');
+                // Đường mở riêng của KBG20: không qua enum ThongBaoAction (có thể thiếu trong Core).
+                target.searchParams.set('kbg20SendTaskCompletion',task.id);
+                target.searchParams.delete('notificationAction');
+                target.searchParams.delete('notificationTaskId');
+                window.location.assign(target.href);
+            }catch(err){notify('Không mở được yêu cầu duyệt hoàn thành. Vui lòng thử lại.','error');}
+            return;
+        }
+        // Không cho action Task chung 'complete/review' đi qua bridge của Tab 1.
         if(action==='complete' || action==='review') {
             notify('Hãy duyệt hoặc xác nhận hoàn thành công việc tại Danh sách công việc.', 'error');
             return;

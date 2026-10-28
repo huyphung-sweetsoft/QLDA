@@ -29,10 +29,10 @@
         .personal-cal .personal-cal-legend-dot.weekend { background:#94a3b8; }
         .personal-cal .personal-cal-legend-hint { margin-left:auto;color:#857990; }
         .personal-cal .personal-cal-scroll { overflow-x:auto;padding:1px 1px 4px;scrollbar-width:thin; }
-        .personal-cal .personal-cal-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;min-width:840px;overflow:hidden;border:1px solid #e8e1ef;border-radius:11px;background:#e8e1ef;isolation:isolate; }
+        .personal-cal .personal-cal-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;min-width:840px;overflow:hidden;border:1px solid #ddd4e8;border-radius:11px;background:#ddd4e8;isolation:isolate; }
         .personal-cal .personal-cal-dow { padding:10px 4px;background:#f3edfa;color:#583486;font-size:12px;font-weight:800;text-align:center; }
         .personal-cal .personal-cal-dow.is-weekend { color:#a56849; }
-        .personal-cal .personal-cal-day { position:relative;display:flex;flex-direction:column;gap:7px;min-width:0;min-height:clamp(103px,calc((100dvh - 295px)/6),132px);padding:8px 7px;background:#fff;transition:background-color .17s,box-shadow .17s; }
+        .personal-cal .personal-cal-day { position:relative;display:flex;flex-direction:column;gap:7px;min-width:0;min-height:clamp(103px,calc((100dvh - 295px)/6),132px);padding:8px 7px;background:#fff;box-shadow:inset 0 0 0 1px #eee7f5;transition:background-color .17s,box-shadow .17s; }
         .personal-cal .personal-cal-grid.is-week .personal-cal-day { min-height:clamp(200px,calc(100dvh - 315px),390px); }
         .personal-cal .personal-cal-day.is-outside { background:#fbfafc; }
         .personal-cal .personal-cal-day.is-holiday { background:#fffcf6; }
@@ -175,7 +175,7 @@
             display:flex; flex-direction:column; gap:0;
             /* Chừa 1px nền lưới ở đáy để viền ngang không bị lớp 3D phủ mất. */
             padding:0 0 1px;
-            background:#e8e1ef!important; box-shadow:none!important;
+            background:#ddd4e8!important; box-shadow:none!important;
             perspective:1200px; -webkit-perspective:1200px;
             isolation:isolate;
         }
@@ -214,7 +214,7 @@
         .personal-cal .personal-cal-day.has-flip .personal-cal-flip-front {
             position:relative; display:flex; flex:1 1 auto; flex-direction:column;
             gap:7px; min-height:0; padding:8px 7px;
-            background:#fff;
+            background:#fff; box-shadow:inset 0 0 0 1px #eee7f5;
             transform:translateZ(1px);
         }
         .personal-cal .personal-cal-day.has-flip.is-outside .personal-cal-flip-front {background:#fbfafc;}
@@ -229,17 +229,16 @@
             padding:8px 6px;
             overflow:visible;
             color:#fff;
-            background:linear-gradient(155deg,rgba(121,67,177,.94),rgba(73,26,127,.97));
-            border:1px solid rgba(225,205,251,.6);
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
+            background:#6f3aa8;
+            border:1px solid #7f55b5;
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
             transform:rotateX(180deg) translateZ(1px);
             transform-style:preserve-3d;
             -webkit-transform-style:preserve-3d;
             text-align:center;
         }
         .personal-cal .personal-cal-flip-back::before {
-            content:'';position:absolute;inset:0;pointer-events:none;
-            background:radial-gradient(ellipse at 25% 0,rgba(255,255,255,.20),transparent 66%);
+            content:none;
         }
         .personal-cal .personal-cal-flip-date {
             position:relative;display:block;max-width:100%;
@@ -298,6 +297,99 @@
 
         .personal-cal .personal-cal-day.is-clickable {cursor:default;}
         .personal-cal .personal-cal-day.has-flip .personal-cal-flip-front {cursor:pointer;}
+
+        /* V11: panel lịch tháng tô kín như ngày trống/cuối tuần; không thay đổi chế độ tuần. */
+        .personal-cal .personal-cal-grid.is-month .personal-cal-month-tile { position:relative;display:flex;flex:1 1 auto;align-items:center;justify-content:center;min-height:64px;width:100%;min-width:0;overflow:hidden;border:1px solid transparent;border-radius:9px;isolation:isolate; }
+        .personal-cal .personal-cal-month-tile.is-tasks-only { background:#fff1f2;border-color:#fecaca;color:#b91c1c; }
+        .personal-cal .personal-cal-month-tile.is-meetings-only { background:#f5effd;border-color:#dfcafa;color:#633498; }
+        .personal-cal .personal-cal-month-tile.is-mixed { background:linear-gradient(135deg,#fff1f2 0%,#fff1f2 49.4%,#debfea 49.6%,#debfea 50.4%,#f4edfc 50.6%,#f4edfc 100%);border-color:#ead6ef; }
+        .personal-cal .personal-cal-month-tile-content { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;text-align:center; }
+        .personal-cal .personal-cal-month-tile-content strong { display:block;font-size:11px;font-weight:800;line-height:1.3;white-space:normal;text-wrap:balance; }
+        .personal-cal .personal-cal-month-tile-icon { display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border-radius:9px;font-size:13px; }
+        .personal-cal .personal-cal-month-tile-content.is-task { color:#b91c1c; }
+        .personal-cal .personal-cal-month-tile-content.is-meeting { color:#633498; }
+        .personal-cal .personal-cal-month-tile-content.is-task .personal-cal-month-tile-icon { background:#ffe0e3;color:#d9273e; }
+        .personal-cal .personal-cal-month-tile-content.is-meeting .personal-cal-month-tile-icon { background:#eadbfa;color:#713cad; }
+        .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content { position:absolute;gap:3px;width:54%;min-width:0; }
+        .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content.is-task { left:4%;top:8%;height:53%;align-items:center;justify-content:center; }
+        .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content.is-meeting { right:4%;bottom:8%;height:53%;align-items:center;justify-content:center; }
+        .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-icon { width:24px;height:24px;flex-basis:24px;font-size:11px; }
+        .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content strong { font-size:10px; }
+        .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content.is-task strong { transform:translateY(-3px); }
+        .personal-cal .personal-cal-day.is-outside .personal-cal-month-tile { opacity:.78; }
+        .personal-cal .personal-cal-day.has-flip .personal-cal-month-tile { margin:0; }
+        .personal-cal .personal-cal-day.is-today .personal-cal-month-tile { box-shadow:0 0 0 1px rgba(116,64,177,.12); }
+        @media(max-width:1050px) { .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content { width:58%; } .personal-cal .personal-cal-month-tile.is-mixed .personal-cal-month-tile-content strong { font-size:9.5px; } }
+        /* V11: modal lịch ngày: thông tin họp được tổ chức thành khối theo dự án, không có link tham gia. */
+        .personal-day-section-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 10px;padding:10px 12px;border:1px solid #fbd1d7;border-radius:9px;background:#fff1f2;color:#a61d35;font-size:13px;font-weight:800; }
+        .personal-day-section-head.is-meeting { border-color:#e5d5f4;background:#f7f2fd;color:#633498; }
+        .personal-day-section-head-title { display:flex;align-items:center;gap:8px;min-width:0; }
+        .personal-day-section-head-desc { color:inherit;opacity:.75;font-size:11px;font-weight:650;white-space:nowrap; }
+        .personal-day-overview { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:15px; }
+        .personal-day-overview-item { display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #fbd1d7;border-radius:10px;background:#fff6f7;color:#b91c1c; }
+        .personal-day-overview-item.is-meeting { border-color:#e6d9f4;background:#faf7fe;color:#633498; }
+        .personal-day-overview-item i { display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;background:#ffe2e6; }
+        .personal-day-overview-item.is-meeting i { background:#ede0fa; }
+        .personal-day-overview-item strong { display:block;font-size:15px;line-height:1.2; }
+        .personal-day-overview-item small { display:block;margin-top:2px;font-size:11px;color:#76647d; }
+        .personal-day-meeting-project { margin:0 0 12px;overflow:hidden;border:1px solid #e6daf1;border-radius:11px;background:#fff; }
+        .personal-day-meeting-project-head { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid #e8dbf3;background:#f6effd;color:#552087; }
+        .personal-day-meeting-project-name { display:flex;align-items:center;gap:8px;min-width:0;font-size:12.5px;font-weight:850;overflow-wrap:anywhere; }
+        .personal-day-meeting-project-name i { flex:0 0 auto;color:#7440ae; }
+        .personal-day-meeting-project-count { flex:0 0 auto;padding:4px 7px;border:1px solid #dcc7f1;border-radius:6px;background:#fff;color:#6b3b9f;font-size:10.5px;font-weight:800; }
+        .personal-day-meeting-entry { display:grid;grid-template-columns:82px minmax(0,1fr);gap:13px;padding:13px 14px; }
+        .personal-day-meeting-entry + .personal-day-meeting-entry { border-top:1px dashed #e8e2ef; }
+        .personal-day-meeting-clock { display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:start;gap:3px;padding:10px 4px;border:1px solid #e4d7f0;border-radius:9px;background:#faf6fe;color:#673797;font-size:12.5px;font-weight:850;font-variant-numeric:tabular-nums; }
+        .personal-day-meeting-clock small { color:#9a8ba7;font-size:10px;font-weight:700; }
+        .personal-day-meeting-content { min-width:0; }
+        .personal-day-meeting-heading { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:7px;margin-bottom:9px; }
+        .personal-day-meeting-entry .personal-day-meeting-name { flex:1 1 180px;color:#352843;font-size:13px;font-weight:850;line-height:1.45; }
+        .personal-day-meeting-entry .personal-day-meeting-status { align-self:flex-start;flex:0 0 auto;padding:4px 8px;color:#6c389e;font-size:10.5px; }
+        .personal-day-meeting-entry.is-status-3 .personal-day-meeting-status { background:#f0f2f5;color:#64748b; }
+        .personal-day-meeting-entry.is-status-1 .personal-day-meeting-status { background:#ede2fc;color:#6b329d; }
+        .personal-day-meeting-meta-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px; }
+        .personal-day-meeting-detail { display:flex;align-items:flex-start;gap:7px;min-width:0;color:#655b71;font-size:11.5px;line-height:1.5;overflow-wrap:anywhere; }
+        .personal-day-meeting-detail i { flex:0 0 14px;margin-top:3px;color:#8053ad; }
+        .personal-day-meeting-detail strong { color:#4a3c58;font-weight:750; }
+        .personal-day-meeting-detail.is-location { grid-column:1/-1; }
+        .personal-day-meeting-detail.is-online { color:#6b5982; }
+        .personal-day-meeting-entry.is-status-3 .personal-day-meeting-clock { background:#f8fafc;border-color:#dfe5eb;color:#64748b; }
+        .personal-day-meeting-entry .personal-meeting-host { color:#d69a19; }
+        .personal-day-meeting-entry.is-status-2 .personal-day-meeting-status .personal-meeting-pulse { animation:personalLivePulse 1.7s ease-in-out infinite; }
+        @media(max-width:590px) { .personal-day-meeting-entry { grid-template-columns:66px minmax(0,1fr);gap:9px;padding:10px; } .personal-day-meeting-clock { font-size:11px; } .personal-day-meeting-meta-grid { grid-template-columns:1fr; } .personal-day-overview-item { gap:7px;padding:9px; } .personal-day-overview-item i { width:26px;height:26px;flex-basis:26px; } .personal-day-section-head-desc { display:none; } }
+
+        /* V12: hai danh sách ngang, tiêu đề co dinh, chi cuon noi bo tung cot. */
+        .modal-dialog:has(.personal-day-modal) { width:min(1120px,calc(100vw - 32px))!important;max-width:min(1120px,calc(100vw - 32px))!important; }
+        .personal-day-modal { max-height:none;overflow:visible;padding:12px 14px;background:#fff; }
+        .personal-day-dual { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;align-items:stretch; }
+        .personal-day-pane { display:flex;flex-direction:column;min-width:0;min-height:140px;max-height:min(65vh,570px);overflow:hidden;border:1px solid #eadfeb;border-radius:11px;background:#fff; }
+        .personal-day-pane.is-task { border-color:#f3d7dd; }
+        .personal-day-pane.is-meeting { border-color:#e5d8f0; }
+        .personal-day-pane .personal-day-section-head { flex:0 0 auto;min-height:48px;margin:0;padding:11px 13px;border:0;border-bottom:1px solid #f3d7dd;border-radius:0;background:#fff1f2; }
+        .personal-day-pane .personal-day-section-head.is-meeting { border-bottom-color:#e5d8f0;background:#f7f2fd; }
+        .personal-day-pane-total { flex:0 0 auto;padding:4px 8px;border:1px solid #f7c7cf;border-radius:7px;background:#fff;color:#af1d38;font-size:11px;font-weight:800;white-space:nowrap; }
+        .personal-day-pane .is-meeting .personal-day-pane-total { border-color:#e1d1ee;color:#673499; }
+        .personal-day-pane-scroll { flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:11px;scrollbar-width:thin;scrollbar-color:#cab6df transparent; }
+        .personal-day-pane.is-task .personal-day-pane-scroll { scrollbar-color:#ebacb7 transparent; }
+        .personal-day-pane .personal-day-project,.personal-day-pane .personal-day-meeting-project { margin-bottom:9px; }
+        .personal-day-pane .personal-day-project-head,.personal-day-pane .personal-day-meeting-project-head { padding:9px 10px;gap:7px; }
+        .personal-day-pane .personal-day-project-head span { line-height:1.4; }
+        .personal-day-pane .personal-day-project-count,.personal-day-pane .personal-day-meeting-project-count { font-size:10px; }
+        .personal-day-pane .personal-day-task { padding:9px 10px;font-size:12px; }
+        .personal-day-pane .personal-day-meeting-entry { grid-template-columns:67px minmax(0,1fr);gap:9px;padding:11px 10px; }
+        .personal-day-pane .personal-day-meeting-clock { padding:8px 3px;font-size:11.5px; }
+        .personal-day-pane .personal-day-meeting-heading { gap:6px;margin-bottom:7px; }
+        .personal-day-pane .personal-day-meeting-entry .personal-day-meeting-name { flex-basis:140px;font-size:12.5px; }
+        .personal-day-pane .personal-day-meeting-meta-grid { grid-template-columns:1fr;gap:5px; }
+        .personal-day-pane-empty { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:155px;padding:18px;text-align:center;color:#ad4051; }
+        .personal-day-pane-empty i { display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:#fff1f2;font-size:19px; }
+        .personal-day-pane-empty strong { font-size:13px; }
+        .personal-day-pane-empty small { font-size:11px;color:#93818b; }
+        .personal-day-pane-empty.is-meeting { color:#70409f; }
+        .personal-day-pane-empty.is-meeting i { background:#f3ebfb; }
+        .personal-day-modal > .personal-day-notice { margin-bottom:11px;padding:10px 13px; }
+        @media(max-width:720px) { .personal-day-modal { padding:9px; } .personal-day-dual { grid-template-columns:minmax(0,1fr);gap:9px; } .personal-day-pane { min-height:0;max-height:min(30vh,240px); } .personal-day-pane-scroll { padding:8px; } .personal-day-pane .personal-day-meeting-meta-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .personal-day-pane .personal-day-meeting-detail.is-location { grid-column:1/-1; } }
+        @media(max-width:420px) { .personal-day-pane .personal-day-meeting-meta-grid { grid-template-columns:1fr; } }
     </style>
 </asp:Content>
 
@@ -440,7 +532,7 @@
                 var from = start < dayStart ? dayStart : start, to = end > next ? next : end;
                 var displayTime = shortTime(from), endTime = to.getTime() === next.getTime() ? '24:00' : shortTime(to);
                 var host = meeting.LaChuTri ? 'Chủ trì cuộc họp' : (meeting.TenNguoiChuTri || 'Chưa rõ người chủ trì');
-                return '<div class="personal-cal-event is-meeting is-status-' + status + '" data-meet-title="' + html(name) + '" data-project-name="' + html(project) + '" data-meet-id="' + html(meeting.IdLichHop || '') + '" data-meet-status="' + status + '" data-meet-host="' + html(host) + '" data-meet-time="' + html(displayTime + '–' + endTime) + '" data-meet-online="' + (meeting.LaHopOnline ? 1 : 0) + '" data-meet-place="' + html(meeting.DiaDiemHop || '') + '">' +
+                return '<div class="personal-cal-event is-meeting is-status-' + status + '" data-meet-title="' + html(name) + '" data-project-name="' + html(project) + '" data-meet-id="' + html(meeting.IdLichHop || '') + '" data-meet-status="' + status + '" data-meet-host="' + html(host) + '" data-meet-time="' + html(displayTime + '–' + endTime) + '" data-meet-online="' + (meeting.LaHopOnline ? 1 : 0) + '" data-meet-place="' + html(meeting.LaHopOnline ? 'Xem thông tin phòng họp tại Lịch họp' : (meeting.DiaDiemHop || '')) + '">' +
                     (meeting.LaChuTri ? '<i class="fas fa-crown personal-meeting-host" title="Bạn là người chủ trì" aria-hidden="true"></i>' : '') +
                     '<b class="personal-cal-meeting-time">' + html(displayTime) + '</b><span class="personal-cal-event-name">' + html(name) + '</span>' +
                     ((status === 1 || status === 2) ? '<i class="personal-meeting-pulse" aria-hidden="true"></i>' : '') + '</div>';
@@ -477,8 +569,10 @@
                     var cell = document.createElement('div'); cell.className = 'personal-cal-day' + (clickable ? ' is-clickable' : '') + (flip ? ' has-flip' : '') + (outside ? ' is-outside' : '') + (status === 'holiday' ? ' is-holiday' : '') + (status === 'weekend' ? ' is-weekend' : '') + (key === today ? ' is-today' : '');
                     cell.setAttribute('role','gridcell'); cell.setAttribute('data-day-index',index);
                     if (clickable) cell.setAttribute('aria-label','Lịch ngày ' + key.slice(8,10) + '/' + key.slice(5,7) + '/' + key.slice(0,4));
-                    var count = (taskCount ? '<span class="personal-cal-day-count" title="' + taskCount + ' công việc"><i class="fas fa-briefcase" aria-hidden="true"></i> ' + taskCount + '</span>' : '') +
-                        (meetingCount ? '<span class="personal-cal-day-meeting-count" title="' + meetingCount + ' cuộc họp"><i class="far fa-calendar-alt" aria-hidden="true"></i> ' + meetingCount + '</span>' : '');
+                    // Lịch tháng: ngày nằm riêng phía trên; màu, biểu tượng và số lượng được trình bày trong panel phủ kín.
+                    // Lịch tuần giữ badge hiện tại, danh sách chi tiết và tooltip của từng hoạt động.
+                    var count = week ? ((taskCount ? '<span class="personal-cal-day-count" title="' + taskCount + ' công việc"><i class="fas fa-briefcase" aria-hidden="true"></i> ' + taskCount + '</span>' : '') +
+                        (meetingCount ? '<span class="personal-cal-day-meeting-count" title="' + meetingCount + ' cuộc họp"><i class="far fa-calendar-alt" aria-hidden="true"></i> ' + meetingCount + '</span>' : '')) : '';
                     var content = '<div class="personal-cal-day-top"><span class="personal-cal-day-number">' + date.getDate() + '</span><span class="personal-cal-day-tags">' + count + '</span></div>';
                     if (!taskCount && !meetingCount) {
                         var panelClass = 'is-free', icon = 'far fa-calendar-check', label = words.free || 'Trống', desc = 'Chưa có công việc và cuộc họp';
@@ -492,18 +586,19 @@
                             content += '<div class="personal-cal-day-state ' + (holiday ? 'is-holiday' : 'is-weekend') + '"><i class="fas ' + (holiday ? 'fa-umbrella-beach' : 'fa-mug-hot') + '" aria-hidden="true"></i><span class="personal-cal-state-text">' + html(holiday ? (day.TenNgoaiLe || words.holiday) : words.weekend) + '</span></div>';
                         }
                         if (!week) {
-                            // Lịch tháng: các dòng thống kê không chứa tên công việc/cuộc họp.
-                            content += '<div class="personal-cal-month-summary">';
-                            if (taskCount) content += '<div class="personal-cal-month-line is-task"><i class="fas fa-briefcase" aria-hidden="true"></i><span>Có ' + taskCount + ' công việc</span></div>';
-                            if (meetingCount) content += '<div class="personal-cal-month-line is-meeting"><i class="far fa-calendar-alt" aria-hidden="true"></i><span>Có ' + meetingCount + ' lịch họp</span></div>';
+                            // Một hoạt động: panel tô kín. Hai hoạt động: chia chéo đỏ (trên-trái) và tím (dưới-phải).
+                            var tileMode = taskCount && meetingCount ? 'is-mixed' : taskCount ? 'is-tasks-only' : 'is-meetings-only';
+                            content += '<div class="personal-cal-month-tile ' + tileMode + '" aria-label="' +
+                                html((taskCount ? taskCount + ' công việc' : '') + (taskCount && meetingCount ? ', ' : '') + (meetingCount ? meetingCount + ' cuộc họp' : '')) + '">';
+                            if (taskCount) content += '<div class="personal-cal-month-tile-content is-task"><span class="personal-cal-month-tile-icon"><i class="fas fa-briefcase" aria-hidden="true"></i></span><strong>' + taskCount + ' công việc</strong></div>';
+                            if (meetingCount) content += '<div class="personal-cal-month-tile-content is-meeting"><span class="personal-cal-month-tile-icon"><i class="far fa-calendar-alt" aria-hidden="true"></i></span><strong>' + meetingCount + ' cuộc họp</strong></div>';
                             content += '</div>';
                         } else {
                             // Lịch tuần: hiển thị HẾT công việc, sau đó HẾT cuộc họp.
                             content += '<div class="personal-cal-day-events">';
                             tasks.forEach(function(task) { if (task) content += renderTask(task); });
-                            meetings.slice().sort(function(a,b) {
-                                return new Date(a.ThoiGianBatDau) - new Date(b.ThoiGianBatDau);
-                            }).forEach(function(meeting) { if (meeting) content += renderMeeting(meeting,key); });
+                            meetings.slice().sort(function(a,b) { return new Date(a.ThoiGianBatDau) - new Date(b.ThoiGianBatDau); })
+                                .forEach(function(meeting) { if (meeting) content += renderMeeting(meeting,key); });
                             content += '</div>';
                         }
                     }

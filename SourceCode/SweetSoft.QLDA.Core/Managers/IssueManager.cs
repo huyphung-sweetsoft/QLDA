@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -9,6 +9,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,30 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         public void DeleteIssue(TblVanDe issue)
         {
-            _repository.DeleteIssue(issue);
+            if (issue == null || issue.IdVanDe == Guid.Empty || issue.IdDuAn == Guid.Empty)
+                throw new InvalidOperationException("Vấn đề không hợp lệ.");
+            // Giu audit va soft-delete cua partner. Chi them guard tranh xoa
+            // Issue co du lieu gio; dung khoa du an chung voi Start/Stop.
+            var gioRepo = new GioXuLyVanDeRepository();
+            using (SqlConnection con = gioRepo.MoKetNoi())
+            using (SqlTransaction tx = con.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+                gioRepo.KhoaDuAn(con, tx, issue.IdDuAn);
+                using (var cmd = new SqlCommand(@"SELECT CASE WHEN EXISTS(
+                    SELECT 1 FROM dbo.TblKhaiBaoGioPhien
+                    WHERE IdDuAn=@D AND IdVanDe=@V AND LoaiGio=3
+                    ) OR EXISTS(SELECT 1 FROM dbo.TblVanDe
+                       WHERE IdDuAn=@D AND IdVanDe=@V AND TrangThaiDuyetGio=1)
+                    THEN 1 ELSE 0 END", con, tx))
+                {
+                    cmd.Parameters.Add("@D", SqlDbType.UniqueIdentifier).Value = issue.IdDuAn;
+                    cmd.Parameters.Add("@V", SqlDbType.UniqueIdentifier).Value = issue.IdVanDe;
+                    if (Convert.ToInt32(cmd.ExecuteScalar()) == 1)
+                        throw new InvalidOperationException("Vấn đề đã có phiên giờ hoặc đang chờ duyệt, không thể xóa. Vui lòng xử lý lịch sử giờ trước.");
+                }
+                _repository.DeleteIssue(issue);
+                tx.Commit();
+            }
         }
         public string GetValueForMucDoAnhHuong(MucDoAnhHuonEnum impact)
         {
@@ -121,7 +145,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 existingIssue.IdCongViecPhatSinh = dto.IdCongViecPhatSinh;
                 existingIssue.MucDoAnhHuong = dto.MucDoAnhHuong;
                 existingIssue.NguonGocVanDe = dto.NguonGocVanDe;
-                existingIssue.TrangThai = dto.TrangThai;
+                // TrangThai chi thay doi thong qua GioXuLyVanDeManager.XuLyYeuCau sau PM duyet.
+                // Sua thong tin Issue khong duoc bo qua luong gui duyet / dong gio nhom.
 
                 existingIssue.NgayCapNhat = DateTime.Now;
                 existingIssue.NguoiCapNhat = currentUser;

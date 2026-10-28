@@ -1,4 +1,4 @@
-using SubSonic;
+﻿using SubSonic;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -840,14 +840,10 @@ namespace SweetSoft.QLDA.Core.Respositories
                        WHEN s.LoaiSuKien=3 AND NOT EXISTS (
                          SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat origin WITH(HOLDLOCK)
                          WHERE origin.IdNhanVien=s.IdNhanVien AND origin.IdCongViec=s.IdCongViec
-                           AND origin.IdDuAn=s.IdDuAn AND origin.LanThucHien=s.LanThucHien
                            AND origin.LanDoiSoat=s.LanDoiSoat AND origin.LoaiSuKien=5)
                        THEN 1 ELSE 0 END
                 FROM dbo.TblKhaiBaoGioDoiSoat s WITH (HOLDLOCK)
-                INNER JOIN dbo.TblCongViec t WITH (HOLDLOCK)
-                    ON t.IdCongViec=s.IdCongViec AND t.IdDuAn=s.IdDuAn
                 WHERE s.IdNhanVien=@U AND s.IdCongViec=@T AND s.LoaiSuKien IN (1,2,3,4,5)
-                  AND s.LanThucHien=t.LanThucHien
                 ORDER BY s.LanDoiSoat DESC, s.PhienBan DESC, s.NgayTao DESC, s.IdDoiSoat DESC"))
             {
                 P(cmd,"@U",SqlDbType.UniqueIdentifier,nhanVien);
@@ -874,13 +870,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                         CASE WHEN s.LoaiSuKien=3 AND EXISTS(
                           SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat origin
                           WHERE origin.IdNhanVien=s.IdNhanVien AND origin.IdCongViec=s.IdCongViec
-                            AND origin.IdDuAn=s.IdDuAn AND origin.LanThucHien=s.LanThucHien
                             AND origin.LanDoiSoat=s.LanDoiSoat AND origin.LoaiSuKien=5)
                         THEN 1 ELSE 0 END AS LaSuaSauXacNhan
                     FROM dbo.TblKhaiBaoGioDoiSoat s WITH (HOLDLOCK)
                     WHERE s.IdNhanVien=@U AND s.IdDuAn=@D
                         AND s.IdCongViec=t.IdCongViec AND s.LoaiSuKien IN (1,2,3,4,5)
-                        AND s.LanThucHien=t.LanThucHien
                     ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) lastEvent
                 WHERE t.IdDuAn=@D AND ISNULL(t.DaXoa,0)=0
                     AND t.TrangThai IN (0,1) AND ISNULL(t.ChoDuyet,0)=0
@@ -933,7 +927,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             using (var cmd = Lenh(con, tx, @"SELECT IdPhien,IdNhanVien,IdCongViec,IdDuAn,LoaiGio,
               BatDauLuc,KetThucLuc,DaTinhDenLuc,LaTiepTucQuaHan,NguonBatDau
-              FROM dbo.TblKhaiBaoGioPhien WHERE IdPhien=@I AND IdNhanVien=@U AND KetThucLuc IS NULL"))
+              FROM dbo.TblKhaiBaoGioPhien WHERE IdPhien=@I AND IdNhanVien=@U AND KetThucLuc IS NULL AND IdCongViec IS NOT NULL"))
             {
                 P(cmd, "@I", SqlDbType.UniqueIdentifier, idPhien);
                 P(cmd, "@U", SqlDbType.UniqueIdentifier, idNv);
@@ -945,7 +939,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             using (var cmd = Lenh(con, tx, @"SELECT IdPhien,IdNhanVien,IdCongViec,IdDuAn,LoaiGio,
               BatDauLuc,KetThucLuc,DaTinhDenLuc,LaTiepTucQuaHan,NguonBatDau
               FROM dbo.TblKhaiBaoGioPhien WITH (UPDLOCK,HOLDLOCK)
-              WHERE IdPhien=@I AND IdNhanVien=@U AND KetThucLuc IS NULL"))
+              WHERE IdPhien=@I AND IdNhanVien=@U AND KetThucLuc IS NULL AND IdCongViec IS NOT NULL"))
             {
                 P(cmd, "@I", SqlDbType.UniqueIdentifier, idPhien);
                 P(cmd, "@U", SqlDbType.UniqueIdentifier, idNv);
@@ -1042,7 +1036,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             var list = new List<Kbg20Phien>();
             using (var con = MoKetNoi()) using (var cmd = Lenh(con, null, @"SELECT TOP (@N) IdPhien,IdNhanVien,IdCongViec,IdDuAn,LoaiGio,
               BatDauLuc,KetThucLuc,DaTinhDenLuc,LaTiepTucQuaHan,NguonBatDau
-              FROM dbo.TblKhaiBaoGioPhien WHERE KetThucLuc IS NULL ORDER BY ISNULL(DaTinhDenLuc,BatDauLuc),IdPhien"))
+              FROM dbo.TblKhaiBaoGioPhien WHERE KetThucLuc IS NULL AND IdCongViec IS NOT NULL ORDER BY ISNULL(DaTinhDenLuc,BatDauLuc),IdPhien"))
             {
                 P(cmd, "@N", SqlDbType.Int, limit);
                 using (var rd = cmd.ExecuteReader()) while (rd.Read()) list.Add(DocPhien(rd));
@@ -1057,7 +1051,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             using (var cmd = Lenh(con, tx, @"SELECT IdPhien,IdNhanVien,IdCongViec,IdDuAn,LoaiGio,
                   BatDauLuc,KetThucLuc,DaTinhDenLuc,LaTiepTucQuaHan,NguonBatDau
                   FROM dbo.TblKhaiBaoGioPhien WITH (UPDLOCK,HOLDLOCK)
-                  WHERE IdDuAn=@D AND KetThucLuc IS NULL ORDER BY IdCongViec,IdPhien"))
+                  WHERE IdDuAn=@D AND KetThucLuc IS NULL AND IdCongViec IS NOT NULL ORDER BY IdCongViec,IdPhien"))
             {
                 P(cmd, "@D", SqlDbType.UniqueIdentifier, idDuAn);
                 using (var rd = cmd.ExecuteReader())
@@ -1350,6 +1344,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                        ROW_NUMBER() OVER (PARTITION BY p.IdCongViec ORDER BY p.BatDauLuc,p.IdPhien) AS rn
                 FROM dbo.TblKhaiBaoGioPhien p
                 WHERE p.IdNhanVien=@U AND p.IdDuAn=@D
+                  AND p.IdCongViec IS NOT NULL AND p.LoaiGio IN (1,2)
             )
             SELECT e.IdCongViec,e.BatDauLuc,
                 COALESCE(e.NgayBatDauKeHoachKhiStart,t.NgayBatDau),
@@ -1470,6 +1465,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                             ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) AS rn
                     FROM dbo.TblKhaiBaoGioDoiSoat s
                     WHERE s.IdNhanVien=@U AND s.IdDuAn=@D
+                      AND s.IdCongViec IS NOT NULL -- Task only: Issue.IdCongViec is NULL.
                       AND s.LoaiSuKien IN (1,2,3,4,5) AND s.NgayTao < @Den
                 )
                 SELECT IdCongViec,LoaiSuKien FROM X WHERE rn=1"))
@@ -1501,7 +1497,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 FROM dbo.TblKhaiBaoGioPhien p
                 LEFT JOIN dbo.TblCongViec kichHoat ON kichHoat.IdCongViec=p.IdCongViecKichHoat
                 LEFT JOIN dbo.aspnet_Users nguoi ON nguoi.UserId=p.IdNguoiKichHoat
-                WHERE p.IdNhanVien=@U AND p.IdDuAn=@D";
+                WHERE p.IdNhanVien=@U AND p.IdDuAn=@D AND p.IdCongViec IS NOT NULL";
             if(ids!=null)sql+=" AND p.IdPhien IN ("+string.Join(",",ids.Select((x,i)=>"@I"+i))+ ")";
             if(ngayDiaPhuong.HasValue)
                 sql+=" AND p.BatDauLuc<@End AND (p.KetThucLuc IS NULL OR p.KetThucLuc>=@Start)";

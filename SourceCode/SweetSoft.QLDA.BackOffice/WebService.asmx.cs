@@ -225,10 +225,12 @@ namespace SweetSoft.QLDA.BackOffice
                             tieuDe         = row["TieuDe"],
                             noiDung        = row["NoiDung"] == DBNull.Value ? null : (string)row["NoiDung"],
                             loaiThongBao   = loaiThongBao,
-                            duongDanLienKet= row["DuongDanLienKet"] == DBNull.Value
-                                || string.IsNullOrWhiteSpace(Convert.ToString(row["DuongDanLienKet"]))
-                                    ? SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(loaiThongBao, idDuAn, idCongViec)
-                                    : Convert.ToString(row["DuongDanLienKet"]),
+                            // Khong tra raw action GioXuLyVanDe:... cho polling.
+                            // Phai chuyen thanh URL that de mo dung ExtraModal o KhaiBaoGio.
+                            duongDanLienKet = SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(
+                                loaiThongBao, idDuAn, idCongViec,
+                                row["DuongDanLienKet"] == DBNull.Value ? null : Convert.ToString(row["DuongDanLienKet"]),
+                                row["IdThongBao"] == DBNull.Value ? (Guid?)null : (Guid)row["IdThongBao"]),
                             daDoc          = (bool)row["DaDoc"],
                             ngayTao        = Convert.ToDateTime(row["NgayTao"]).ToString("dd/MM/yyyy HH:mm")
                         });
@@ -267,12 +269,6 @@ namespace SweetSoft.QLDA.BackOffice
                 Guid idThongBao;
                 if (!Guid.TryParse(id, out idThongBao))
                     return new { success = false, message = "Invalid id" };
-
-                // Khong duoc danh dau da doc thong bao cua tai khoan khac.
-                // Callback realtime nam trong ThongBaoManager, khong gui lap lai tu WebService.
-                var notification = ThongBaoManager.Instance.GetById(idThongBao);
-                if (notification == null || notification.UserId != userId || notification.DaXoa == true)
-                    return new { success = false, message = "Notification not found" };
 
                 ThongBaoManager.Instance.MarkAsRead(idThongBao);
 

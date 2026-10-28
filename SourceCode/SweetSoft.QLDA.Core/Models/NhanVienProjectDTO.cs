@@ -101,6 +101,8 @@ namespace SweetSoft.QLDA.Core.Models
         public string TenDoUuTien { get; set; }
         public string TenPhaseGoc { get; set; }
         public bool IsMyTask { get; set; }
+        public bool IsCurrentAssignee { get; set; }
+        public bool IsArchivedTask { get; set; }
         public bool DaChotTask { get; set; }
         public string TrangThaiChotText { get { return DaChotTask ? "Đã chốt công" : (TrangThaiTask == 2 || TrangThaiTask == 3 ? "Chờ chốt công" : "Chưa hoàn tất"); } }
     }
@@ -133,6 +135,7 @@ namespace SweetSoft.QLDA.Core.Models
 
     public class NhanVienProjectDTO : NhanVienProjectSummaryDTO
     {
+        public List<NhanVienTaskDTO> Tasks { get; set; } = new List<NhanVienTaskDTO>();
         public List<NhanVienPhaseDTO> Phases { get; set; } = new List<NhanVienPhaseDTO>();
     }
 }

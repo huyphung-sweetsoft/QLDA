@@ -128,10 +128,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         // Chỉ phục vụ mở hộp cảnh báo từ link thông báo khi TaskList vừa tải.
         // Không tạo overlay riêng, không đổi khung ExtraModal hoặc logic duyệt Task.
-        private void DangKyMoCanhBaoKbg20TuThongBao(string modalClientId)
+        private void DangKyMoCanhBaoKbg20TuThongBao(string modalClientId,
+            string tieuDe = "Cảnh báo khi hoàn thành công việc")
         {
             string selector = System.Web.HttpUtility.JavaScriptStringEncode("#" + modalClientId);
-            string title = System.Web.HttpUtility.JavaScriptStringEncode("Cảnh báo khi hoàn thành công việc");
+            string title = System.Web.HttpUtility.JavaScriptStringEncode(tieuDe);
             string script = @"
 (function () {
     var selector = '__SELECTOR__';
@@ -149,6 +150,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
     function ready() {
         if (opened) return;
         tries++;
+        // Nếu ExtraModal đã mở bằng script gốc, không mở lần hai tạo overlay trùng.
+        var element = document.querySelector(selector);
+        if (element && element.classList.contains('show')) {
+            opened = true;
+            if (timer !== null) { window.clearInterval(timer); timer = null; }
+            return;
+        }
         var cms = getCms();
         var dollar = null;
         try { if (typeof $ !== 'undefined') dollar = $; } catch (e) { }
@@ -201,7 +209,16 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if(modal!=null)modal.CloseModal();
             ViewState.Remove("Kbg20WarningTask");ViewState.Remove("Kbg20WarningNext");ViewState.Remove("Kbg20WarningUsers");
             ViewState.Remove("Kbg20WarningFromNotification");
-            if(next=="complete")CtrlFastCompleteTask1.OpenModal(taskId,task.MaCongViec,task.TenCongViec);
+            if(next=="complete")
+            {
+                CtrlFastCompleteTask1.OpenModal(taskId, task.MaCongViec, task.TenCongViec);
+                if (tuThongBao)
+                {
+                    var fast = TimControl(CtrlFastCompleteTask1, "mdlFastComplete") as SweetSoft.QLDA.Controls.ExtraModal;
+                    if (fast != null)
+                        DangKyMoCanhBaoKbg20TuThongBao(fast.ClientID, "Gửi yêu cầu hoàn thành công việc");
+                }
+            }
             else if(next=="review"){
                 var review=GetFastReviewTaskControl();
                 if(review!=null){
@@ -232,6 +249,20 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             // Chỉ xử lý khi tải trang lần đầu, tránh mở lại popup khi postback.
             if (IsPostBack)
                 return;
+
+            // KBG20: chỉ điều hướng khi người đã báo phần việc bấm Gửi duyệt từ Theo dõi giờ làm.
+            // Đây không phải loại thông báo trên chuông; không phụ thuộc enum ThongBaoAction.
+            string kbg20Completion = Request.QueryString["kbg20SendTaskCompletion"];
+            if (!string.IsNullOrWhiteSpace(kbg20Completion))
+            {
+                Guid idKbg20;
+                if (Guid.TryParse(kbg20Completion, out idKbg20) && idKbg20 != Guid.Empty)
+                    OpenFastCompleteTaskFromNotification(idKbg20);
+                else
+                    ShowInvalidDataError();
+                ClearNotificationActionFromUrl();
+                return;
+            }
 
             string actionText = Request.QueryString["notificationAction"];
             if (string.IsNullOrWhiteSpace(actionText))
@@ -337,6 +368,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             currentUrl.searchParams.delete('notificationAction');
             currentUrl.searchParams.delete('notificationTaskId');
             currentUrl.searchParams.delete('notificationId');
+            currentUrl.searchParams.delete('kbg20SendTaskCompletion');
 
             var cleanUrl = currentUrl.pathname + currentUrl.search + currentUrl.hash;
             window.history.replaceState(window.history.state, document.title, cleanUrl);
@@ -440,21 +472,38 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         private void OpenFastCompleteTaskFromNotification(Guid taskId)
         {
-            if (!IsEdit)
+            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+                return;
+
+            // Người đã được giao trực tiếp có thể gửi yêu cầu hoàn thành từ KhaiBaoGio,
+            // ngay cả khi không có quyền sửa TOÀN BỘ TaskList; Core còn xác minh lượt báo.
+            Guid actor = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
+            bool duocGuiKbg20 = Kbg20TichHopTask.DuocKichHoat && actor != Guid.Empty &&
+                TaskManager.Instance.GetAssignedNhanVienIds(taskId).Contains(actor);
+            if (!IsEdit && !duocGuiKbg20)
             {
                 ShowAccessDeniedNotify();
                 return;
             }
 
-            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+            if (task.TrangThai != 1)
+            {
+                ShowNotify("Công việc không còn ở trạng thái Đang thực hiện. Vui lòng tải lại danh sách.", MSGType.Warning);
+                Rebind();
                 return;
+            }
 
-            // DOT 4B: ca Task la, Task trung gian va Task goc deu duoc mo
-            // quy trinh hoan thanh hien co. Dieu kien 100% duoc kiem tra trong popup va server.
-            CtrlFastCompleteTask1.OpenModal(
-                task.IdCongViec,
-                task.MaCongViec,
-                task.TenCongViec);
+            // Giống nút FAST_COMPLETE trong bảng: kiểm tra người gửi đã báo giờ,
+            // cảnh báo đồng nghiệp chưa báo và tiếp tục bằng ExtraModal hiện có.
+            // true: vừa điều hướng từ KhaiBaoGio nên phải chờ JS của Master sẵn sàng.
+            if (HienCanhBaoKbg20(taskId, "complete", true)) return;
+
+            // DOT 4B: Task lá/trung gian/gốc vẫn dùng CtrlFastCompleteTask của partner.
+            CtrlFastCompleteTask1.OpenModal(task.IdCongViec, task.MaCongViec, task.TenCongViec);
+            // Fallback an toàn cho lần điều hướng đầu: nếu popup đã mở thì không mở lại.
+            var fastModal = TimControl(CtrlFastCompleteTask1, "mdlFastComplete") as SweetSoft.QLDA.Controls.ExtraModal;
+            if (fastModal != null)
+                DangKyMoCanhBaoKbg20TuThongBao(fastModal.ClientID, "Gửi yêu cầu hoàn thành công việc");
         }
 
         private void OpenStartTaskFromNotification(Guid taskId)

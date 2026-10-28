@@ -116,6 +116,24 @@
         .mc-day.today { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
 
         .mc-label { margin-top: 3px; max-width: 100%; padding: 0 3px; box-sizing: border-box; font-size: 9.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Mini calendar: meeting indicator, without changing the existing task/weekend colors. */
+        .mc-day.st-meeting-only { background: #f3edff; color: #6d28d9; }
+        .mc-day .mc-meeting-count { position: absolute; top: 2px; right: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-width: 15px; height: 15px; padding: 0 3px; border: 1px solid #e7d7ff; border-radius: 5px; background: #f4eaff; color: #6d28d9; font-size: 9px; line-height: 1; font-weight: 750; pointer-events: none; }
+        .mc-day .mc-meeting-count i { font-size: 8px; }
+        .mc-day .mc-meeting-count .mc-meeting-number { font-variant-numeric: tabular-nums; }
+        .global-tooltip-content { max-height: min(420px, 66vh); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 2px; }
+        .global-task-tooltip.below::after { top: auto; bottom: 100%; border-color: transparent transparent #ffffff transparent; }
+        .mc-tooltip-title { color: #334155; font-size: 12px; font-weight: 750; margin-bottom: 9px; }
+        .mc-tooltip-section { display: flex; align-items: center; gap: 7px; color: #64748b; font-size: 11px; font-weight: 750; margin: 7px 0; }
+        .mc-tooltip-section.is-meeting { color: #6d28d9; border-top: 1px solid #ede9f6; padding-top: 9px; margin-top: 10px; }
+        .mc-tooltip-meet { display: flex; align-items: flex-start; gap: 9px; padding: 7px 0; border-bottom: 1px dashed #eee7f6; }
+        .mc-tooltip-meet:last-of-type { border-bottom: 0; }
+        .mc-tooltip-time { flex: 0 0 auto; min-width: 78px; color: #6d28d9; font-size: 11px; font-weight: 750; font-variant-numeric: tabular-nums; }
+        .mc-tooltip-meet-body { min-width: 0; flex: 1; }
+        .mc-tooltip-meet-name { font-size: 12px; color: #334155; font-weight: 650; line-height: 1.35; }
+        .mc-tooltip-meet-project { margin-top: 2px; color: #64748b; font-size: 10.5px; }
+        .mc-tooltip-more { margin-top: 6px; color: #6d28d9; font-size: 11px; font-weight: 650; }
+
         /* ============================================================
            MOBILE
            ============================================================ */
@@ -163,10 +181,10 @@
            Phạm vi giới hạn vào các class nvd- của trang chi tiết.
            ============================================================ */
         .nvd-detail-layout { align-items: stretch !important; height: auto; overflow: visible; }
-        .nvd-left-column { min-width: 0; min-height: 0; height: auto; overflow: visible; }
+        .nvd-dashboard-cell { min-width:0; min-height:0; }
 
         /* Hồ sơ phía trên chỉ cao theo nội dung, không kéo giãn. */
-        .nvd-left-column > .nvd-profile-card {
+        .nvd-profile-slot > .nvd-profile-card {
             flex: 0 0 auto !important;
             height: auto !important;
             min-height: 0 !important;
@@ -183,7 +201,7 @@
         .nvd-profile-details > div { min-width: 0; overflow-wrap: anywhere; }
 
         /* Card dưới tự giãn tới đáy cột bên phải, nhưng KHÔNG thu nhỏ/cắt nội dung. */
-        .nvd-left-column > .nvd-info-card {
+        .nvd-info-slot > .nvd-info-card {
             display: flex;
             flex-direction: column;
             flex: 1 0 auto !important;
@@ -314,7 +332,7 @@
         .nvd-info-empty { color: #98a2b3; font-weight: 500; }
 
         @media (max-width: 991.98px) {
-            .nvd-left-column > .nvd-info-card { flex-grow: 0 !important; }
+            .nvd-info-slot > .nvd-info-card { flex-grow: 0 !important; }
             .nvd-address-panel, .nvd-address-details { flex-grow: 0; }
         }
         @media (max-width: 767.98px) {
@@ -442,6 +460,18 @@
         .nvd-tasks-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 12px; margin-bottom:10px; border:1px solid #e5e0eb; background:#fff; border-radius:9px; }
         .nvd-tasks-toolbar strong { color:#3c3248; font-size:13px; }
         .nvd-tasks-toolbar small { display:block; font-size:11px; color:#8b8393; margin-top:2px; }
+        .nvd-client-filterbar { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+        .nvd-client-status { flex:0 0 184px; min-width:0; min-height:37px; border:1px solid #d9cae9; border-radius:8px; padding:7px 28px 7px 10px; color:#583077; background:#fff; font-size:12.5px; font-weight:650; cursor:pointer; }
+        .nvd-client-search { display:flex; align-items:center; flex:1; min-width:0; min-height:37px; padding:0 8px 0 12px; gap:7px; border:1px solid #d9cae9; background:#fff; border-radius:8px; color:#7f609e; }
+        .nvd-client-search:focus-within, .nvd-client-status:focus { outline:2px solid #c7abe3; outline-offset:0; }
+        .nvd-client-search input { border:0; outline:0; min-width:0; width:100%; height:35px; background:transparent; color:#352646; font-size:12.5px; }
+        .nvd-client-search button { border:0; padding:5px 6px; color:#8b789a; background:transparent; cursor:pointer; }
+        .nvd-client-search button:hover { color:#6d329a; }
+        .nvd-client-filtermeta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:14px; font-size:11.5px; color:#806d8d; }
+        .nvd-client-refresh { border:1px solid #e0d5ea; border-radius:7px; background:#faf7fe; padding:6px 9px; color:#654184; font-size:11.5px; font-weight:650; text-decoration:none; }
+        .nvd-client-refresh:hover { background:#f0e6fc; color:#51247a; }
+        .nvd-project-card[hidden] { display:none !important; }
+        @media (max-width:620px) { .nvd-client-filterbar { flex-wrap:wrap; } .nvd-client-status { flex:1 0 100%; } }
         .nvd-pending-filter { cursor:pointer; border:1px solid #d7c2f1; border-radius:8px; padding:7px 10px; background:#fbf8ff; color:#69339d; font-size:11px; font-weight:700; white-space:nowrap; }
         .nvd-pending-filter:hover, .nvd-pending-filter[aria-pressed="true"] { background:#f0e5fc; border-color:#a980d9; }
         .nvd-filter-empty { background:#fff; border:1px dashed #ded4e9; border-radius:9px; padding:20px; font-size:12px; color:#665575; text-align:center; margin-bottom:10px; }
@@ -475,6 +505,78 @@
         .nvd-hours-final strong { color:#23784b; }
         @media(max-width:850px) { .nvd-hours-guide-content { grid-template-columns:1fr; } }
         @media(max-width:720px) { .nvd-card-metrics { grid-template-columns:1fr; } .nvd-card-note { max-width:none; } .nvd-detail-metrics { grid-template-columns:1fr; } .nvd-card-footer { flex-direction:column; } .nvd-card-report small { margin-left:0; } .nvd-topbar-divider { display:none; } .nvd-work-progress-head { flex-wrap:wrap; } }
+
+        /* UX V8: Giữ chiều cao compact cho hai card đầu (kể cả sau khi chia 2 hàng độc lập ở V10). */
+        @media (min-width:992px) {
+            .nvd-detail-layout .nvd-profile-slot > .nvd-profile-card { min-height:94px !important; }
+            .nvd-detail-layout .nvd-profile-card > .nvd-profile-body { padding:10px 18px !important; }
+            .nvd-detail-layout .nvd-profile-card .nvd-profile-avatar { width:72px !important; height:72px !important; }
+            .nvd-detail-layout .nvd-allocation-slot > .nvd-project-entry { min-height:94px; }
+            .nvd-detail-layout .nvd-project-entry .card-body { padding:11px 18px !important; }
+            .nvd-detail-layout .nvd-project-entry .icon-box { width:44px; height:44px; font-size:18px; }
+        }
+
+        /* UX V4 - danh sách dự án ưu tiên một con số giờ công, không biến ba nguồn thành ba tổng cộng. */
+        .nvd-project-hours { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:13px; padding:13px 17px; background:#faf7fe; border:1px solid #e9dff3; border-radius:10px; min-height:84px; }
+        .nvd-project-hours-main { display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-width:0; }
+        .nvd-project-hours-label { color:#766289; font-size:12px; font-weight:700; line-height:1.4; }
+        .nvd-project-hours-value { color:#4d287d; font-size:26px; font-weight:750; line-height:1.2; letter-spacing:-.4px; overflow-wrap:anywhere; }
+        .nvd-project-hours-context { max-width:380px; color:#746a7e; font-size:12px; line-height:1.55; text-align:right; }
+        .nvd-project-hours--final { background:#f3fbf6; border-color:#d3e9da; }
+        .nvd-project-hours--final .nvd-project-hours-label, .nvd-project-hours--final .nvd-project-hours-value { color:#24784e; }
+        .nvd-card-footer--compact { align-items:center; margin-top:10px; padding-top:10px; }
+        .nvd-card-footer--compact .nvd-card-note { max-width:none; font-size:11.5px; }
+        .nvd-card-footer--compact .btn-project-detail { flex-shrink:0; }
+        /* Cột 1 vẫn căn trái để dễ đọc tên; các cột số liệu và trạng thái cân đối tâm ô. */
+        .nvd-task-flat-scroll { border:1px solid #e5dced; border-radius:10px; overflow-x:auto; overflow-y:visible; background:#fff; margin-top:10px; }
+        .nvd-task-table--flat { margin:0; width:100%; }
+        .nvd-task-table--flat thead th { position:sticky; top:0; z-index:1; }
+        .nvd-task-table--flat tbody tr:last-child td { border-bottom:0; }
+        .nvd-task-history { display:inline-flex; align-items:center; margin:5px 0 3px; color:#806795; background:#f7f2fd; border:1px solid #e5d8f6; border-radius:6px; padding:3px 7px; font-size:11px; font-weight:600; }
+        .nvd-task-table thead th:not(:first-child), .nvd-task-table tbody td:not(:first-child) { text-align:center; }
+        .nvd-task-table tbody td:not(:first-child) { vertical-align:middle; }
+        .nvd-task-table tbody td.nvd-task-status-cell { text-align:center; }
+        .nvd-task-table tbody td.nvd-task-status-cell .nvd-task-status { justify-content:center; }
+        .nvd-task-table tbody td.nvd-hours strong, .nvd-task-table tbody td.nvd-hours small { text-align:center; }
+        .nvd-task-table tbody td.nvd-task-name { text-align:left; vertical-align:middle; }
+        @media(max-width:720px) { .nvd-project-hours { align-items:flex-start; flex-direction:column; gap:6px; padding:12px 14px; } .nvd-project-hours-context { text-align:left; max-width:none; } }
+
+        /* UX V10: Mỗi hàng là một grid độc lập, không bóp ngang 2 card hàng trên. */
+        .nvd-dashboard-layout { display:flex; flex-direction:column; gap:16px; width:100%; min-width:0; }
+        .nvd-dashboard-row { display:grid; gap:16px; align-items:stretch; width:100%; min-width:0; }
+        .nvd-dashboard-row--top { grid-template-columns:minmax(0,67fr) minmax(0,33fr); }
+        .nvd-dashboard-row--bottom { grid-template-columns:minmax(0,62fr) minmax(0,38fr); }
+        .nvd-dashboard-cell > .card { width:100%; height:100%; margin-bottom:0; }
+        .nvd-info-slot > .nvd-info-card { display:flex; flex-direction:column; }
+        .nvd-calendar-slot .nvd-calendar-card { min-width:0; }
+        .nvd-calendar-slot .nvd-calendar-card > .card-header { gap:10px; }
+        .nvd-calendar-slot .nvd-calendar-card > .card-header > div { min-width:0; }
+        .nvd-calendar-slot #lnkSchedule { flex-shrink:0; white-space:nowrap; }
+        /* Cùng một hàng tiêu đề: số ngày góc trái, badge họp góc phải, không thể đè nhau. */
+        .nvd-calendar-card .mc-day { align-items:stretch; justify-content:flex-start; padding:4px 3px 3px; gap:1px; }
+        .nvd-calendar-card .mc-day .mc-num { align-self:flex-start; margin-left:3px; line-height:16px; }
+        .nvd-calendar-card .mc-day .mc-label { align-self:center; margin:auto 0 3px; max-width:100%; padding:0 1px; text-align:center; }
+        .nvd-calendar-card .mc-day .mc-meeting-count { top:4px; right:4px; height:16px; min-width:16px; max-width:calc(100% - 24px); z-index:1; }
+        @media (min-width:992px) and (max-width:1199.98px) {
+            .nvd-dashboard-row--top { grid-template-columns:minmax(0,58fr) minmax(0,42fr); }
+            .nvd-dashboard-row--bottom { grid-template-columns:minmax(0,56fr) minmax(0,44fr); }
+            .nvd-calendar-slot .nvd-calendar-card > .card-header { padding-left:16px !important; padding-right:16px !important; }
+            .nvd-calendar-slot .nvd-calendar-card > .card-body { padding-left:16px !important; padding-right:16px !important; }
+        }
+        @media (max-width:991.98px) {
+            /* Mobile/tablet: hồ sơ → thông tin cá nhân → phân bổ → lịch. */
+            .nvd-dashboard-layout { display:grid; grid-template-columns:minmax(0,1fr); }
+            .nvd-dashboard-row { display:contents; }
+            .nvd-profile-slot { order:1; }
+            .nvd-info-slot { order:2; }
+            .nvd-allocation-slot { order:3; }
+            .nvd-calendar-slot { order:4; }
+            .nvd-dashboard-cell > .card { height:auto; }
+        }
+        @media (max-width:575.98px) {
+            .nvd-calendar-slot .nvd-calendar-card > .card-header { padding-left:15px !important; padding-right:15px !important; }
+            .nvd-calendar-slot .nvd-calendar-card > .card-body { padding-left:14px !important; padding-right:14px !important; }
+        }
     </style>
 </asp:Content>
 
@@ -487,180 +589,169 @@
                 <!-- ====================================================
                      MAIN LAYOUT
                      ==================================================== -->
-                <div class="row align-items-stretch nvd-detail-layout">
+                <div class="nvd-dashboard-layout nvd-detail-layout">
+    <!-- Hàng 1: tỷ lệ 67/33; card phân bổ không nở theo lịch -->
+    <div class="nvd-dashboard-row nvd-dashboard-row--top">
+        <div class="nvd-dashboard-cell nvd-profile-slot">
+<div class="card shadow-sm border-0 nvd-profile-card">
+                                        <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3 nvd-profile-body">
+                                            <div class="flex-shrink-0">
+                                                <img id="imgAvatar" runat="server" src="/Styles/images/user-icon.png" class="rounded-circle border border-3 border-primary shadow-sm nvd-profile-avatar" style="width:78px;height:78px;object-fit:cover;" onerror="this.src='/Styles/images/user-icon.png'" />
+                                            </div>
+                                            <div class="flex-grow-1 w-100 text-center text-md-start">
+                                                <div class="d-flex flex-column flex-md-row align-items-center gap-2 mb-1">
+                                                    <h4 class="mb-0 fw-bold text-dark nvd-profile-name">
+                                                        <asp:Literal ID="ltrTenNhanVien" runat="server" />
+                                                    </h4>
+                                                </div>
+                                                <div class="row g-1 text-muted nvd-profile-details" style="font-size:13px;">
+                                                    <div class="col-sm-6">
+                                                        <%= GetResourceText(BackEndResourceKeys.CHUC_DANH) %>: <strong class="text-dark"><asp:Literal ID="ltrChucDanh" runat="server" /></strong>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <%= GetResourceText(BackEndResourceKeys.PHONG_BAN) %>: <strong class="text-dark"><asp:Literal ID="ltrPhongBan" runat="server" /></strong>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        Email: <strong class="text-dark"><asp:Literal ID="ltrEmail" runat="server" /></strong>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %>: <strong class="text-dark"><asp:Literal ID="ltrPhone" runat="server" /></strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+        </div>
+        <div class="nvd-dashboard-cell nvd-allocation-slot">
+<div class="card shadow-sm border bg-white mb-0 nvd-project-entry" 
+                                         style="cursor:pointer; border-color:#e0e4e8 !important;" 
+                                         onclick="openSidePanel();"
+                                         onmouseover="this.style.borderColor='#3a6ea5';"
+                                         onmouseout="this.style.borderColor='#e0e4e8';">
+                                        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="icon-box shadow-sm text-primary" style="background-color:#e9f2fb;">
+                                                    <i class="fas fa-layer-group"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-1"><%= GetResourceText(BackEndResourceKeys.PROJECT_ALLOCATION_DETAILS) %></h6>
+                                                    <span class="text-muted" style="font-size:12px;">
+                                                        <asp:Literal ID="ltrCountAllProj" runat="server">0</asp:Literal> <%= GetResourceText(BackEndResourceKeys.PROJECT).ToLower() %>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-chevron-right text-muted"></i>
+                                        </div>
+                                    </div>
+        </div>
+    </div>
+    <!-- Hàng 2: tỷ lệ 62/38; ưu tiên chiều rộng lịch tháng -->
+    <div class="nvd-dashboard-row nvd-dashboard-row--bottom">
+        <div class="nvd-dashboard-cell nvd-info-slot">
+<div class="card shadow-sm border-0 flex-grow-1 nvd-info-card">
+                                        <div class="d-flex justify-content-between align-items-center nvd-info-header">
+                                            <h6 class="mb-0 fw-bold text-dark">
+                                                <i class="fas fa-id-card text-primary me-2"></i><%= GetResourceText(BackEndResourceKeys.PERSONAL_AND_WORK_INFORMATION) %>
+                                            </h6>
+                                            <SweetSoft:ExtraButton runat="server" ID="btnEditProfile" CssClass="btn-sm btn-light border text-primary fw-bold" ButtonIcon="Edit" OnClick="btnEditProfile_Click"></SweetSoft:ExtraButton>
+                                        </div>
+                                        <div class="card-body nvd-info-body">
+                                            <!-- Công tác: hai chỉ số cân đối, nổi bật ở đầu khối -->
+                                            <div class="nvd-info-grid">
+                                                <div class="nvd-info-tile nvd-info-tile--accent">
+                                                    <span class="nvd-info-icon"><i class="far fa-calendar-check"></i></span>
+                                                    <div class="nvd-info-content">
+                                                        <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.JOIN_DATE) %></span>
+                                                        <span class="nvd-info-value"><asp:Literal ID="ltrNgayGiaNhap" runat="server" /></span>
+                                                    </div>
+                                                </div>
+                                                <div class="nvd-info-tile nvd-info-tile--accent">
+                                                    <span class="nvd-info-icon"><i class="far fa-clock"></i></span>
+                                                    <div class="nvd-info-content">
+                                                        <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.SENIORITY) %></span>
+                                                        <span class="nvd-info-value nvd-info-value--accent"><asp:Literal ID="ltrThamNien" runat="server" /></span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                    <!-- =================================================
-                         LEFT COLUMN
-                         ================================================= -->
-                    <div class="col-xl-8 col-lg-7 d-flex flex-column gap-3 nvd-left-column">
+                                            <!-- Cá nhân: không hiển thị CCCD / Trạng thái công tác -->
+                                            <div class="nvd-info-grid">
+                                                <div class="nvd-info-tile">
+                                                    <span class="nvd-info-icon nvd-info-icon--neutral"><i class="fas fa-birthday-cake"></i></span>
+                                                    <div class="nvd-info-content">
+                                                        <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.DATE_OF_BIRTH) %></span>
+                                                        <span class="nvd-info-value"><asp:Literal ID="ltrNgaySinh" runat="server" /></span>
+                                                    </div>
+                                                </div>
+                                                <div class="nvd-info-tile">
+                                                    <span class="nvd-info-icon nvd-info-icon--neutral"><i class="far fa-user"></i></span>
+                                                    <div class="nvd-info-content">
+                                                        <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.GIOI_TINH) %></span>
+                                                        <span class="nvd-info-value"><asp:Literal ID="ltrGioiTinh" runat="server" /></span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                        <!-- ================================
-                             EMPLOYEE SUMMARY
-                             ================================ -->
-                        <div class="card shadow-sm border-0 nvd-profile-card">
-                            <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3 nvd-profile-body">
-                                <div class="flex-shrink-0">
-                                    <img id="imgAvatar" runat="server" src="/Styles/images/user-icon.png" class="rounded-circle border border-3 border-primary shadow-sm nvd-profile-avatar" style="width:78px;height:78px;object-fit:cover;" onerror="this.src='/Styles/images/user-icon.png'" />
-                                </div>
-                                <div class="flex-grow-1 w-100 text-center text-md-start">
-                                    <div class="d-flex flex-column flex-md-row align-items-center gap-2 mb-1">
-                                        <h4 class="mb-0 fw-bold text-dark nvd-profile-name">
-                                            <asp:Literal ID="ltrTenNhanVien" runat="server" />
-                                        </h4>
-                                    </div>
-                                    <div class="row g-1 text-muted nvd-profile-details" style="font-size:13px;">
-                                        <div class="col-sm-6">
-                                            <%= GetResourceText(BackEndResourceKeys.CHUC_DANH) %>: <strong class="text-dark"><asp:Literal ID="ltrChucDanh" runat="server" /></strong>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <%= GetResourceText(BackEndResourceKeys.PHONG_BAN) %>: <strong class="text-dark"><asp:Literal ID="ltrPhongBan" runat="server" /></strong>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            Email: <strong class="text-dark"><asp:Literal ID="ltrEmail" runat="server" /></strong>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %>: <strong class="text-dark"><asp:Literal ID="ltrPhone" runat="server" /></strong>
+                                            <!-- Địa chỉ: hiển thị riêng cấp tỉnh / cấp xã và địa chỉ chi tiết -->
+                                            <div class="nvd-address-panel">
+                                                <div class="nvd-address-title"><i class="fas fa-map-marker-alt"></i> Địa chỉ liên hệ</div>
+                                                <div class="nvd-address-grid">
+                                                    <div class="nvd-address-location">
+                                                        <span class="nvd-info-label">Tỉnh / Thành phố</span>
+                                                        <span class="nvd-address-value"><asp:Literal ID="ltrTinhThanh" runat="server" /></span>
+                                                    </div>
+                                                    <div class="nvd-address-location">
+                                                        <span class="nvd-info-label">Xã / Phường / Đặc khu</span>
+                                                        <span class="nvd-address-value"><asp:Literal ID="ltrXaPhuong" runat="server" /></span>
+                                                    </div>
+                                                </div>
+                                                <div class="nvd-address-details">
+                                                    <span class="nvd-info-label">Địa chỉ chi tiết</span>
+                                                    <span class="nvd-address-value"><asp:Literal ID="ltrDiaChi" runat="server" /></span>
+                                                </div>
+                                                <div class="nvd-address-summary" id="boxDiaChiDayDu" runat="server">
+                                                    <i class="fas fa-map"></i>
+                                                    <span><asp:Literal ID="ltrDiaChiDayDu" runat="server" /></span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+        </div>
+        <div class="nvd-dashboard-cell nvd-calendar-slot">
+<div class="card shadow-sm border flex-grow-1 bg-white nvd-calendar-card" style="border-color:#e0e4e8 !important;">
+                                        <!-- Header: Đã dời nút Mở Lịch Biểu lên ngang hàng với Tiêu đề -->
+                                        <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="icon-box shadow-sm" style="color:#681da8; background-color:#f3e8fd;">
+                                                    <i class="fas fa-calendar-alt"></i>
+                                                </div>
+                                                <div>
+                                                    <!-- GỌI ĐÚNG BACKEND RESOURCE KEY CHUẨN -->
+                                                    <h6 class="fw-bold text-dark mb-1"><%= GetResourceText(BackEndResourceKeys.WORK_SCHEDULE_THIS_MONTH) %></h6>
+                                                    <span class="text-muted" style="font-size:12px;">
+                                                        <%= GetResourceText(BackEndResourceKeys.PERSONAL_SCHEDULE) %>
+                                                    </span>
+                                                </div>
+                                            </div>
 
-                        <!-- ================================
-                             PERSONAL / WORK INFO — ĐỒNG BỘ POPUP THÊM/SỬA
-                             ================================ -->
-                        <div class="card shadow-sm border-0 flex-grow-1 nvd-info-card">
-                            <div class="d-flex justify-content-between align-items-center nvd-info-header">
-                                <h6 class="mb-0 fw-bold text-dark">
-                                    <i class="fas fa-id-card text-primary me-2"></i><%= GetResourceText(BackEndResourceKeys.PERSONAL_AND_WORK_INFORMATION) %>
-                                </h6>
-                                <SweetSoft:ExtraButton runat="server" ID="btnEditProfile" CssClass="btn-sm btn-light border text-primary fw-bold" ButtonIcon="Edit" OnClick="btnEditProfile_Click"></SweetSoft:ExtraButton>
-                            </div>
-                            <div class="card-body nvd-info-body">
-                                <!-- Công tác: hai chỉ số cân đối, nổi bật ở đầu khối -->
-                                <div class="nvd-info-grid">
-                                    <div class="nvd-info-tile nvd-info-tile--accent">
-                                        <span class="nvd-info-icon"><i class="far fa-calendar-check"></i></span>
-                                        <div class="nvd-info-content">
-                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.JOIN_DATE) %></span>
-                                            <span class="nvd-info-value"><asp:Literal ID="ltrNgayGiaNhap" runat="server" /></span>
+                                            <!-- Nút liên kết ra trang Lịch biểu đầy đủ -->
+                                            <a id="lnkSchedule" runat="server" class="text-primary fw-bold text-decoration-none" style="font-size:13px; transition:all .2s;"
+                                               onmouseover="this.style.color='#681da8';" onmouseout="this.style.color='#3a6ea5';">
+                                                <%= GetResourceText(BackEndResourceKeys.OPEN_SCHEDULE) %> <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
                                         </div>
-                                    </div>
-                                    <div class="nvd-info-tile nvd-info-tile--accent">
-                                        <span class="nvd-info-icon"><i class="far fa-clock"></i></span>
-                                        <div class="nvd-info-content">
-                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.SENIORITY) %></span>
-                                            <span class="nvd-info-value nvd-info-value--accent"><asp:Literal ID="ltrThamNien" runat="server" /></span>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Cá nhân: không hiển thị CCCD / Trạng thái công tác -->
-                                <div class="nvd-info-grid">
-                                    <div class="nvd-info-tile">
-                                        <span class="nvd-info-icon nvd-info-icon--neutral"><i class="fas fa-birthday-cake"></i></span>
-                                        <div class="nvd-info-content">
-                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.DATE_OF_BIRTH) %></span>
-                                            <span class="nvd-info-value"><asp:Literal ID="ltrNgaySinh" runat="server" /></span>
+                                        <!-- Body chứa Grid Lịch -->
+                                        <div class="card-body p-4 pt-3 pb-4">
+                                            <asp:HiddenField ID="hdfScheduleJson" runat="server" ClientIDMode="Static" />
+                                            <div class="mini-cal-wrap">
+                                                <div class="mini-cal" id="employeeMonthCalendar"></div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="nvd-info-tile">
-                                        <span class="nvd-info-icon nvd-info-icon--neutral"><i class="far fa-user"></i></span>
-                                        <div class="nvd-info-content">
-                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.GIOI_TINH) %></span>
-                                            <span class="nvd-info-value"><asp:Literal ID="ltrGioiTinh" runat="server" /></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Địa chỉ: hiển thị riêng cấp tỉnh / cấp xã và địa chỉ chi tiết -->
-                                <div class="nvd-address-panel">
-                                    <div class="nvd-address-title"><i class="fas fa-map-marker-alt"></i> Địa chỉ liên hệ</div>
-                                    <div class="nvd-address-grid">
-                                        <div class="nvd-address-location">
-                                            <span class="nvd-info-label">Tỉnh / Thành phố</span>
-                                            <span class="nvd-address-value"><asp:Literal ID="ltrTinhThanh" runat="server" /></span>
-                                        </div>
-                                        <div class="nvd-address-location">
-                                            <span class="nvd-info-label">Xã / Phường / Đặc khu</span>
-                                            <span class="nvd-address-value"><asp:Literal ID="ltrXaPhuong" runat="server" /></span>
-                                        </div>
-                                    </div>
-                                    <div class="nvd-address-details">
-                                        <span class="nvd-info-label">Địa chỉ chi tiết</span>
-                                        <span class="nvd-address-value"><asp:Literal ID="ltrDiaChi" runat="server" /></span>
-                                    </div>
-                                    <div class="nvd-address-summary" id="boxDiaChiDayDu" runat="server">
-                                        <i class="fas fa-map"></i>
-                                        <span><asp:Literal ID="ltrDiaChiDayDu" runat="server" /></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-<!-- =================================================
-                         RIGHT COLUMN (CHIA 2 KHỐI RÕ RÀNG)
-                         ================================================= -->
-                    <div class="col-xl-4 col-lg-5 d-flex flex-column mt-3 mt-lg-0 gap-3">
-                        
-                        <!-- Box 1: Tổng quan dự án (Clickable) -->
-                        <div class="card shadow-sm border bg-white mb-0" 
-                             style="cursor:pointer; border-color:#e0e4e8 !important;" 
-                             onclick="openSidePanel();"
-                             onmouseover="this.style.borderColor='#3a6ea5';"
-                             onmouseout="this.style.borderColor='#e0e4e8';">
-                            <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="icon-box shadow-sm text-primary" style="background-color:#e9f2fb;">
-                                        <i class="fas fa-layer-group"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-bold text-dark mb-1"><%= GetResourceText(BackEndResourceKeys.PROJECT_ALLOCATION_DETAILS) %></h6>
-                                        <span class="text-muted" style="font-size:12px;">
-                                            <asp:Literal ID="ltrCountAllProj" runat="server">0</asp:Literal> <%= GetResourceText(BackEndResourceKeys.PROJECT).ToLower() %>
-                                        </span>
-                                    </div>
-                                </div>
-                                <i class="fas fa-chevron-right text-muted"></i>
-                            </div>
-                        </div>
-
-                        <!-- Box 2: Lịch tĩnh tháng hiện tại -->
-                        <div class="card shadow-sm border flex-grow-1 bg-white" style="border-color:#e0e4e8 !important;">
-                            <!-- Header: Đã dời nút Mở Lịch Biểu lên ngang hàng với Tiêu đề -->
-                            <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="icon-box shadow-sm" style="color:#681da8; background-color:#f3e8fd;">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </div>
-                                    <div>
-                                        <!-- GỌI ĐÚNG BACKEND RESOURCE KEY CHUẨN -->
-                                        <h6 class="fw-bold text-dark mb-1"><%= GetResourceText(BackEndResourceKeys.WORK_SCHEDULE_THIS_MONTH) %></h6>
-                                        <span class="text-muted" style="font-size:12px;">
-                                            <%= GetResourceText(BackEndResourceKeys.PERSONAL_SCHEDULE) %>
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Nút liên kết ra trang Lịch biểu đầy đủ -->
-                                <a id="lnkSchedule" runat="server" class="text-primary fw-bold text-decoration-none" style="font-size:13px; transition:all .2s;"
-                                   onmouseover="this.style.color='#681da8';" onmouseout="this.style.color='#3a6ea5';">
-                                    <%= GetResourceText(BackEndResourceKeys.OPEN_SCHEDULE) %> <i class="fas fa-arrow-right ms-1"></i>
-                                </a>
-                            </div>
-                            
-                            <!-- Body chứa Grid Lịch -->
-                            <div class="card-body p-4 pt-3 pb-4">
-                                <asp:HiddenField ID="hdfScheduleJson" runat="server" ClientIDMode="Static" />
-                                <div class="mini-cal-wrap">
-                                    <div class="mini-cal" id="employeeMonthCalendar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+    </div>
+</div>
 
                 <!-- =====================================================
                      PROJECT LIST SIDE PANEL
@@ -678,30 +769,21 @@
                     </div>
 
                     <div class="side-panel-body">
-                        <!-- ================================================
-                             SEARCH / FILTER
-                             ================================================ -->
-                        <asp:UpdatePanel runat="server" ID="upnlSearchDuAn" UpdateMode="Conditional">
-                            <ContentTemplate>
-                                <div class="d-flex flex-column flex-md-row gap-2 mb-2">
-                                    <SweetSoft:BootstrapDropdown ID="ddlSearchTrangThaiDuAn" runat="server" Text="Trạng thái dự án" AllowClear="true" AutoPostBack="true" SearchColumn="TrangThai" EnableSearch="false" CausesValidation="false" OnSelectedValueChanged="ddlSearchTrangThaiDuAn_SelectedValueChanged" CssClass="border-radius-1" Style="min-width:180px;"></SweetSoft:BootstrapDropdown>
-                                    <asp:Panel runat="server" DefaultButton="btnSearchDuAn" CssClass="input-group flex-grow-1">
-                                        <SweetSoft:ExtraTextBox runat="server" ID="txtSearchDuAn" CssClass="border-primary input-search-filter" PlaceHolder="Nhập tên dự án..." CausesValidation="false"></SweetSoft:ExtraTextBox>
-                                        <SweetSoft:ExtraButton runat="server" ID="btnSearchDuAn" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearchDuAn_Click" CausesValidation="false" IsSubmit="false"></SweetSoft:ExtraButton>
-                                    </asp:Panel>
-                                </div>
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
-
-                        <!-- ================================================
-                             SEARCH TAGS
-                             ================================================ -->
-                        <div class="listSearchTagBox">
-                            <asp:UpdatePanel ID="upSearchTagDuAn" runat="server" UpdateMode="Conditional">
-                                <ContentTemplate>
-                                    <SweetSoft:ExtraSearchBox ID="searchTagBoxDuAn" runat="server" OnTagClosed="searchTagBoxDuAn_TagClosed"></SweetSoft:ExtraSearchBox>
-                                </ContentTemplate>
-                            </asp:UpdatePanel>
+                        <!-- UX V6: lọc ngay trên trình duyệt; không gọi SQL khi gõ hoặc chọn trạng thái. -->
+                        <div class="nvd-client-filterbar">
+                            <select id="nvdProjectStatus" class="nvd-client-status" aria-label="Lọc trạng thái dự án" onchange="nvdFilterProjects();">
+                                <option value="">Tất cả trạng thái</option>
+                                <%= GetDuAnStatusOptionsHtml() %>
+                            </select>
+                            <div class="nvd-client-search">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                <input id="nvdProjectSearch" type="search" autocomplete="off" placeholder="Nhập mã hoặc tên dự án..." aria-label="Tìm mã hoặc tên dự án" oninput="nvdFilterProjects();" onkeydown="if(event.key==='Enter'){event.preventDefault();nvdFilterProjects();}" />
+                                <button type="button" title="Xóa từ khóa" aria-label="Xóa từ khóa" onclick="nvdClearProjectSearch();"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="nvd-client-filtermeta">
+                            <span id="nvdFilterCount" role="status" aria-live="polite">Đang tải danh sách</span>
+                            <asp:LinkButton runat="server" ID="btnReloadProjects" OnClick="btnReloadProjects_Click" OnClientClick="nvdRememberProjectListBeforeRefresh();" CssClass="nvd-client-refresh" CausesValidation="false" ToolTip="Cập nhật giờ công và tiếp tục xem danh sách dự án"><i class="fas fa-sync-alt me-1"></i>Làm mới số liệu</asp:LinkButton>
                         </div>
 
                         <!-- ================================================
@@ -717,7 +799,7 @@
 
                                     <asp:Repeater ID="rptAllProjects" runat="server" OnItemCommand="rptAllProjects_ItemCommand">
                                         <ItemTemplate>
-                                            <div class="project-box nvd-project-card">
+                                            <div class="project-box nvd-project-card" data-nvd-status='<%# Eval("TrangThai") %>'>
                                                 <div class="project-summary-head">
                                                     <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
                                                         <div class="flex-grow-1 min-w-0">
@@ -733,17 +815,20 @@
                                                             <span class='nvd-time-state <%# Eval("TrangThaiGioCss") %>'><%# Eval("TinhTrangGioText") %></span>
                                                         </div>
                                                     </div>
-                                                    <div class="nvd-card-metrics">
-                                                        <div class="nvd-metric nvd-metric-featured"><span><i class="far fa-clock me-1"></i>Giờ hệ thống ghi nhận</span><strong><%# Eval("GioHeThongText") %></strong><small>Thời gian đã ghi, chưa tính phiên đang chạy</small></div>
-                                                        <div class="nvd-metric nvd-metric-featured nvd-metric-final"><span><i class="fas fa-check-circle me-1"></i>Giờ của nhân viên được PM chốt</span><strong><%# Eval("GioPmChotText") %></strong><small><%# Eval("SoTaskDaChot") %>/<%# Eval("SoTaskLienQuan") %> công việc của nhân viên đã chốt</small></div>
+                                                    <%-- Danh sách chỉ có một chỉ số giờ: giờ PM chốt nếu đã kết toán, ngược lại là giờ hệ thống đã ghi.
+                                                         Các nguồn giờ riêng và lịch sử vẫn xem tại panel Chi tiết dự án. --%>
+                                                    <div class='nvd-project-hours <%# Convert.ToBoolean(Eval("DaKetToanDuAn")) ? "nvd-project-hours--final" : "" %>'>
+                                                        <div class="nvd-project-hours-main">
+                                                            <span class="nvd-project-hours-label"><i class="far fa-clock me-1" aria-hidden="true"></i><%# GetProjectListHoursLabel(Container.DataItem) %></span>
+                                                            <strong class="nvd-project-hours-value"><%# GetProjectListHoursValue(Container.DataItem) %></strong>
+                                                        </div>
+                                                        <div class="nvd-project-hours-context"><i class="fas fa-info-circle me-1" aria-hidden="true"></i><%# GetProjectListHoursNote(Container.DataItem) %></div>
                                                     </div>
-                                                    <div class="nvd-card-report"><span><i class="fas fa-file-signature me-1"></i>Giờ nhân viên tự khai</span><strong><%# Eval("GioTuKhaiText") %></strong><small><%# Eval("SoTaskCoTuKhai") %>/<%# Eval("SoTaskLienQuan") %> công việc có dữ liệu tự khai</small></div>
-                                                    <div class="nvd-card-footer">
-                                                        <div class="nvd-card-note"><i class="fas fa-info-circle me-1"></i><%# GetProjectCardInsight(Container.DataItem) %>
+                                                    <div class="nvd-card-footer nvd-card-footer--compact">
+                                                        <div class="nvd-card-note"><i class="far fa-list-alt me-1" aria-hidden="true"></i>Chi tiết giờ công và các công việc
                                                             <asp:PlaceHolder runat="server" Visible='<%# Convert.ToBoolean(Eval("HienThiTyTrong")) %>'>
-                                                                <span class="nvd-share"><i class="fas fa-chart-pie me-1"></i>Tỷ trọng giờ đã quyết toán: <strong><%# Eval("TyTrongText") %></strong></span>
+                                                                <span class="nvd-share"><i class="fas fa-chart-pie me-1" aria-hidden="true"></i>Tỷ trọng giờ công: <strong><%# Eval("TyTrongText") %></strong></span>
                                                             </asp:PlaceHolder>
-                                                            <details class="nvd-help-details"><summary>Vì sao số giờ khác nhau?</summary><div><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("GhiChuGioText"))) %></div></details>
                                                         </div>
                                                         <asp:LinkButton ID="btnViewProject" runat="server" CommandName="ViewProject" CommandArgument='<%# Eval("IdDuAn") %>' CssClass="btn btn-sm btn-outline-primary btn-project-detail"><i class="fas fa-eye me-1"></i>Xem chi tiết</asp:LinkButton>
                                                     </div>
@@ -751,6 +836,7 @@
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
+                                    <div id="nvdFilteredEmpty" class="nvd-filter-empty" hidden>Không tìm thấy dự án phù hợp. Hãy thử từ khóa hoặc trạng thái khác.</div>
                                 </div>
                             </ContentTemplate>
                         </asp:UpdatePanel>
@@ -795,26 +881,20 @@
                                         <div><strong>Giờ PM chốt:</strong> Số giờ PM đã xác nhận trên các công việc được chốt. Công việc chưa chốt vẫn có thể còn giờ hệ thống hoặc giờ tự khai.</div>
                                     </div>
                                 </details>
-                                <div class="nvd-tasks-toolbar"><div><strong><i class="fas fa-tasks me-1"></i>Công việc liên quan</strong><small>Nhấn tên giai đoạn để xem công việc, tình trạng giờ và lý do trễ hạn khi có.</small></div><button type="button" id="nvdPendingFilter" class="nvd-pending-filter" aria-pressed="false" onclick="nvdTogglePendingTasks(this);" title="Chỉ hiện các công việc chưa được PM chốt giờ"><i class="fas fa-filter me-1"></i>Chỉ xem chưa chốt</button></div>
+                                <div class="nvd-tasks-toolbar"><div><strong><i class="fas fa-tasks me-1"></i>Công việc liên quan</strong><small>Tất cả công việc được giao trực tiếp hoặc đã phát sinh giờ công; không phân nhóm theo giai đoạn.</small></div><button type="button" id="nvdPendingFilter" class="nvd-pending-filter" aria-pressed="false" onclick="nvdTogglePendingTasks(this);" title="Chỉ hiện các công việc chưa được PM chốt giờ"><i class="fas fa-filter me-1"></i>Chỉ xem chưa chốt</button></div>
                                 <div id="nvdPendingEmpty" class="nvd-filter-empty" hidden>Không có công việc chưa được PM chốt giờ trong danh sách này.</div>
-                                <asp:Repeater ID="rptDetailPhases" runat="server">
-                                    <ItemTemplate>
-                                        <details class="phase-item nvd-phase">
-                                            <summary class="phase-header-line nvd-phase-summary">
-                                                <div class="phase-title-name"><i class="far fa-folder-open me-1"></i><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("MaPhase"))) %> · <%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("TenPhase"))) %>
-                                                    <span class="text-muted fw-normal ms-1">(<%# Eval("SoTaskLienQuan") %> công việc)</span>
-                                                </div>
-                                                <div class="nvd-phase-hours"><span>Hệ thống: <strong><%# Eval("GioHeThongText") %></strong></span><span>PM chốt: <strong><%# Eval("GioPmChotText") %></strong></span></div>
-                                            </summary>
-                                            <div class="nvd-task-scroll">
-                                                <table class="task-sub-table nvd-task-table">
-                                                    <thead><tr><th>Công việc / xác nhận giờ</th><th>Trạng thái công việc</th><th>Giờ hệ thống</th><th>Nhân viên báo</th><th>PM đã chốt</th></tr></thead>
-                                                    <tbody>
-                                                        <asp:Repeater ID="rptDetailTasks" runat="server" DataSource='<%# Eval("MyTasks") %>'>
-                                                            <ItemTemplate>
+                                <div class="nvd-task-scroll nvd-task-flat-scroll">
+                                    <table class="task-sub-table nvd-task-table nvd-task-table--flat">
+                                        <thead><tr><th>Công việc / xác nhận giờ</th><th>Trạng thái công việc</th><th>Giờ hệ thống</th><th>Nhân viên báo</th><th>PM đã chốt</th></tr></thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rptDetailTasks" runat="server">
+                                                <ItemTemplate>
                                                                 <tr class="task-row" data-status='<%# Eval("TrangThaiTask") %>' data-hour-final='<%# Convert.ToBoolean(Eval("DaChotTask")) ? "1" : "0" %>'>
                                                                     <td class="nvd-task-name">
                                                                         <a href='<%# GetTaskListUrl() %>' target="_blank" rel="noopener" class="fw-bold text-primary">[<%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("MaTask"))) %>] <%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("TenTask"))) %></a>
+                                                                        <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsCurrentAssignee")) || Convert.ToBoolean(Eval("IsArchivedTask")) %>'>
+                                                                            <span class="nvd-task-history"><i class="fas fa-history me-1"></i><%# Convert.ToBoolean(Eval("IsArchivedTask")) ? "Công việc lưu trữ" : "Đã từng tham gia" %></span>
+                                                                        </asp:PlaceHolder>
                                                                         <div class='nvd-task-progress <%# Convert.ToBoolean(Eval("DaChotTask")) ? "nvd-task-progress-final" : "" %>'><i class='<%# Convert.ToBoolean(Eval("DaChotTask")) ? "fas fa-check-circle" : "far fa-clock" %>'></i><%# GetTaskWorkProgressText(Eval("TrangThaiTask"),Eval("DaChotTask")) %></div>
                                                                         <div class="nvd-task-actions">
                                                                             <asp:PlaceHolder runat="server" Visible='<%# IsTaskCompletedLate(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>'>
@@ -831,14 +911,11 @@
                                                                     <td class="nvd-hours"><strong><%# Eval("GioTuKhaiText") %></strong><small>Theo lịch <%# Eval("GioTuKhaiThuongText") %> · Tăng ca <%# Eval("GioTuKhaiTangCaText") %></small></td>
                                                                     <td class="nvd-hours nvd-hours-final"><strong><%# Eval("GioPmChotText") %></strong><small><%# Convert.ToBoolean(Eval("DaChotTask")) ? "PM đã chốt" : "Chưa chốt giờ" %></small></td>
                                                                 </tr>
-                                                            </ItemTemplate>
-                                                        </asp:Repeater>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </details>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </ContentTemplate>
                         </asp:UpdatePanel>
                     </div>
@@ -850,7 +927,60 @@
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script>
-        function openSidePanel() {
+        // Search and filter are instant after first load. Only "Làm mới số liệu" queries SQL.
+        var nvdClientProjectFilter = { keyword: '', status: '' };
+        var nvdProjectListScrollBeforeRefresh = 0;
+        function nvdRememberProjectListBeforeRefresh() {
+            var input = document.getElementById('nvdProjectSearch');
+            var status = document.getElementById('nvdProjectStatus');
+            nvdClientProjectFilter.keyword = input ? input.value : nvdClientProjectFilter.keyword;
+            nvdClientProjectFilter.status = status ? status.value : nvdClientProjectFilter.status;
+            var panel = document.getElementById('projectSidePanel');
+            var body = panel ? panel.querySelector('.side-panel-body') : null;
+            nvdProjectListScrollBeforeRefresh = body ? body.scrollTop : 0;
+        }
+        function nvdRestoreProjectFilter() {
+            var keyword = document.getElementById('nvdProjectSearch');
+            var status = document.getElementById('nvdProjectStatus');
+            if (keyword) keyword.value = nvdClientProjectFilter.keyword;
+            if (status) status.value = nvdClientProjectFilter.status;
+            nvdFilterProjects();
+        }
+        function nvdFoldSearchText(text) {
+            text = String(text || '').toLocaleLowerCase('vi-VN');
+            if (typeof text.normalize === 'function') text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return text.replace(/đ/g, 'd').trim();
+        }
+        function nvdFilterProjects() {
+            var host = document.getElementById('section_all_projects');
+            if (!host) return;
+            var query = nvdFoldSearchText((document.getElementById('nvdProjectSearch') || {}).value);
+            var status = String((document.getElementById('nvdProjectStatus') || {}).value || '');
+            nvdClientProjectFilter.keyword = (document.getElementById('nvdProjectSearch') || {}).value || '';
+            nvdClientProjectFilter.status = status;
+            var cards = host.querySelectorAll('.nvd-project-card');
+            var count = 0;
+            Array.prototype.forEach.call(cards, function (card) {
+                var code = card.querySelector('.project-code');
+                var title = card.querySelector('.project-title');
+                var name = (code ? code.textContent : '') + ' ' + (title ? title.textContent : '');
+                var ok = (!query || nvdFoldSearchText(name).indexOf(query) >= 0)
+                    && (!status || card.getAttribute('data-nvd-status') === status);
+                card.hidden = !ok;
+                if (ok) count++;
+            });
+            var empty = document.getElementById('nvdFilteredEmpty');
+            if (empty) empty.hidden = cards.length === 0 || count !== 0;
+            var counter = document.getElementById('nvdFilterCount');
+            if (counter) counter.textContent = 'Hiển thị ' + count + '/' + cards.length + ' dự án';
+        }
+        function nvdClearProjectSearch() {
+            var input = document.getElementById('nvdProjectSearch');
+            if (input) { input.value = ''; input.focus(); }
+            nvdFilterProjects();
+        }
+
+        function openSidePanel(preserveRefreshScroll) {
             var overlay = document.getElementById('sidePanelOverlay');
             var panel = document.getElementById('projectSidePanel');
             if (!overlay || !panel) return;
@@ -858,7 +988,7 @@
             setTimeout(function () {
                 panel.classList.add('open');
                 var body = panel.querySelector('.side-panel-body');
-                if (body) { body.scrollTop = 0; }
+                if (body) body.scrollTop = preserveRefreshScroll === true ? nvdProjectListScrollBeforeRefresh : 0;
             }, 10);
         }
 
@@ -870,38 +1000,21 @@
             setTimeout(function () { overlay.style.display = 'none'; }, 300);
         }
 
-        function nvdPreparePhases() {
-            var panel = document.getElementById('projectDetailPanel');
-            if (!panel) return;
-            var phases = panel.querySelectorAll('details.nvd-phase');
-            if (!phases.length) return;
-            // Chỉ mở giai đoạn đầu tiên khi một tập dữ liệu mới được render.
-            var anyReady = Array.prototype.some.call(phases, function (p) { return p.getAttribute('data-nvd-initialized') === '1'; });
-            if (!anyReady) {
-                Array.prototype.forEach.call(phases, function (p, i) { p.open = i === 0; p.setAttribute('data-nvd-initialized','1'); });
-            }
-        }
         function nvdTogglePendingTasks(button) {
             var panel = document.getElementById('projectDetailPanel');
             if (!panel || !button) return;
             var active = button.getAttribute('aria-pressed') !== 'true';
             button.setAttribute('aria-pressed', active ? 'true' : 'false');
             button.innerHTML = active ? '<i class="fas fa-times me-1"></i>Xem tất cả công việc' : '<i class="fas fa-filter me-1"></i>Chỉ xem chưa chốt';
-            var phases = panel.querySelectorAll('details.nvd-phase');
-            var any = false;
-            Array.prototype.forEach.call(phases, function (phase) {
-                var rows = phase.querySelectorAll('tr.task-row');
-                var visible = 0;
-                Array.prototype.forEach.call(rows, function (row) {
-                    var show = !active || row.getAttribute('data-hour-final') !== '1';
-                    row.style.display = show ? '' : 'none';
-                    if (show) visible++;
-                });
-                phase.style.display = !active || visible > 0 ? '' : 'none';
-                if (active && visible > 0) { any = true; phase.open = true; }
+            var rows = panel.querySelectorAll('.nvd-task-table--flat tr.task-row');
+            var count = 0;
+            Array.prototype.forEach.call(rows, function (row) {
+                var show = !active || row.getAttribute('data-hour-final') !== '1';
+                row.style.display = show ? '' : 'none';
+                if (show) count++;
             });
             var empty = document.getElementById('nvdPendingEmpty');
-            if (empty) empty.hidden = !active || any;
+            if (empty) empty.hidden = !active || count > 0;
         }
         function nvdResetTaskFilter() {
             var button = document.getElementById('nvdPendingFilter');
@@ -913,7 +1026,6 @@
             if (!overlay || !panel) return;
             overlay.style.display = 'block';
             nvdResetTaskFilter();
-            nvdPreparePhases();
             setTimeout(function () {
                 panel.classList.add('open');
                 var body = panel.querySelector('.side-panel-body');
@@ -980,29 +1092,49 @@
                 if (key === todayKey) cls += ' today';
 
                 var extra = '';
-                var clickAttr = ''; // [MỚI]
+                var clickAttr = '';
 
                 if (info) {
                     var label = String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
                     if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
 
-                    // [MỚI]: Xử lý Tooltip y hệt như bên Chọn Nhân Viên
-                    var hasTasks = (info.status === "busy" && info.tasks && info.tasks.length > 0);
-                    if (hasTasks) {
-                        cls += ' has-tooltip';
-                        var listHtml = '<ul class="tooltip-task-list">';
-                        for (var t = 0; t < info.tasks.length; t++) {
-                            listHtml += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + escAttr(info.tasks[t].projectName) + '</div><span class="t-code">[' + escAttr(info.tasks[t].code) + ']</span>' + escAttr(info.tasks[t].name) + '</li>';
-                        }
-                        listHtml += '</ul>';
+                    var taskItems = Array.isArray(info.tasks) ? info.tasks : [];
+                    var meetingItems = Array.isArray(info.meetings) ? info.meetings : [];
+                    var meetingCount = Number(info.meetingCount) || meetingItems.length;
+                    if (meetingCount > 0) {
+                        extra += '<span class="mc-meeting-count" title="' + meetingCount + ' cuộc họp"><i class="far fa-calendar-alt" aria-hidden="true"></i><span class="mc-meeting-number">' + meetingCount + '</span></span>';
+                        if (info.status === 'free') cls += ' st-meeting-only';
+                    }
 
-                        // Ép data html vào thuộc tính ẩn
+                    // Dung tooltip hover cu, chi them mot khu vuc cuoc hop toi da 3 dong.
+                    if (taskItems.length > 0 || meetingCount > 0) {
+                        cls += ' has-tooltip';
+                        var listHtml = '<div class="global-tooltip-content"><div class="mc-tooltip-title">' + d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + '</div>';
+                        if (taskItems.length > 0) {
+                            listHtml += '<div class="mc-tooltip-section"><i class="fas fa-tasks"></i>' + taskItems.length + ' công việc</div><ul class="tooltip-task-list">';
+                            for (var t = 0; t < taskItems.length; t++) {
+                                var task = taskItems[t];
+                                listHtml += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + escAttr(task.projectName || 'Dự án khác') + '</div><span class="t-code">[' + escAttr(task.code || '') + ']</span>' + escAttr(task.name || '') + '</li>';
+                            }
+                            listHtml += '</ul>';
+                        }
+                        if (meetingCount > 0) {
+                            listHtml += '<div class="mc-tooltip-section is-meeting"><i class="far fa-calendar-alt"></i>' + meetingCount + ' cuộc họp</div>';
+                            var showMeetings = Math.min(3, meetingItems.length);
+                            for (var m = 0; m < showMeetings; m++) {
+                                var meet = meetingItems[m];
+                                listHtml += '<div class="mc-tooltip-meet"><span class="mc-tooltip-time">' + escAttr(meet.time || '') + '</span>';
+                                listHtml += '<div class="mc-tooltip-meet-body"><div class="mc-tooltip-meet-name">' + (meet.isHost ? '<i class="fas fa-crown" title="Bạn chủ trì" style="color:#d4a017"></i> ' : '') + escAttr(meet.name || 'Cuộc họp') + '</div>';
+                                listHtml += '<div class="mc-tooltip-meet-project">' + escAttr(meet.projectName || 'Dự án khác') + '</div></div></div>';
+                            }
+                            if (meetingCount > showMeetings) listHtml += '<div class="mc-tooltip-more">+' + (meetingCount - showMeetings) + ' cuộc họp khác · Xem tại Lịch cá nhân</div>';
+                        }
+                        listHtml += '</div>';
                         clickAttr = ' data-tooltip-content="' + encodeURIComponent(listHtml) + '"';
                     } else if (info.text) {
                         clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
                     }
                 }
-
                 html += '<div class="' + cls + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
             }
             html += '</div>';
@@ -1033,7 +1165,13 @@
             var leftPos = offset.left + (dayWidth / 2) - (ttWidth / 2);
 
             var windowWidth = $(window).width();
+            var viewportTop = $(window).scrollTop();
+            var viewportBottom = viewportTop + $(window).height();
             var arrowLeft = 50;
+            var placeBelow = topPos < viewportTop + 8;
+            if (placeBelow) topPos = offset.top + $day.outerHeight() + 10;
+            // Neu thanh tooltip vuot man hinh, kep trong viewport; noi dung tu scroll.
+            topPos = Math.max(viewportTop + 8, Math.min(topPos, viewportBottom - ttHeight - 8));
 
             if (leftPos < 10) {
                 var overstep = 10 - leftPos;
@@ -1044,12 +1182,8 @@
                 leftPos = windowWidth - ttWidth - 10;
                 arrowLeft = 50 + (overstep / ttWidth * 100);
             }
-
-            $globalTooltip.css({
-                top: topPos + 'px',
-                left: leftPos + 'px',
-                '--arrow-left': arrowLeft + '%'
-            });
+            $globalTooltip.toggleClass('below', placeBelow);
+            $globalTooltip.css({ top: topPos + 'px', left: leftPos + 'px', '--arrow-left': arrowLeft + '%' });
 
             $globalTooltip.addClass('show');
         }
@@ -1099,12 +1233,14 @@
         // 1. Chạy lần đầu khi load trang (F5)
         $(document).ready(function () {
             renderEmployeeMonthCalendar();
+            nvdRestoreProjectFilter();
         });
 
         // 2. Chạy lại MỖI KHI UpdatePanel load xong ngầm (Đóng/Mở popup, lọc trạng thái...)
         if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
             Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function (sender, args) {
                 renderEmployeeMonthCalendar();
+                nvdRestoreProjectFilter();
             });
         }
         function showDelayReasonFromButton(button) {
