@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.BackOffice.Common;
+﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -196,7 +196,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             hfTaskId.Value = task.ToString("D");
             hfSnapshot.Value = Ban.DauDuLieu;
             hfRequestId.Value = Guid.NewGuid().ToString("D");
-            pnlShell.CssClass = "qlpm-shell" + (Ban.NhanVien.Count <= 1 ? " qlpm-one" : "");
+            pnlShell.CssClass = "qlpm-shell"; // Mot hay nhieu nhan vien deu dung cung bo cuc 2 cot.
             ltrTaskName.Text = HttpUtility.HtmlEncode("[" + Ban.MaCongViec + "] " + Ban.TenCongViec);
             // Dong nhat mau va class badge voi GetTaskStatusBadge() cua CtrlTask.
             switch (Ban.TrangThaiTask)
