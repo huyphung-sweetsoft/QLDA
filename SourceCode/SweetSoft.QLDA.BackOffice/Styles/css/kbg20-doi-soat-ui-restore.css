@@ -1,0 +1,92 @@
+/* KBG20 UI restoration 20261026: CSS only for markup rendered by kbg20-doi-soat.js.
+   The previous kbg20-page.css package was based on old CSS and had zero .kbg20-ui-* selectors.
+   Scope: personal report table and ExtraModal mdlKbg20Manual. No workflow or timer rules. */
+.kbg20-page .kbg20-v41-manual-table{overflow:hidden;border:1px solid #e7e0ef;border-radius:11px;background:#fff}
+.kbg20-page .kbg20-ui-table-grid{display:grid;grid-template-columns:minmax(235px,2.5fr) minmax(140px,1.05fr) minmax(135px,1fr) minmax(142px,1.15fr) minmax(95px,.85fr);column-gap:14px;align-items:center;padding:12px 15px;min-width:0}
+.kbg20-page .kbg20-ui-table-head{background:#f8f5fc;color:#6f6382;font-size:10.3px;font-weight:800;letter-spacing:.025em;text-transform:uppercase;border-bottom:1px solid #eae3f2}
+.kbg20-page .kbg20-ui-table-head>span{min-width:0;line-height:1.4}
+.kbg20-page .kbg20-ui-table-row{min-height:77px;border-bottom:1px solid #eee9f4;background:#fff;transition:background .15s ease}
+.kbg20-page .kbg20-ui-table-row:last-child{border-bottom:0}
+.kbg20-page .kbg20-ui-table-row:hover{background:#fcfaff}
+.kbg20-page .kbg20-ui-table-row>div{min-width:0}
+.kbg20-page .kbg20-ui-cell-task{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:0;overflow-wrap:anywhere}
+.kbg20-page .kbg20-ui-cell-task strong{font-size:12px;font-weight:750;color:#40216b;line-height:1.5}
+.kbg20-page .kbg20-ui-cell-task>span{font-size:10.8px;color:#778196}
+.kbg20-page .kbg20-ui-cell-times{display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0}
+.kbg20-page .kbg20-ui-cell-times>small{color:#798397;font-size:10.5px}
+.kbg20-page .kbg20-ui-cell-sys,.kbg20-page .kbg20-ui-cell-self{display:flex;align-items:baseline;justify-content:space-between;gap:6px;min-width:0}
+.kbg20-page .kbg20-ui-cell-sys span,.kbg20-page .kbg20-ui-cell-self span{font-size:10.6px;color:#8791a2}
+.kbg20-page .kbg20-ui-cell-sys strong,.kbg20-page .kbg20-ui-cell-self strong{font:750 12.5px/1.4 Consolas,'Courier New',monospace;color:#4c3280;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kbg20-page .kbg20-ui-cell-self strong{color:#335b84}
+.kbg20-page .kbg20-ui-cell-status{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;min-width:0}
+.kbg20-page .kbg20-ui-cell-status>small{color:#8791a2;font-size:10.7px;line-height:1.45}
+.kbg20-page .kbg20-ui-cell-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.kbg20-ui-action{display:inline-flex;align-items:center;justify-content:center;min-height:30px;border:1px solid #ded3ed;border-radius:7px;padding:6px 10px;color:#53278b;background:#f7f2ff;font-size:11px;font-weight:750;line-height:1.3;cursor:pointer;white-space:normal;text-align:center;transition:background .15s,border-color .15s}
+.kbg20-ui-action:hover{background:#eee3ff;border-color:#cdb6ed}
+.kbg20-ui-action.is-primary{background:#602a9b;border-color:#602a9b;color:#fff}
+.kbg20-ui-action.is-primary:hover{background:#4f1f85;border-color:#4f1f85}
+.kbg20-ui-action.is-secondary{background:#fff7ea;border-color:#ecd1a1;color:#825514}
+.kbg20-ui-action.is-neutral{background:#fff;border-color:#d7d5df;color:#48566e}
+.kbg20-ui-action:focus-visible{outline:2px solid #9b75cb;outline-offset:2px}
+.kbg20-ui-badge{display:inline-flex;align-items:center;border:1px solid transparent;padding:5px 9px;border-radius:20px;font-size:10.8px;line-height:1.35;font-weight:750;white-space:normal}
+.kbg20-ui-badge.is-reported{background:#e4f5ea;border-color:#ceebd8;color:#14724d}
+.kbg20-ui-badge.is-withdrawn{background:#fff2da;border-color:#f5dfb4;color:#915e18}
+.kbg20-ui-badge.is-pending{background:#f2f0f6;border-color:#e5e0eb;color:#6d667b}
+.kbg20-ui-badge.is-locked{background:#e8f2ff;border-color:#cadbf2;color:#235a90}
+.kbg20-page .kbg20-ui-empty,.kbg20-page .kbg20-ui-loading{margin:0;padding:24px;text-align:center;color:#718096;font-size:12px;line-height:1.6}
+/* The content of SweetSoft:ExtraModal is outside .kbg20-page; style it by its modal ID. */
+#mdlKbg20Manual .kbg20-reconcile-content{padding:15px 18px;overflow-y:auto;max-height:min(68vh,570px);min-height:0}
+#mdlKbg20Manual .kbg20-ui-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid #eae4f2}
+#mdlKbg20Manual .kbg20-ui-top-title{min-width:0;flex:1 1 250px}
+#mdlKbg20Manual .kbg20-ui-eyebrow{font-size:10.3px;font-weight:800;line-height:1.5;letter-spacing:.04em;color:#7d529b;text-transform:uppercase}
+#mdlKbg20Manual .kbg20-ui-top-title h3{margin:3px 0 0;color:#40216a;font-size:17px;line-height:1.4;font-weight:800;overflow-wrap:anywhere}
+#mdlKbg20Manual .kbg20-ui-workspace{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(300px,.82fr);gap:14px;min-height:0;align-items:stretch}
+#mdlKbg20Manual .kbg20-ui-main,#mdlKbg20Manual .kbg20-ui-side{min-width:0;min-height:0}
+#mdlKbg20Manual .kbg20-ui-main{display:flex;flex-direction:column;gap:12px}
+#mdlKbg20Manual .kbg20-ui-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-items:stretch}
+#mdlKbg20Manual .kbg20-ui-hours-card{display:flex;flex-direction:column;gap:8px;padding:13px;border:1px solid #e3d9ed;border-radius:10px;background:#fcfaff;min-width:0}
+#mdlKbg20Manual .kbg20-ui-hours-card:nth-child(2){background:#f9f5ff;border-color:#ddceee}
+#mdlKbg20Manual .kbg20-ui-hours-card h4{margin:0;color:#51317c;font-size:13px;font-weight:800;line-height:1.4}
+#mdlKbg20Manual .kbg20-ui-hours-caption{margin:0;color:#778096;font-size:10.8px;line-height:1.45;min-height:28px}
+#mdlKbg20Manual .kbg20-ui-hour-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:auto}
+#mdlKbg20Manual .kbg20-ui-hour-pair>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+#mdlKbg20Manual .kbg20-ui-hour-pair span{font-size:10.5px;color:#718096;line-height:1.4}
+#mdlKbg20Manual .kbg20-ui-hour-pair strong{font:750 16px/1.3 Consolas,'Courier New',monospace;color:#48257f;white-space:nowrap;font-variant-numeric:tabular-nums}
+#mdlKbg20Manual .kbg20-ui-input-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:5px}
+#mdlKbg20Manual .kbg20-ui-input-pair>*{min-width:0}
+#mdlKbg20Manual .kbg20-ui-help{padding:10px 12px;background:#f8f4ff;border:1px solid #e7daf5;border-radius:9px;color:#614884;font-size:11.5px;line-height:1.6}
+#mdlKbg20Manual .kbg20-ui-help strong{display:block;color:#543078;font-size:11.5px;margin-bottom:3px}
+#mdlKbg20Manual .kbg20-ui-help p{margin:0;color:inherit;font-size:inherit;line-height:inherit}
+#mdlKbg20Manual .kbg20-ui-help.is-warning{background:#fff8eb;border-color:#f3daae;color:#98601a}
+#mdlKbg20Manual .kbg20-ui-help.is-warning strong{color:#895415}
+#mdlKbg20Manual .kbg20-ui-help.is-locked{background:#eff5ff;border-color:#d4e4fa;color:#315f8d}
+#mdlKbg20Manual .kbg20-ui-reason{display:flex;flex-direction:column;gap:7px;margin:0;font-size:11.3px;color:#596376;font-weight:750}
+#mdlKbg20Manual .kbg20-ui-reason>span{display:block}
+#mdlKbg20Manual .kbg20-ui-reason textarea{display:block;width:100%;min-height:72px;max-height:125px;padding:10px 11px;border:1px solid #d9cce9;border-radius:8px;background:#fff;color:#343247;font-size:12px;line-height:1.45;resize:vertical;box-sizing:border-box}
+#mdlKbg20Manual .kbg20-ui-reason textarea:focus{outline:2px solid #bda1e2;outline-offset:0;border-color:#a17ccc}
+#mdlKbg20Manual .kbg20-ui-side{display:flex;flex-direction:column}
+#mdlKbg20Manual .kbg20-ui-history-panel{display:flex;flex-direction:column;gap:8px;min-height:220px;height:100%;padding:12px;border:1px solid #e4dcec;border-radius:10px;background:#faf7ff}
+#mdlKbg20Manual .kbg20-ui-history-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-bottom:7px;border-bottom:1px solid #e9dff3}
+#mdlKbg20Manual .kbg20-ui-history-head strong{color:#542d88;font-size:12px;line-height:1.45}
+#mdlKbg20Manual .kbg20-ui-history-head span{color:#7f87a0;font-size:10px}
+#mdlKbg20Manual .kbg20-ui-history-list{display:flex;flex-direction:column;gap:9px;max-height:335px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 3px 0 0}
+#mdlKbg20Manual .kbg20-ui-history-empty{font-size:11px;color:#8790a2;line-height:1.55;margin:5px 0}
+#mdlKbg20Manual .kbg20-ui-history-item{display:flex;flex-direction:column;gap:6px;border:1px solid #e7deef;border-radius:8px;background:#fff;padding:10px 11px;min-width:0;font-size:11px;color:#687287}
+#mdlKbg20Manual .kbg20-ui-history-item-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+#mdlKbg20Manual .kbg20-ui-history-item-head strong{font-size:11.2px;font-weight:750;color:#593584;line-height:1.4}
+#mdlKbg20Manual .kbg20-ui-history-item-head time{font-size:10px;color:#8290a5}
+#mdlKbg20Manual .kbg20-ui-history-version{font-size:10.5px;color:#607088}
+#mdlKbg20Manual .kbg20-ui-history-hours{font-size:11px;color:#443562;line-height:1.5}
+#mdlKbg20Manual .kbg20-ui-history-reason{margin:0;font-size:10.8px;line-height:1.5;color:#757d90;overflow-wrap:anywhere}
+#mdlKbg20Manual .kbg20-ui-compare-cell{display:flex;flex-direction:column;gap:7px;border:1px solid #e7dced;border-radius:9px;padding:10px;background:#fff}
+#mdlKbg20Manual .kbg20-ui-compare-label{font-size:10.8px;font-weight:750;color:#634983}
+#mdlKbg20Manual .kbg20-ui-compare-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#mdlKbg20Manual .kbg20-ui-compare-values>span{display:flex;flex-direction:column;gap:5px;min-width:0}
+#mdlKbg20Manual .kbg20-ui-compare-values small{font-size:10px;color:#8b91a0}
+#mdlKbg20Manual .kbg20-ui-compare-values strong{font:750 15px/1.3 Consolas,'Courier New',monospace;color:#543189}
+#mdlKbg20Manual .kbg20-ui-loading,#mdlKbg20Manual .kbg20-ui-empty{padding:20px;text-align:center;font-size:12px;color:#728199}
+#mdlKbg20Manual .kbg20-dot2-notice{padding:9px 12px;margin:10px 0 0;border:1px solid #e3d8ef;border-radius:7px;background:#f8f4ff;color:#60478a;font-size:11.5px;line-height:1.5}
+#mdlKbg20Manual .kbg20-dot2-notice.is-error{border-color:#f3c6cc;background:#fff2f2;color:#ad3342}
+@media(max-width:1190px){.kbg20-page .kbg20-ui-table-grid{grid-template-columns:minmax(200px,2.2fr) minmax(110px,1fr) minmax(110px,1fr) minmax(115px,1fr);gap:10px}.kbg20-page .kbg20-ui-table-grid>:nth-child(4){display:none}#mdlKbg20Manual .kbg20-ui-workspace{grid-template-columns:minmax(0,1fr) minmax(245px,.75fr)}}
+@media(max-width:780px){.kbg20-page .kbg20-ui-table-head{display:none}.kbg20-page .kbg20-ui-table-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:13px}.kbg20-page .kbg20-ui-table-grid>:nth-child(4){display:flex}.kbg20-page .kbg20-ui-cell-task{grid-column:1/-1}.kbg20-page .kbg20-ui-cell-status{grid-column:1/-1}.kbg20-page .kbg20-ui-cell-actions{grid-column:1/-1;justify-content:flex-start}#mdlKbg20Manual .kbg20-ui-workspace{grid-template-columns:1fr}#mdlKbg20Manual .kbg20-ui-cards{grid-template-columns:1fr 1fr}#mdlKbg20Manual .kbg20-ui-history-panel{min-height:145px}#mdlKbg20Manual .kbg20-ui-history-list{max-height:200px}}
+@media(max-width:520px){#mdlKbg20Manual .kbg20-ui-cards{grid-template-columns:1fr}#mdlKbg20Manual .kbg20-reconcile-content{padding:10px}#mdlKbg20Manual .kbg20-ui-top-title h3{font-size:15px}.kbg20-page .kbg20-ui-cell-sys,.kbg20-page .kbg20-ui-cell-self{flex-wrap:wrap}#mdlKbg20Manual .kbg20-ui-input-pair{grid-template-columns:1fr}}

@@ -560,6 +560,27 @@
     <Compile Include="fGanttCharts\Gantts.aspx.designer.cs">
       <DependentUpon>Gantts.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fIssues\Controls\CtrlDuyetGioCongIssue.ascx.cs">
+      <DependentUpon>CtrlDuyetGioCongIssue.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlDuyetGioCongIssue.ascx.designer.cs">
+      <DependentUpon>CtrlDuyetGioCongIssue.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlFastCompleteIssue.ascx.cs">
+      <DependentUpon>CtrlFastCompleteIssue.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlFastCompleteIssue.ascx.designer.cs">
+      <DependentUpon>CtrlFastCompleteIssue.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlFastReviewIssue.ascx.cs">
+      <DependentUpon>CtrlFastReviewIssue.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlFastReviewIssue.ascx.designer.cs">
+      <DependentUpon>CtrlFastReviewIssue.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fIssues\Controls\CtrlIssue.ascx.cs">
       <DependentUpon>CtrlIssue.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1070,6 +1091,9 @@
     <Content Include="fGanttCharts\Controls\progress-report-shared.css" />
     <Content Include="fGanttCharts\Controls\progress-report-shared.js" />
     <Content Include="fGanttCharts\Gantts.aspx" />
+    <Content Include="fIssues\Controls\CtrlDuyetGioCongIssue.ascx" />
+    <Content Include="fIssues\Controls\CtrlFastCompleteIssue.ascx" />
+    <Content Include="fIssues\Controls\CtrlFastReviewIssue.ascx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
@@ -1840,6 +1864,7 @@
     </Content>
     <Content Include="fKhaiBaoGio\FloatingWorkTimer.ashx" />
     <Content Include="fKhaiBaoGio\KhaiBaoGio20.ashx" />
+    <Content Include="fKhaiBaoGio\GioXuLyVanDe.ashx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

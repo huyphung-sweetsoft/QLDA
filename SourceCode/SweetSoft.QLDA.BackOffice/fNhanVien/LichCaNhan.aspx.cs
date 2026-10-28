@@ -84,7 +84,12 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 litTitle.Text = GetResourceText(BackEndResourceKeys.MY_PERSONAL_SCHEDULE);
             }
 
-            Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PERSONAL_SCHEDULE);
+            // Giống NhanVienDetail: thiết lập tiêu đề tab trình duyệt / metadata của trang.
+            string pageTitle = GetResourceText(BackEndResourceKeys.PERSONAL_SCHEDULE);
+            if (string.IsNullOrWhiteSpace(pageTitle)) pageTitle = "Lịch cá nhân";
+            Navigation1.MainTitle = pageTitle;
+            SetMetaTagsOgTags(pageTitle);
+            if (string.IsNullOrWhiteSpace(Page.Title)) Page.Title = pageTitle;
             var navLinks = new Dictionary<string, string>();
             if (hasParentDetail)
             {
@@ -136,9 +141,69 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 btnViewWeek.CssClass = "personal-cal-btn";
             }
             var data = LichTrinhManager.Instance.LayLichTrinhNhanVienCoCuocHop(TargetUserId, startDate, endDate);
+            BoSungTenDuAnChoLichHop(data);
             hfScheduleDataJSON.Value = JsonConvert.SerializeObject(data);
         }
         #endregion
+
+        // TenDuAn cua DTO hop co the rong du IdDuAn van hop le. Uu tien dung ten
+        // san co tu DTO/task; neu thieu chi lookup mot lan cho moi IdDuAn trong ky lich.
+        // Khong sua MeetRepository, khong lam thay doi pham vi hop nhan vien duoc xem.
+        private static void BoSungTenDuAnChoLichHop(IEnumerable<ThongTinLichNgay> days)
+        {
+            if (days == null) return;
+            var calendarDays = days.Where(d => d != null).ToList();
+            var tenDuAn = new Dictionary<Guid, string>();
+            var duAnTheoCuocHop = new Dictionary<Guid, Guid>();
+
+            foreach (ThongTinLichNgay day in calendarDays)
+            {
+                if (day.DanhSachCongViec == null) continue;
+                foreach (TomTatCongViec task in day.DanhSachCongViec)
+                {
+                    if (task != null && task.IdDuAn != Guid.Empty && !string.IsNullOrWhiteSpace(task.TenDuAn))
+                        tenDuAn[task.IdDuAn] = task.TenDuAn;
+                }
+            }
+
+            foreach (ThongTinLichNgay day in calendarDays)
+            {
+                if (day.DanhSachCuocHop == null) continue;
+                foreach (TomTatCuocHop meeting in day.DanhSachCuocHop)
+                {
+                    if (meeting == null) continue;
+                    Guid idDuAn = meeting.IdDuAn;
+                    // Du phong DTO tu repository chua gan IdDuAn: tra cuu theo IdLichHop.
+                    // Chi truy van mot lan cho moi cuoc hop, ke ca hop keo dai nhieu ngay.
+                    if (idDuAn == Guid.Empty && meeting.IdLichHop != Guid.Empty)
+                    {
+                        if (!duAnTheoCuocHop.TryGetValue(meeting.IdLichHop, out idDuAn))
+                        {
+                            TblLichHop hop = TblLichHop.FetchByID(meeting.IdLichHop);
+                            idDuAn = Guid.Empty;
+                            if (hop != null && hop.DaXoa != true)
+                                Guid.TryParse(Convert.ToString(hop.IdDuAn), out idDuAn);
+                            duAnTheoCuocHop[meeting.IdLichHop] = idDuAn;
+                        }
+                        if (idDuAn != Guid.Empty) meeting.IdDuAn = idDuAn;
+                    }
+                    if (idDuAn == Guid.Empty) continue;
+                    if (!string.IsNullOrWhiteSpace(meeting.TenDuAn))
+                    {
+                        tenDuAn[idDuAn] = meeting.TenDuAn;
+                        continue;
+                    }
+                    string ten;
+                    if (!tenDuAn.TryGetValue(idDuAn, out ten))
+                    {
+                        TblDuAn project = DuAnManager.Instance.GetDuAnById(idDuAn);
+                        ten = project != null ? project.TenDuAn : string.Empty;
+                        tenDuAn[idDuAn] = ten ?? string.Empty;
+                    }
+                    if (!string.IsNullOrWhiteSpace(ten)) meeting.TenDuAn = ten;
+                }
+            }
+        }
 
         #region 3. Điều hướng (UpdatePanel)
         protected void btnPrev_Click(object sender, EventArgs e)
@@ -180,6 +245,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             GetCalendarPeriod(out DateTime refDate, out DateTime start, out DateTime end);
             var days = LichTrinhManager.Instance.LayLichTrinhNhanVienCoCuocHop(TargetUserId, start, end);
             if (days == null) return;
+            BoSungTenDuAnChoLichHop(days);
             List<ThongTinLichNgay> dayList = days.ToList();
             if (index >= dayList.Count) return;
             ThongTinLichNgay day = dayList[index];
@@ -203,23 +269,15 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 ? day.DanhSachCuocHop.Where(m => m != null)
                     .OrderBy(m => m.ThoiGianBatDau).ToList()
                 : new List<TomTatCuocHop>();
-            if (tasks.Count == 0 && meetings.Count == 0)
-            {
-                if (status == "weekend")
-                    html.Append("<div class='personal-day-notice is-weekend'><i class='fas fa-mug-hot'></i><span>Ngày nghỉ, không có công việc được liệt kê.</span></div>");
-                else if (status == "busy")
-                    html.Append("<div class='personal-day-notice'><i class='far fa-calendar-check'></i><span>Ngày có lịch làm việc, chưa có công việc chi tiết.</span></div>");
-                else if (status != "holiday")
-                    html.Append("<div class='personal-day-notice'><i class='far fa-calendar'></i><span>Chưa có công việc trong ngày này.</span></div>");
-            }
+            html.Append("<div class='personal-day-dual' role='group' aria-label='Công việc và lịch họp trong ngày'>")
+                .Append("<section class='personal-day-pane is-task' aria-label='Danh sách công việc'>")
+                .Append("<div class='personal-day-section-head is-task'><span class='personal-day-section-head-title'><i class='fas fa-briefcase'></i> Công việc trong ngày</span><strong class='personal-day-pane-total'>")
+                .Append(tasks.Count).Append(" công việc</strong></div><div class='personal-day-pane-scroll' tabindex='0'>");
             if (tasks.Count > 0)
             {
                 var groups = tasks.GroupBy(t => string.IsNullOrWhiteSpace(t.TenDuAn)
                     ? (GetResourceText(BackEndResourceKeys.OTHER_PROJECT_UNIDENTIFIED) ?? "Dự án khác")
                     : t.TenDuAn).ToList();
-                html.Append("<div class='personal-day-intro'><span class='personal-day-intro-icon'><i class='fas fa-briefcase'></i></span><span><strong class='personal-day-intro-title'>")
-                    .Append(tasks.Count).Append(" công việc trong ngày</strong><small class='personal-day-intro-subtitle'>Thuộc ")
-                    .Append(groups.Count).Append(" dự án</small></span></div>");
                 foreach (var group in groups)
                 {
                     html.Append("<section class='personal-day-project'><div class='personal-day-project-head'><span><i class='fas fa-folder-open me-1'></i> ")
@@ -235,61 +293,85 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                     html.Append("</div></section>");
                 }
             }
-            // Nhất quán với lịch tuần: công việc trước, lịch họp sau.
+
+            else
+            {
+                html.Append("<div class='personal-day-pane-empty'><i class='far fa-calendar-check'></i><strong>Không có công việc</strong><small>Chưa có công việc được liệt kê trong ngày.</small></div>");
+            }
+            html.Append("</div></section>")
+                .Append("<section class='personal-day-pane is-meeting' aria-label='Danh sách cuộc họp'>")
+                .Append("<div class='personal-day-section-head is-meeting'><span class='personal-day-section-head-title'><i class='far fa-calendar-alt'></i> Lịch họp trong ngày</span><strong class='personal-day-pane-total'>")
+                .Append(meetings.Count).Append(" cuộc họp</strong></div><div class='personal-day-pane-scroll' tabindex='0'>");
+
+            // Họp được nhóm theo dự án, rồi xếp theo giờ bắt đầu trong từng dự án.
+            // Địa chỉ họp trực tuyến không được xuất ra dưới dạng URL/link/nút tham gia ở Lịch cá nhân.
             if (meetings.Count > 0)
             {
-                html.Append("<div class='personal-day-meeting-head'><i class='fas fa-calendar-alt'></i> ")
-                    .Append(meetings.Count).Append(" cuộc họp</div>");
-                foreach (TomTatCuocHop meeting in meetings)
+                var meetingGroups = meetings.GroupBy(m => string.IsNullOrWhiteSpace(m.TenDuAn)
+                    ? "Chưa xác định dự án" : m.TenDuAn).ToList();
+                DateTime now = DateTime.Now;
+                foreach (var group in meetingGroups)
                 {
-                    DateTime now = DateTime.Now;
-                    byte meetingStatus = (byte)(now >= meeting.ThoiGianKetThuc ? 3
-                        : now >= meeting.ThoiGianBatDau ? 2
-                        : meeting.ThoiGianBatDau <= now.AddMinutes(15) ? 1 : 0);
-                    string[] statusLabels = { "Đã lên lịch", "Sắp diễn ra", "Đang diễn ra", "Đã kết thúc" };
-                    int idx = meetingStatus <= 3 ? meetingStatus : (byte)0;
-                    DateTime from = meeting.ThoiGianBatDau > day.Ngay.Date
-                        ? meeting.ThoiGianBatDau : day.Ngay.Date;
-                    DateTime until = meeting.ThoiGianKetThuc < day.Ngay.Date.AddDays(1)
-                        ? meeting.ThoiGianKetThuc : day.Ngay.Date.AddDays(1);
-                    string endTime = until == day.Ngay.Date.AddDays(1)
-                        ? "24:00" : until.ToString("HH:mm");
-                    html.Append("<div class='personal-day-meeting is-status-").Append(idx).Append("'>")
-                        .Append("<div class='personal-day-meeting-top'><strong><i class='far fa-clock'></i> ")
-                        .Append(from.ToString("HH:mm")).Append("–").Append(endTime)
-                        .Append("</strong><span class='personal-day-meeting-status'>")
-                        .Append(statusLabels[idx]);
-                    // Giữ tông tím; chỉ báo họp đang diễn ra bằng chấm pulse ngay cạnh trạng thái.
-                    if (idx == 2)
-                        html.Append("<i class='personal-meeting-pulse' aria-hidden='true'></i>");
-                    html.Append("</span></div>")
-                        .Append("<div class='personal-day-meeting-name'>");
-                    if (meeting.LaChuTri)
-                        html.Append("<i class='fas fa-crown personal-meeting-host' title='Người chủ trì'></i> ");
-                    html.Append(Esc(meeting.TenCuocHop)).Append("</div>")
-                        .Append("<div class='personal-day-meeting-meta'><i class='fas fa-folder-open'></i> ")
-                        .Append(Esc(string.IsNullOrWhiteSpace(meeting.TenDuAn) ? "Dự án khác" : meeting.TenDuAn))
-                        .Append("</div>")
-                        .Append("<div class='personal-day-meeting-meta'><i class='fas fa-user-tie'></i> ")
-                        .Append(Esc(meeting.LaChuTri ? "Chủ trì cuộc họp" :
-                            string.IsNullOrWhiteSpace(meeting.TenNguoiChuTri) ? "Chưa rõ người chủ trì" : meeting.TenNguoiChuTri))
-                        .Append("</div>");
-                    html.Append("<div class='personal-day-meeting-meta'><i class='fas ")
-                        .Append(meeting.LaHopOnline ? "fa-video" : "fa-map-marker-alt")
-                        .Append("'></i> ")
-                        .Append(Esc(string.IsNullOrWhiteSpace(meeting.DiaDiemHop)
-                            ? "Chưa có địa điểm" : meeting.DiaDiemHop)).Append("</div>");
-                    Uri onlineUrl;
-                    if (meeting.LaHopOnline && Uri.TryCreate(meeting.DiaDiemHop, UriKind.Absolute, out onlineUrl)
-                        && (onlineUrl.Scheme == Uri.UriSchemeHttp || onlineUrl.Scheme == Uri.UriSchemeHttps))
+                    html.Append("<section class='personal-day-meeting-project'><div class='personal-day-meeting-project-head'>")
+                        .Append("<span class='personal-day-meeting-project-name'><i class='fas fa-folder-open'></i> ")
+                        .Append(Esc(group.Key)).Append("</span><span class='personal-day-meeting-project-count'>")
+                        .Append(group.Count()).Append(" cuộc họp</span></div>");
+                    foreach (TomTatCuocHop meeting in group.OrderBy(m => m.ThoiGianBatDau))
                     {
-                        html.Append("<a class='personal-day-join' target='_blank' rel='noopener noreferrer' href='")
-                            .Append(HttpUtility.HtmlAttributeEncode(onlineUrl.AbsoluteUri))
-                            .Append("'><i class='fas fa-external-link-alt'></i> Mở phòng họp</a>");
+                        int state = now >= meeting.ThoiGianKetThuc ? 3
+                            : now >= meeting.ThoiGianBatDau ? 2
+                            : meeting.ThoiGianBatDau <= now.AddMinutes(15) ? 1 : 0;
+                        string[] statusLabels = { "Đã lên lịch", "Sắp diễn ra", "Đang diễn ra", "Đã kết thúc" };
+                        DateTime from = meeting.ThoiGianBatDau > day.Ngay.Date
+                            ? meeting.ThoiGianBatDau : day.Ngay.Date;
+                        DateTime until = meeting.ThoiGianKetThuc < day.Ngay.Date.AddDays(1)
+                            ? meeting.ThoiGianKetThuc : day.Ngay.Date.AddDays(1);
+                        string endTime = until == day.Ngay.Date.AddDays(1)
+                            ? "24:00" : until.ToString("HH:mm");
+                        string host = !string.IsNullOrWhiteSpace(meeting.TenNguoiChuTri)
+                            ? meeting.TenNguoiChuTri : meeting.LaChuTri
+                                ? "Nhân viên đang xem lịch" : "Chưa xác định người chủ trì";
+
+                        html.Append("<article class='personal-day-meeting-entry is-status-").Append(state).Append("'>")
+                            .Append("<div class='personal-day-meeting-clock'><span>").Append(from.ToString("HH:mm"))
+                            .Append("</span><small>đến</small><span>").Append(endTime)
+                            .Append("</span></div><div class='personal-day-meeting-content'>")
+                            .Append("<div class='personal-day-meeting-heading'><div class='personal-day-meeting-name'>");
+                        if (meeting.LaChuTri)
+                            html.Append("<i class='fas fa-crown personal-meeting-host' title='Bạn chủ trì'></i> ");
+                        html.Append(Esc(string.IsNullOrWhiteSpace(meeting.TenCuocHop) ? "Cuộc họp chưa có tên" : meeting.TenCuocHop))
+                            .Append("</div><span class='personal-day-meeting-status'>")
+                            .Append(statusLabels[state]);
+                        if (state == 2)
+                            html.Append("<i class='personal-meeting-pulse' aria-hidden='true'></i>");
+                        html.Append("</span></div><div class='personal-day-meeting-meta-grid'>")
+                            .Append("<div class='personal-day-meeting-detail'><i class='fas fa-user-tie'></i><span><strong>Chủ trì: </strong>")
+                            .Append(Esc(host)).Append("</span></div>")
+                            .Append("<div class='personal-day-meeting-detail'><i class='fas ")
+                            .Append(meeting.LaHopOnline ? "fa-video" : "fa-users")
+                            .Append("'></i><span><strong>Hình thức: </strong>")
+                            .Append(meeting.LaHopOnline ? "Trực tuyến" : "Trực tiếp").Append("</span></div>")
+                            .Append("<div class='personal-day-meeting-detail is-location")
+                            .Append(meeting.LaHopOnline ? " is-online" : "")
+                            .Append("'><i class='fas ")
+                            .Append(meeting.LaHopOnline ? "fa-info-circle" : "fa-map-marker-alt")
+                            .Append("'></i><span>");
+                        if (meeting.LaHopOnline)
+                            html.Append("Thông tin phòng họp được xem tại trang Lịch họp.");
+                        else
+                            html.Append("<strong>Địa điểm: </strong>")
+                                .Append(Esc(string.IsNullOrWhiteSpace(meeting.DiaDiemHop)
+                                    ? "Chưa cập nhật địa điểm" : meeting.DiaDiemHop));
+                        html.Append("</span></div></div></div></article>");
                     }
-                    html.Append("</div>");
+                    html.Append("</section>");
                 }
             }
+            else
+            {
+                html.Append("<div class='personal-day-pane-empty is-meeting'><i class='far fa-calendar-alt'></i><strong>Không có lịch họp</strong><small>Không có cuộc họp được ghi nhận trong ngày.</small></div>");
+            }
+            html.Append("</div></section></div>");
             litModalContent.Text = html.ToString();
             upModal.Update();
             mdlDayDetail.OpenModal(true);

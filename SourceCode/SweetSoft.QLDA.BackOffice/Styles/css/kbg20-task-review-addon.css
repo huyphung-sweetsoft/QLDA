@@ -1,0 +1,15 @@
+/* KBG20 — chỉ phạm vi tên Task và nút gửi yêu cầu sau khi đã báo phần việc. */
+/* 9 cột hiện hành: chỉ thu cột đầu, không đổi số cột hay thứ tự. */
+@media (min-width:1161px) { .kbg20-page .kbg20-v41-taskgrid { grid-template-columns:minmax(185px,2.30fr) minmax(79px,.77fr) minmax(64px,.62fr) minmax(88px,.83fr) minmax(120px,1.08fr) minmax(115px,1.05fr) minmax(115px,1.1fr) minmax(110px,1.08fr) minmax(136px,1.25fr); } }
+.kbg20-page .kbg20-v41-identity, .kbg20-page .kbg20-v41-taskname, .kbg20-page .kbg20-v41-tasktext { min-width:0; }
+.kbg20-page .kbg20-v41-taskname { display:flex; align-items:center; flex-wrap:nowrap; gap:5px; }
+.kbg20-page .kbg20-v41-taskcode { flex:0 0 auto; }
+.kbg20-page .kbg20-v41-tasktext { display:block; flex:1 1 auto; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; cursor:help; }
+.kbg20-page .kbg20-v41-taskname>.kbg20-d6-badge { flex:0 0 auto; }
+/* Khi có cả Rút báo và Gửi duyệt: hai nút xếp gọn trong đúng cột Hành động. */
+.kbg20-page .kbg20-v41-actions.is-multi-action { display:flex; flex-direction:column; align-items:stretch; justify-content:center; gap:5px; }
+.kbg20-page .kbg20-v41-actions.is-multi-action .kbg20-dot2-row-btn { width:100%; max-width:100%; min-height:29px; padding:5px 6px; font-size:10px; line-height:1.2; white-space:normal; }
+.kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn.is-submit-approval { border:1px solid #d7bfed; background:#f6f0ff; color:#59228f; box-shadow:none; }
+.kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn.is-submit-approval:hover:not(:disabled) { border-color:#ba99e0; background:#ede1fc; color:#491a7c; }
+.kbg20-page .kbg20-v41-actions .kbg20-dot2-row-btn.is-submit-approval:focus-visible { outline:2px solid #7840ae; outline-offset:2px; }
+@media (max-width:760px) { .kbg20-page .kbg20-v41-taskname { flex-wrap:nowrap; } }

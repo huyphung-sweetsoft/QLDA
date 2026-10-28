@@ -266,9 +266,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             DataTable meetings = kind == "pdPersonalHourDetail" ? PersonalQuery(conn, PersonalMeetingsSql, projectId, userId) : new DataTable();
             if (needTasks || needIssues)
             {
-                Dictionary<Guid, PdDoiSoat> snapshots = LoadDoiSoat(conn, projectId, userId);
-                if (needTasks) AttachDoiSoat(tasks, snapshots, "IdCongViec");
-                if (needIssues) AttachDoiSoat(issues, snapshots, "IdCongViecBiAnhHuong");
+                if (needTasks) AttachDoiSoat(tasks, LoadDoiSoat(conn, projectId, userId, false), "IdCongViec");
+                if (needIssues) AttachDoiSoat(issues, LoadDoiSoat(conn, projectId, userId, true), "IdVanDe");
             }
             List<DataRow> taskRows = tasks.Rows.Cast<DataRow>().OrderBy(r => { int s = PersonalInt(r, "TrangThai"); return s == 1 ? 0 : s == 0 ? 1 : s == 2 ? 3 : 2; })
                 .ThenBy(r => PersonalDate(r, "NgayKetThuc") ?? DateTime.MaxValue).ThenBy(r => PersonalText(r, "MaCongViec"), StringComparer.CurrentCultureIgnoreCase).ToList();
@@ -339,9 +338,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             DataTable meetings = full ? PersonalQuery(conn, TeamHoursEndedMeetingsSql, projectId, userId) : new DataTable();
             if (needTasks || needIssues)
             {
-                var snapshots = LoadDoiSoat(conn, projectId, userId);
-                if (needTasks) AttachDoiSoat(tasks, snapshots, "IdCongViec");
-                if (needIssues) AttachDoiSoat(issues, snapshots, "IdCongViecBiAnhHuong");
+                if (needTasks) AttachDoiSoat(tasks, LoadDoiSoat(conn, projectId, userId, false), "IdCongViec");
+                if (needIssues) AttachDoiSoat(issues, LoadDoiSoat(conn, projectId, userId, true), "IdVanDe");
             }
             var taskRows = tasks.Rows.Cast<DataRow>().ToList();
             var meetingRows = meetings.Rows.Cast<DataRow>().OrderByDescending(r => PersonalDate(r, "ThoiGianBatDau") ?? DateTime.MinValue).ToList();
@@ -373,7 +371,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         // Các hàm truy vấn / tính / render lấy nguyên logic đối soát V15.
         private sealed class PdDoiSoat
         {
-            public Guid IdCongViec;
+            public Guid IdDoiTuong;
             public decimal? ThuongTuKhai, TangCaTuKhai;
             public decimal ThuongPm, TangCaPm;
             public bool DaPmChot;
@@ -399,13 +397,21 @@ INNER JOIN dbo.TblCongViec t ON t.IdCongViec=assign.IdCongViec
 WHERE assign.IdNhanVien=@UserId AND t.IdDuAn=@ProjectId AND ISNULL(t.DaXoa,0)=0
 ORDER BY t.NgayKetThuc,t.TenCongViec;";
 
+        // Giữ TẤT CẢ lịch họp để hiển thị, nhưng giờ công chỉ ghi khi đã kết thúc và đã tham gia.
+        // Override của PM có độ ưu tiên cao nhất, cùng hợp đồng với Công thành viên / CtrlMeet.
         private static readonly string PersonalMeetingsSql = @"
-SELECT DISTINCT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc
+SELECT DISTINCT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc,
+       ISNULL((SELECT MAX(CAST(g.DaThamGiaOverride AS INT))
+               FROM dbo.TblLichHopGioCong g
+               WHERE g.IdLichHop=m.IdLichHop AND g.IdNhanVien=@UserId),
+              ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia,0) AS INT))
+                      FROM dbo.TblLichHop_NhanVien p
+                      WHERE p.IdLichHop=m.IdLichHop AND p.IdNhanVien=@UserId),0)) AS XacNhanThamGia
 FROM dbo.TblLichHop m
 WHERE m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0 AND
       (m.IdNguoiTao=@UserId OR EXISTS
-        (SELECT 1 FROM dbo.TblLichHop_NhanVien attendees
-         WHERE attendees.IdLichHop=m.IdLichHop AND attendees.IdNhanVien=@UserId));";
+         (SELECT 1 FROM dbo.TblLichHop_NhanVien attendees
+          WHERE attendees.IdLichHop=m.IdLichHop AND attendees.IdNhanVien=@UserId));";
 
         private static readonly string PersonalIssuesSql = @"
 SELECT DISTINCT v.IdVanDe,v.TenVanDe,v.TrangThai,v.MucDoAnhHuong,
@@ -485,52 +491,79 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             return table;
         }
 
-        private static Dictionary<Guid, PdDoiSoat> LoadDoiSoat(SqlConnection conn, Guid projectId, Guid userId)
+        // KBG20: Task va Issue co DOI SOAT RIENG. Khong dung IdCongViecBiAnhHuong de lay gio Issue.
+        // Chi gio do PM chot (event 4 Task; event 4/6 Issue) moi duoc tinh vao tong.
+        private static Dictionary<Guid, PdDoiSoat> LoadDoiSoat(SqlConnection conn, Guid projectId, Guid userId, bool isIssue)
         {
-            const string sql = @"WITH HienTai AS (
-    SELECT s.IdCongViec, s.SoPhutThuongTuKhai, s.SoPhutTangCaTuKhai,
-        s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot, s.IdPmChot,
-        ROW_NUMBER() OVER (PARTITION BY s.IdCongViec
-           ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) AS rn
-    FROM dbo.TblKhaiBaoGioDoiSoat AS s
-    INNER JOIN dbo.TblCongViec AS t ON t.IdCongViec=s.IdCongViec
-      AND t.IdDuAn=s.IdDuAn AND ISNULL(t.DaXoa,0)=0
-    WHERE s.IdDuAn=@ProjectId AND s.IdNhanVien=@UserId AND s.LaBanHienTai=1
+            // Tach hai cau SQL co dieu kien co dinh, KHONG noi ten bang/column tu input.
+            // LaBanHienTai=1 va latest theo doi tuong de khong cong ca ban lich su.
+            const string sqlTask = @"WITH HienTai AS (
+    SELECT s.IdCongViec AS IdDoiTuong, s.SoPhutThuongTuKhai, s.SoPhutTangCaTuKhai,
+           s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot, s.IdPmChot, s.LoaiSuKien,
+           ROW_NUMBER() OVER (PARTITION BY s.IdCongViec
+             ORDER BY s.LanDoiSoat DESC, s.PhienBan DESC, s.NgayTao DESC, s.IdDoiSoat DESC) AS rn
+    FROM dbo.TblKhaiBaoGioDoiSoat s
+    INNER JOIN dbo.TblCongViec t ON t.IdCongViec=s.IdCongViec
+       AND t.IdDuAn=s.IdDuAn AND ISNULL(t.DaXoa,0)=0
+    WHERE s.IdDuAn=@ProjectId AND s.IdNhanVien=@UserId
+      AND s.IdCongViec IS NOT NULL AND s.IdVanDe IS NULL AND s.LaBanHienTai=1
+) SELECT * FROM HienTai WHERE rn=1;";
+            const string sqlIssue = @"WITH HienTai AS (
+    SELECT s.IdVanDe AS IdDoiTuong, s.SoPhutThuongTuKhai, s.SoPhutTangCaTuKhai,
+           s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot, s.IdPmChot, s.LoaiSuKien,
+           ROW_NUMBER() OVER (PARTITION BY s.IdVanDe
+             ORDER BY s.LanDoiSoat DESC, s.PhienBan DESC, s.NgayTao DESC, s.IdDoiSoat DESC) AS rn
+    FROM dbo.TblKhaiBaoGioDoiSoat s
+    INNER JOIN dbo.TblVanDe v ON v.IdVanDe=s.IdVanDe
+       AND v.IdDuAn=s.IdDuAn AND ISNULL(v.DaXoa,0)=0
+    WHERE s.IdDuAn=@ProjectId AND s.IdNhanVien=@UserId
+      AND s.IdVanDe IS NOT NULL AND s.IdCongViec IS NULL AND s.LaBanHienTai=1
 ) SELECT * FROM HienTai WHERE rn=1;";
             var result = new Dictionary<Guid, PdDoiSoat>();
-            DataTable table = PersonalQuery(conn, sql, projectId, userId);
+            DataTable table = PersonalQuery(conn, isIssue ? sqlIssue : sqlTask, projectId, userId);
             foreach (DataRow r in table.Rows)
             {
-                Guid id = (Guid)r["IdCongViec"];
-                bool chot = r["IdPmChot"] != DBNull.Value &&
-                            (Guid)r["IdPmChot"] != Guid.Empty;
+                Guid id = (Guid)r["IdDoiTuong"];
+                int evt = r["LoaiSuKien"] == DBNull.Value ? 0 : Convert.ToInt32(r["LoaiSuKien"]);
+                bool hasPmMinutes = r["SoPhutThuongPmChot"] != DBNull.Value &&
+                                    r["SoPhutTangCaPmChot"] != DBNull.Value;
+                // Task: event 4 va IdPmChot. Issue: event 4 chot, 6 dieu chinh;
+                // manager Issue luu IdNguoiThaoTacVanDe thay vi IdPmChot.
+                bool approved = hasPmMinutes && (isIssue
+                    ? evt == 4 || evt == 6
+                    : evt == 4 && r["IdPmChot"] != DBNull.Value && (Guid)r["IdPmChot"] != Guid.Empty);
                 result[id] = new PdDoiSoat
                 {
-                    IdCongViec = id,
-                    DaPmChot = chot,
+                    IdDoiTuong = id,
+                    DaPmChot = approved,
                     ThuongTuKhai = r["SoPhutThuongTuKhai"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(r["SoPhutThuongTuKhai"]),
                     TangCaTuKhai = r["SoPhutTangCaTuKhai"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(r["SoPhutTangCaTuKhai"]),
-                    ThuongPm = r["SoPhutThuongPmChot"] == DBNull.Value ? 0 : Convert.ToDecimal(r["SoPhutThuongPmChot"]),
-                    TangCaPm = r["SoPhutTangCaPmChot"] == DBNull.Value ? 0 : Convert.ToDecimal(r["SoPhutTangCaPmChot"])
+                    ThuongPm = approved ? Convert.ToDecimal(r["SoPhutThuongPmChot"]) : 0m,
+                    TangCaPm = approved ? Convert.ToDecimal(r["SoPhutTangCaPmChot"]) : 0m
                 };
             }
             return result;
         }
-        private static void AttachDoiSoat(DataTable table, Dictionary<Guid, PdDoiSoat> byTask, string idColumn)
+
+        private static void AttachDoiSoat(DataTable table, Dictionary<Guid, PdDoiSoat> records, string idColumn)
         {
-            string[] names = { "DsThuongTuKhai", "DsTangCaTuKhai", "DsThuongPm", "DsTangCaPm", "DsPhutPm", "DsDaChot", "DsIdCongViec" };
+            string[] names = { "DsThuongTuKhai", "DsTangCaTuKhai", "DsThuongPm", "DsTangCaPm", "DsPhutPm", "DsDaChot" };
             foreach (string name in names)
-                if (!table.Columns.Contains(name)) table.Columns.Add(name, name == "DsDaChot" ? typeof(bool) : name == "DsIdCongViec" ? typeof(Guid) : typeof(decimal));
+                if (!table.Columns.Contains(name)) table.Columns.Add(name, name == "DsDaChot" ? typeof(bool) : typeof(decimal));
             foreach (DataRow row in table.Rows)
             {
-                Guid id = row.Table.Columns.Contains(idColumn) && row[idColumn] != DBNull.Value ? (Guid)row[idColumn] : Guid.Empty;
-                row["DsIdCongViec"] = id == Guid.Empty ? (object)DBNull.Value : id;
+                Guid id = row.Table.Columns.Contains(idColumn) && row[idColumn] != DBNull.Value
+                    ? (Guid)row[idColumn] : Guid.Empty;
                 PdDoiSoat item;
-                if (!byTask.TryGetValue(id, out item)) { row["DsDaChot"] = false; row["DsPhutPm"] = 0m; continue; }
-                row["DsDaChot"] = item.DaPmChot;
-                row["DsPhutPm"] = item.PhutPm;
-                row["DsThuongPm"] = item.DaPmChot ? item.ThuongPm : 0m;
-                row["DsTangCaPm"] = item.DaPmChot ? item.TangCaPm : 0m;
+                // Chua chot KHAC voi PM chot bang 0 phut. Khong lay gio tu khai lam gio PM.
+                row["DsDaChot"] = records.TryGetValue(id, out item) && item.DaPmChot;
+                row["DsPhutPm"] = item != null ? item.PhutPm : 0m;
+                if (item == null) continue;
+                if (item.DaPmChot)
+                {
+                    row["DsThuongPm"] = item.ThuongPm;
+                    row["DsTangCaPm"] = item.TangCaPm;
+                }
                 if (item.ThuongTuKhai.HasValue) row["DsThuongTuKhai"] = item.ThuongTuKhai.Value;
                 if (item.TangCaTuKhai.HasValue) row["DsTangCaTuKhai"] = item.TangCaTuKhai.Value;
             }
@@ -558,20 +591,10 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
         }
         private static decimal DsSum(List<DataRow> rows)
         {
-            // Nhieu van de co the cung tham chieu 1 cong viec: chi tinh 1 lan trong nhom.
-            return DsUniqueSum(rows, new List<DataRow>());
+            // Task/Issue la hai doi tuong co phien gio doc lap; cong dong thoi van cong du ca hai.
+            return rows.Sum(row => DsMinute(row, "DsPhutPm")) / 60m;
         }
-        private static decimal DsUniqueSum(List<DataRow> tasks, List<DataRow> issues)
-        {
-            var minutes = new Dictionary<Guid, decimal>();
-            foreach (DataRow row in tasks.Concat(issues))
-            {
-                if (!row.Table.Columns.Contains("DsIdCongViec") || row["DsIdCongViec"] == DBNull.Value) continue;
-                Guid id = (Guid)row["DsIdCongViec"];
-                if (!minutes.ContainsKey(id)) minutes[id] = DsMinute(row, "DsPhutPm");
-            }
-            return minutes.Values.Sum() / 60m;
-        }
+
         private static DataTable LoadPersonalTasks(SqlConnection connection, Guid projectId, Guid userId)
         {
             string actualDateExpr = "CAST(NULL AS DATETIME)";
@@ -603,6 +626,14 @@ ORDER BY CASE COLUMN_NAME
             DateTime? end = PersonalDate(row, "ThoiGianKetThuc");
             if (!start.HasValue || !end.HasValue || end.Value <= start.Value) return 0m;
             return (decimal)(end.Value - start.Value).TotalMinutes / 60m;
+        }
+
+        private static decimal PersonalMeetingLaborHours(DataRow row, DateTime now)
+        {
+            DateTime? end = PersonalDate(row, "ThoiGianKetThuc");
+            // Cuoc hop dang dien ra/chua den ngay va nhan vien chua xac nhan deu khong tinh cong.
+            return end.HasValue && end.Value <= now && PersonalInt(row, "XacNhanThamGia") == 1
+                ? Math.Round(PersonalMeetingHours(row), 2, MidpointRounding.AwayFromZero) : 0m;
         }
         private static string PersonalHourValue(decimal hours)
         {

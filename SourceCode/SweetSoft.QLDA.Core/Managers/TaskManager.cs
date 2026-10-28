@@ -1,4 +1,4 @@
-using SubSonic;
+﻿using SubSonic;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -1373,7 +1373,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 throw new InvalidOperationException("Khong xac dinh duoc du an hoac cong viec can hoan thanh.");
 
             TblCongViec task = FetchById(taskId);
-            if (task == null || task.IdDuAn != projectId || task.DaXoa == true)
+            if (task == null || task.IdDuAn != projectId || task.DaXoa != false)
                 throw new InvalidOperationException("Cong viec khong con thuoc du an hoac da bi xoa.");
 
             // Su dung logic duyet cay da co san: chi lay con con hieu luc,
@@ -1459,7 +1459,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 KhaiBaoGio20Manager.PhienDongBoPhanCong khoa = null;
                 try
                 {
-                    if (canDongKBG && danhSachTam.Except(newAssigneeIds).Any())
+                    // KBG20: ca THEM lan GO nhan vien deu dung cung AppLock voi hoan thanh/tinh gio.
+                    if (canDongKBG && !new HashSet<Guid>(danhSachTam).SetEquals(newAssigneeIds))
                         khoa = new KhaiBaoGio20Manager().MoDongBoPhanCongTrongTransactionScope(idDuAn);
                     task = FetchById(idCongViec);
                     if (task == null || task.IdDuAn != idDuAn ||
@@ -1787,7 +1788,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 TblCongViec childTask = FetchById(childId);
 
-                if (childTask == null || childTask.DaXoa == true)
+                if (childTask == null || childTask.DaXoa != false)
                 {
                     continue;
                 }

@@ -31,3 +31,54 @@
 .kbg20-d6-badge.is-early{background:#e8f0ff;color:#2855a5;border:1px solid #b9ccf8;font-weight:700;}
 .kbg20-d6-badge.is-can-early{background:#eff6ff;color:#506f98;border:1px solid #dae5f6;font-weight:650;}
 .kbg20-v41-taskname{flex-wrap:wrap;align-items:center;}
+
+/* Nguon Start theo phien (khong phan loai co dinh ca Task). */
+.kbg20-v41-source-badge{display:inline-flex;align-items:center;gap:4px;margin-top:3px;border-radius:6px;padding:2px 7px;font-size:10px;line-height:1.35;font-weight:650;border:1px solid #d9dded;background:#f5f7fc;color:#52607b;width:max-content;cursor:help}
+.kbg20-v41-source-badge.is-auto{background:#f4edff;color:#66359f;border-color:#dfc9fa}
+.kbg20-v41-source-badge.is-manual{background:#f2f7fb;color:#3c607c;border-color:#cfe2f1}
+.kbg20-v41-source-history{display:block;color:#737a90;font-size:10.5px;cursor:help}
+.kbg20-v41-source-description{margin:7px 0 3px;color:#666c7c;font-size:11px;line-height:1.5}
+.kbg20-ui-cell-task .kbg20-v41-deleted{display:inline-flex;width:max-content;margin-top:5px;border:1px solid #e9d7df}
+.kbg20-ui-top .kbg20-v41-deleted{display:inline-flex;align-items:center;border:1px solid #e9d7df;white-space:nowrap}
+
+.kbg20-d6-badge.is-source-auto{background:#f4edff;color:#66359f;border:1px solid #dfc9fa}
+.kbg20-d6-badge.is-source-manual{background:#f2f7fb;color:#3c607c;border:1px solid #cfe2f1}
+
+/* Tab 1: nguon Start nam cung thong tin Task; cot dong ho chi con thoi gian va thao tac. */
+.kbg20-page .kbg20-v41-identity-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0;margin-top:3px;}
+.kbg20-page .kbg20-v41-identity-meta .kbg20-v41-task-note{display:inline;margin:0;min-width:0;}
+.kbg20-page .kbg20-v41-source-badge{margin-top:0;padding:2px 6px;font-size:10px;line-height:1.3;flex:none;cursor:help;}
+.kbg20-page .kbg20-v41-source-badge:focus-visible,.kbg20-page .kbg20-d6-badge:focus-visible{outline:2px solid #7546ba;outline-offset:2px;}
+.kbg20-page .kbg20-v41-source-history{display:inline;margin:0;font-size:10.5px;cursor:help;}
+.kbg20-page .kbg20-d6-badge.is-inferred{border-style:dashed;background:#f3f6fb;color:#5d6f89;border-color:#b7c4d7;}
+.kbg20-ux-smart-tooltip{position:fixed;z-index:11050;max-width:min(320px,calc(100vw - 20px));padding:11px 13px;border:1px solid #ded6ec;border-radius:10px;background:#fff;box-shadow:0 8px 26px rgba(30,18,52,.15);color:#384257;font-family:Nunito,'Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.5;pointer-events:none;overflow-wrap:break-word;}
+.kbg20-ux-smart-tooltip[hidden]{display:none!important;}
+.kbg20-ux-smart-tooltip strong{display:block;color:#53258b;font-size:12px;font-weight:750;margin-bottom:4px;}
+.kbg20-ux-smart-tooltip p{display:block;margin:0;color:#4e5769;}
+
+/* ExtraModal: toàn bộ nút thao tác của popup ở FooterTemplate, không nằm trong body. */
+.kbg20-ux-footer-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;width:100%;}
+.kbg20-ux-footer-actions .kbg20-btn{font-size:12px;min-height:34px;white-space:normal;text-align:center;}
+#mdlKbg20Parallel .kbg20-ux-session-select{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:650;color:#60358b;cursor:pointer;margin-top:5px;width:max-content;max-width:100%;}
+#mdlKbg20Parallel .kbg20-ux-session-select input{accent-color:#6936aa;width:15px;height:15px;flex:none;cursor:pointer;}
+#mdlKbg20Parallel .kbg20-ux-parallel-footer-actions{max-width:100%;}
+@media(max-width:700px){.kbg20-ux-footer-actions{justify-content:stretch}.kbg20-ux-footer-actions .kbg20-btn{flex:1 1 42%;}}
+
+
+/* Parallel start: native ExtraModal button sizing, two clear actions, checkbox multiple selection. */
+#mdlKbg20Parallel .kbg20-parallel-intro{font-size:12.5px;line-height:1.55;color:#49546a;margin:0 0 10px}
+#mdlKbg20Parallel .kbg20-parallel-legend{font-size:12px;line-height:1.55;border:1px solid #ddd1ef;background:#f8f5ff;color:#513477;padding:9px 11px;border-radius:7px;margin-bottom:12px}
+#mdlKbg20Parallel .kbg20-parallel-choice{display:flex;align-items:center;gap:11px;width:100%;cursor:pointer;margin:0}
+#mdlKbg20Parallel .kbg20-parallel-choice input{accent-color:#66339e;width:17px;height:17px;flex:none;cursor:pointer}
+#mdlKbg20Parallel .kbg20-parallel-choice-content{display:flex;flex-direction:column;gap:4px;min-width:0}
+#mdlKbg20Parallel .kbg20-parallel-choice-content small{color:#6b778c;font-size:11px}
+#mdlKbg20Parallel .kbg20-parallel-summary{border-top:1px solid #e9e4ef;margin-top:12px;padding-top:8px;font-size:11.5px;font-weight:650;color:#5b3b85}
+#mdlKbg20Parallel .kbg20-ux-parallel-footer-actions{gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+#mdlKbg20Parallel .kbg20-parallel-action{border:1px solid #49566d;border-radius:5px;min-height:34px;font-size:12px;line-height:1.35;font-weight:650;padding:7px 11px;white-space:normal;box-shadow:none;transition:background-color .15s,border-color .15s}
+#mdlKbg20Parallel .kbg20-parallel-action.btn-default{color:#354258;background:#fff}
+#mdlKbg20Parallel .kbg20-parallel-action.btn-default:hover{background:#f3f0f9;border-color:#54348a;color:#54348a}
+#mdlKbg20Parallel .kbg20-parallel-action.btn-primary{border-color:#55248e;background:#602d9b;color:#fff}
+#mdlKbg20Parallel .kbg20-parallel-action.btn-primary:hover{background:#4c1d80;border-color:#40196c}
+@media(max-width:650px){#mdlKbg20Parallel .kbg20-parallel-action{flex:1 1 100%}}
+#mdlKbg20Parallel .modal-dialog{max-width:min(660px,calc(100vw - 30px))}
+#mdlKbg20Parallel .kbg20-ux-parallel-item.can-stop:has(input:checked){border-color:#b59adf;background:#f2ebfc}

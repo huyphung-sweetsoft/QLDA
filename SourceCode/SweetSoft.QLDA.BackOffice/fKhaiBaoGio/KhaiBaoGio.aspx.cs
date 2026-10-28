@@ -840,8 +840,6 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
                 if(action=="start")
                 {
                     if(task.TrangThai!=0)throw new InvalidOperationException("Task khong con o trang thai Chua bat dau.");
-                    // Task Start sớm do Core kiểm tra dưới AppLock sau khi popup xác nhận;
-                    // không dùng DateTime.Today của server IIS để chặn trước.
                     if(TaskManager.Instance.CheckHasChildTasks(CurrentProjectId,task))
                         throw new InvalidOperationException("Task cha co con, nut Start tu TaskList khong ap dung truc tiep.");
                     var ctrl=TimControl<CtrlStartTask>(Page,"KbgCtrlStartTask");
