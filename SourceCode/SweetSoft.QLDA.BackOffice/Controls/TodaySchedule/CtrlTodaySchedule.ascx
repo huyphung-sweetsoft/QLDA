@@ -1,5 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTodaySchedule.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.Controls.TodaySchedule.CtrlTodaySchedule" %>
 <%@ Register Assembly="SweetSoft.QLDA.Controls" Namespace="SweetSoft.QLDA.Controls" TagPrefix="SweetSoft" %>
+<%@ Import Namespace="SweetSoft.QLDA.Core.Infrastructure" %>
 <%@ Register Src="~/fTasks/Controls/CtrlViewTaskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewTaskDetail" %>
 <%@ Register Src="~/fMeets/Controls/CtrlViewMeetDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewMeetDetail" %>
 <style>
@@ -74,12 +75,12 @@
 .today-schedule-intro { padding:12px 14px;margin-bottom:13px; }
 .today-schedule-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:12px;max-width:730px;margin:0 auto; }
 .today-schedule-grid.has-overdue { grid-template-columns:repeat(3,minmax(0,1fr));max-width:1080px; }
-.today-schedule-block { display:flex;flex-direction:column;min-width:0;height:min(51dvh,465px);min-height:335px;border-radius:11px; }
+.today-schedule-block { display:flex;flex-direction:column;min-width:0;height:453px;min-height:453px;border-radius:11px; }
 .today-schedule-block-head { flex:0 0 60px;min-height:60px;align-items:center;padding:9px 12px; }
 .today-schedule-block-head strong { font-size:13px;line-height:1.35;min-width:0; }
 .today-schedule-block-head strong i { flex:0 0 auto; }
 .today-schedule-block-head small { flex:0 0 auto;font-size:10.5px; }
-.today-schedule-list { flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin; }
+.today-schedule-list { flex:1 1 auto;min-height:0;max-height:none;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:thin; }
 .today-schedule-item { display:flex;flex:0 0 116px;flex-direction:column;justify-content:center;height:116px;min-height:116px;padding:9px 12px;overflow:hidden;border-bottom:1px solid #e8eef5; }
 .today-schedule-item[hidden] { display:none!important; }
 .today-schedule-item-top { gap:5px;margin-bottom:6px; }
@@ -108,7 +109,7 @@
 .today-schedule-companion,.today-schedule-companion.is-visible { transform:none!important;transition:opacity .18s ease,visibility 0s linear .18s!important; }
 .today-schedule-companion.is-visible { transition:opacity .18s ease,visibility 0s!important; }
 @media(max-width:1050px) { .today-schedule-grid.has-overdue { gap:8px; } .today-schedule-block-head { padding:8px; } .today-schedule-block-head strong { font-size:12px; } .today-schedule-block-head small { font-size:10px; } }
-@media(max-width:760px) { .today-schedule-grid.has-overdue { grid-template-columns:1fr;max-width:600px; } .today-schedule-grid { grid-template-columns:1fr;max-width:600px; } .today-schedule-block { height:350px;min-height:350px; } #<%= mdlTodaySchedule.ClientID %> .modal-body { max-height:calc(100dvh - 125px); } }
+@media(max-width:760px) { .today-schedule-grid.has-overdue { grid-template-columns:1fr;max-width:600px; } .today-schedule-grid { grid-template-columns:1fr;max-width:600px; } .today-schedule-block { height:453px;min-height:453px; } #<%= mdlTodaySchedule.ClientID %> .modal-body { max-height:calc(100dvh - 125px); } }
 
 /* V29: less modal width means reserved room for Hibrid; keep ExtraModal and its X unchanged. */
 #<%= mdlTodaySchedule.ClientID %> .modal-dialog { width:min(1010px,calc(100vw - 390px))!important;max-width:calc(100vw - 24px)!important; }
@@ -174,6 +175,36 @@
 body.today-schedule-detail-layer #<%= TodayModalClientId %> { z-index:1055!important; }
 body.today-schedule-detail-layer #<%= TodayTaskModalClientId %>,body.today-schedule-detail-layer #<%= TodayMeetModalClientId %> { z-index:2105!important; }
 body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!important; }
+/* Lật 3D giống lịch CtrlMeet: hai bảng task, chiều cao 116px của từng row không thay đổi. */
+.today-schedule-block--tasks .today-schedule-flip-row,.today-schedule-block--overdue .today-schedule-flip-row { display:block;position:relative;height:116px;min-height:116px;max-height:116px;flex:0 0 116px;padding:0;overflow:visible;perspective:1050px;contain:layout; }
+.today-schedule-flip-row .today-schedule-flip-inner { display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform:rotateY(0);transition:transform .65s cubic-bezier(.22,.61,.36,1); }
+/* Chỉ lật bằng hover thực sự hoặc focus-visible từ bàn phím; click link không giữ focus làm kẹt mặt sau khi Back. */
+.today-schedule-flip-row:hover:not(.today-schedule-flip-reset) .today-schedule-flip-inner,.today-schedule-flip-row:has(:focus-visible):not(.today-schedule-flip-reset) .today-schedule-flip-inner { transform:rotateY(180deg); }
+.today-schedule-flip-row.today-schedule-flip-reset .today-schedule-flip-inner { transform:rotateY(0)!important;transition:none!important; }
+.today-schedule-flip-row .today-schedule-flip-face { position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:0;padding:10px 11px;box-sizing:border-box;backface-visibility:hidden;-webkit-backface-visibility:hidden; }
+.today-schedule-flip-row .today-schedule-flip-front { background:#fff;transform:rotateY(0) translateZ(1px); }
+.today-schedule-flip-row .today-schedule-flip-back { align-items:center;justify-content:center;gap:10px;padding:10px 9px;border:1px solid #c9dbf4;border-radius:7px;background:linear-gradient(140deg,#fff,#f0f7ff);transform:rotateY(180deg) translateZ(1px); }
+.today-schedule-block--overdue .today-schedule-flip-row .today-schedule-flip-back { border-color:#fecaca;background:linear-gradient(140deg,#fff,#fff0f1); }
+.today-schedule-flip-back-title { width:100%;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;text-align:center;color:#263e66;font-size:12px;font-weight:800;line-height:1.35;overflow-wrap:anywhere; }
+.today-schedule-block--overdue .today-schedule-flip-back-title { color:#9f2f39; }
+.today-schedule-flip-actions { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:5px;width:100%;max-width:100%; }
+.today-schedule-flip-action { display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;min-width:0;min-height:29px;max-width:100%;padding:5px 4px;border:1px solid #c7d9f7;border-radius:7px;background:#fff;color:#2454ad!important;font-size:10px;font-weight:800;line-height:1.2;white-space:nowrap;text-decoration:none!important;cursor:pointer;overflow:hidden; }
+.today-schedule-flip-action:hover,.today-schedule-flip-action:focus-visible { color:#16418b!important;border-color:#84abe8;background:#eaf3ff;outline:none;text-decoration:none!important; }
+.today-schedule-flip-action.is-time { color:#5d2b9c!important;border-color:#d8c4ef; }
+.today-schedule-flip-action.is-time:hover,.today-schedule-flip-action.is-time:focus-visible { color:#502183!important;border-color:#b795db;background:#f5eeff; }
+.today-schedule-block--overdue .today-schedule-flip-action.is-detail { color:#b43842!important;border-color:#f6b9bf; }
+.today-schedule-flip-action i { flex:0 0 auto;font-size:10px; }
+.today-schedule-flip-action .today-schedule-flip-label { display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.today-schedule-flip-action.is-project { border-color:#decdf2;background:#fdfaff;color:#6531a3!important; }
+.today-schedule-flip-action.is-project:hover,.today-schedule-flip-action.is-project:focus-visible { border-color:#ae8bdb;background:#f3ebff;color:#4d2085!important; }
+.today-schedule-preference { display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:9px;margin:0 15px 12px;padding:9px 11px;border:1px solid #e6ddf3;border-radius:9px;background:#faf7ff;color:#5a397c;font-size:11.5px; }
+.today-schedule-preference-check { display:inline-flex;align-items:center;gap:7px;margin:0;cursor:pointer;font-weight:750; }
+.today-schedule-preference-check input { width:15px;height:15px;margin:0;accent-color:#6730a5;cursor:pointer; }
+.today-schedule-preference-save { display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #d2b9ed;border-radius:7px;background:#fff;color:#5a2496;font-size:11px;font-weight:800;cursor:pointer; }
+.today-schedule-preference-save:hover,.today-schedule-preference-save:focus-visible { background:#eee3ff;border-color:#a97ed7;outline:none; }
+.today-schedule-preference-note { color:#477457;font-size:10.5px; }
+@media(max-width:390px) { .today-schedule-flip-row .today-schedule-flip-face { padding:7px; } .today-schedule-flip-action { padding:5px; } }
+@media(prefers-reduced-motion:reduce) { .today-schedule-flip-row .today-schedule-flip-inner { transition:none!important; } }
 </style>
 <SweetSoft:ExtraModal runat="server" ID="mdlTodaySchedule" Type="Primary" Size="Large" Title="Lịch trình hôm nay">
     <ContentTemplate>
@@ -184,6 +215,11 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
                 <asp:Literal runat="server" ID="litTodaySchedule" Text="&lt;div class='today-schedule-empty'&gt;Nhấn Q hoặc chọn Lịch trình hôm nay để tải dữ liệu.&lt;/div&gt;" />
             </ContentTemplate>
         </asp:UpdatePanel>
+        <div class="today-schedule-preference" data-today-preference data-today-user="<%= SweetContext.Current.UserId.ToString("N") %>">
+            <label class="today-schedule-preference-check"><input type="checkbox" data-today-suppress-choice /> <span>Không hiện lại hôm nay</span></label>
+            <button type="button" class="today-schedule-preference-save" data-today-save-choice><i class="far fa-save" aria-hidden="true"></i> Lưu lựa chọn</button>
+            <span class="today-schedule-preference-note" role="status" aria-live="polite" data-today-preference-note></span>
+        </div>
         <%-- Async trigger nằm ngoài panel danh sách, tránh reset scroll và phân trang. --%>
         <asp:HiddenField runat="server" ID="hfTodayOpenKind" />
         <asp:HiddenField runat="server" ID="hfTodayOpenId" />
@@ -233,6 +269,38 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             bot.style.setProperty('z-index', String(Math.max(2000, zModal + 2, zBackdrop + 2)), 'important');
         }
         function isVisible() { var el = modal(); return !!(el && (el.classList.contains('show') || el.classList.contains('in'))); }
+        // Trình duyệt khôi phục trang bằng Back/Forward Cache có thể giữ focus của liên kết Khai báo giờ.
+        // Đưa TẤT CẢ row về mặt trước; chỉ mở khóa hover khi người dùng thực sự di chuyển chuột / Tab lại.
+        function resetScheduleFlips() {
+            var root = modal(); if (!root) return;
+            var active = document.activeElement;
+            if (active && active.closest && active.closest('.today-schedule-flip-row') && typeof active.blur === 'function') active.blur();
+            root.querySelectorAll('.today-schedule-flip-row').forEach(function (row) {
+                row.classList.add('today-schedule-flip-reset');
+            });
+        }
+        document.addEventListener('pointermove', function (event) {
+            var row = event.target && event.target.closest && event.target.closest('.today-schedule-flip-row.today-schedule-flip-reset');
+            if (row && row.closest('.today-schedule-content')) row.classList.remove('today-schedule-flip-reset');
+        }, { passive: true });
+        document.addEventListener('pointerout', function (event) {
+            var row = event.target && event.target.closest && event.target.closest('.today-schedule-flip-row.today-schedule-flip-reset');
+            if (row && (!event.relatedTarget || !row.contains(event.relatedTarget))) row.classList.remove('today-schedule-flip-reset');
+        });
+        document.addEventListener('focusin', function (event) {
+            var row = event.target && event.target.closest && event.target.closest('.today-schedule-flip-row.today-schedule-flip-reset');
+            if (row && event.target.matches && event.target.matches(':focus-visible')) row.classList.remove('today-schedule-flip-reset');
+        });
+        // Đưa state về mặt trước NGAY khi rời trang, rồi reset lại nếu BFCache phục hồi trang.
+        document.addEventListener('click', function (event) {
+            var link = event.target && event.target.closest && event.target.closest('.today-schedule-flip-action.is-time[href]');
+            if (!link || !link.closest('.today-schedule-content')) return;
+            var row = link.closest('.today-schedule-flip-row');
+            if (row) row.classList.add('today-schedule-flip-reset');
+            link.blur();
+        }, true);
+        window.addEventListener('pagehide', resetScheduleFlips);
+        window.addEventListener('pageshow', function (event) { if (event.persisted) resetScheduleFlips(); });
         // V31: Hibrid được đặt vào vị trí CUỐI CÙNG khi đang ẩn, rồi mới hiện.
         // Không lấy getBoundingClientRect của modal-dialog khi ExtraModal đang trượt vào.
         function positionBot() {
@@ -287,9 +355,9 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             robotVisibilityObserver = new MutationObserver(function () { if (isVisible()) revealRobotWithModal(); });
             robotVisibilityObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
         }
-        function onScheduleOpening() { hideRobot(); robotReady = false; syncData(); prepareRobot(); observeModalOpen(); }
-        function onScheduleOpened() { syncData(); revealRobotWithModal(); }
-        function onScheduleClosing() { hideRobot(); robotReady = false; }
+        function onScheduleOpening() { resetScheduleFlips(); hideRobot(); robotReady = false; syncData(); syncPreference(); prepareRobot(); observeModalOpen(); }
+        function onScheduleOpened() { syncData(); syncPreference(); revealRobotWithModal(); }
+        function onScheduleClosing() { resetScheduleFlips(); hideRobot(); robotReady = false; }
         function niceDay(dateString) {
             var raw = String(dateString || '');
             var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
@@ -455,7 +523,36 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
         document.addEventListener('scroll', hideScheduleTip, true);
         window.addEventListener('resize', hideScheduleTip);
         document.addEventListener('hidden.bs.modal', function (e) { if (e.target === modal()) hideScheduleTip(); });
-        window.TodayScheduleUI = { toggle: toggle, openDate: openDate, show: show, hide: hide, isVisible: isVisible };
+        // Lưu theo tài khoản + ngày trên thiết bị; chỉ cấm tự mở, KHÔNG cấm Q / mở thủ công.
+        function preferenceRoot() { return document.querySelector('[data-today-preference]'); }
+        function dayStamp() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+        function preferenceKey() { var node = preferenceRoot(); var user = node && node.getAttribute('data-today-user'); return user ? 'SweetSoft.TodaySchedule.NoAuto.' + user : ''; }
+        function isAutoSuppressed() {
+            try { var key = preferenceKey(); return !!(key && window.localStorage.getItem(key) === dayStamp()); }
+            catch (e) { return false; }
+        }
+        function syncPreference() {
+            var root = preferenceRoot(), input = root && root.querySelector('[data-today-suppress-choice]');
+            if (input) input.checked = isAutoSuppressed();
+            var note = root && root.querySelector('[data-today-preference-note]'); if (note) note.textContent = '';
+        }
+        function savePreference() {
+            var root = preferenceRoot(); if (!root) return;
+            var input = root.querySelector('[data-today-suppress-choice]'), note = root.querySelector('[data-today-preference-note]'), key = preferenceKey();
+            if (!input || !key) return;
+            try {
+                if (input.checked) window.localStorage.setItem(key, dayStamp());
+                else window.localStorage.removeItem(key);
+                if (note) note.textContent = input.checked ? 'Đã lưu: hôm nay không tự mở lại.' : 'Đã bật lại tự mở lịch trình.';
+            } catch (e) { if (note) note.textContent = 'Không lưu được tùy chọn trên trình duyệt này.'; }
+        }
+        function autoOpenEmployee() {
+            if (!document.getElementById('edEmployeeDashboard') || isAutoSuppressed()) return false;
+            if (document.querySelector('.modal.show,.modal.in')) return false;
+            openDate(''); return true;
+        }
+        document.addEventListener('click', function (e) { var b = e.target && e.target.closest && e.target.closest('[data-today-save-choice]'); if (b) { e.preventDefault(); savePreference(); } });
+        window.TodayScheduleUI = { toggle: toggle, openDate: openDate, show: show, hide: hide, isVisible: isVisible, autoOpenEmployee: autoOpenEmployee };
         document.addEventListener('keydown', function (event) {
             if (String(event.key || '').toLowerCase() !== 'q' || event.altKey || event.ctrlKey || event.metaKey || event.repeat || event.isComposing) return;
             var t = event.target; if (t && (t.isContentEditable || (t.closest && t.closest('input,textarea,select,[contenteditable],[role="textbox"],.CodeMirror,.monaco-editor')))) return;

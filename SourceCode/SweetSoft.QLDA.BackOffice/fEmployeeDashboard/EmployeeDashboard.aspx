@@ -711,6 +711,18 @@
             if (displayedUrl !== window.location.href) changeWeek(window.location.href, false);
         });
     })();
+    // Chi trang EmployeeDashboard moi tu dong mo lich. Phim Q va nut mo thu cong van doc lap.
+    (function () {
+        function autoOpenToday() {
+            var dashboard = document.getElementById('edEmployeeDashboard');
+            if (!dashboard || dashboard.getAttribute('data-ed-auto-today-done') === '1') return;
+            dashboard.setAttribute('data-ed-auto-today-done', '1');
+            if (window.TodayScheduleUI && typeof window.TodayScheduleUI.autoOpenEmployee === 'function')
+                window.TodayScheduleUI.autoOpenEmployee();
+        }
+        if (document.readyState === 'complete') window.setTimeout(autoOpenToday, 80);
+        else window.addEventListener('load', function () { window.setTimeout(autoOpenToday, 80); }, { once: true });
+    })();
 </script>
 
 </asp:Content>

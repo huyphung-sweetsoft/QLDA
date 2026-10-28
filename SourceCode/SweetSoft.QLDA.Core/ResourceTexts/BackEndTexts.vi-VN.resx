@@ -3367,6 +3367,9 @@
   <data name="PROJECT_TEMPLATE_LIST" xml:space="preserve">
     <value>Danh sách dự án mẫu</value>
   </data>
+  <data name="TASK_TIME_TRACKING" xml:space="preserve">
+    <value>Tính giờ công việc</value>
+  </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
@@ -3526,7 +3529,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
-  <data name="TASK_TIME_TRACKING" xml:space="preserve">
-    <value>Tính giờ công việc</value>
+  <data name="EMPLOYEE_DASHBOARD" xml:space="preserve">
+    <value>Biểu đồ nhân viên</value>
   </data>
 </root>
