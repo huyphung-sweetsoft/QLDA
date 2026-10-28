@@ -1,4 +1,5 @@
 using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using System;
@@ -22,12 +23,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         private Guid _projectPm = Guid.Empty;
         // Khong dereference CURRENT_PAGE tai Init: BaseAdminUserControl/BaseAdminPage
         // co the chua khoi tao du thong tin quyen cho den Load.
+        private bool CoQuyenDuAn(Guid project)
+        {
+            var page = Page as BaseAdminPage;
+            if (page == null || project == Guid.Empty || !DuocXemDuAn(project)) return false;
+            if (page.IsAdministrator) return true;
+            if (SweetContext.Current == null || SweetContext.Current.UserId == Guid.Empty) return false;
+            Guid? idPm = DuAnManager.Instance.LayIdNhanVienQuanLy(project);
+            return idPm.HasValue && idPm.Value == SweetContext.Current.UserId;
+        }
         private bool CoQuyen
         {
             get
             {
                 var page = Page as BaseAdminPage;
-                return page != null && (page.IsPM || page.IsAdministrator);
+                return page != null && CoQuyenDuAn(page.CurrentProjectId);
             }
         }
 
@@ -261,7 +271,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         public void OpenModal(Guid project, Guid task)
         {
-            if (!CoQuyen) { ShowAccessDeniedNotify(); return; }
+            if (!CoQuyenDuAn(project)) { ShowAccessDeniedNotify(); return; }
             if (!DuocXemDuAn(project)) { ShowAccessDeniedNotify(); return; }
             try
             {
@@ -320,50 +330,137 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             catch(Exception ex){ShowNotify(ex.Message,MSGType.Error);}
         }
-        protected void btnLuuDieuChinh_Click(object sender,EventArgs e)
+        private const string XacNhanDieuChinhPm = "KBG20_PM_CONFIRM_ADJUST";
+
+        private void XoaYeuCauDieuChinhChoXacNhan()
         {
-            if(!CoQuyen){ShowAccessDeniedNotify();return;}
-            Guid project,task,request;
-            if(!DangDieuChinh || !Guid.TryParse(hfProjectId.Value,out project) ||
-                !Guid.TryParse(hfTaskId.Value,out task) || !Guid.TryParse(hfRequestId.Value,out request) || !DuocXemDuAn(project))
-            {ShowNotify("Phiên điều chỉnh đã hết hiệu lực, vui lòng mở lại.",MSGType.Warning);return;}
+            foreach (string key in new[] { "Project", "Task", "Request", "Snapshot", "Employee",
+                "Regular", "Overtime", "Reason", "CreatedAt" })
+                ViewState.Remove("Kbg20PmPending_" + key);
+        }
+
+        protected void btnLuuDieuChinh_Click(object sender, EventArgs e)
+        {
+            if (!CoQuyen) { ShowAccessDeniedNotify(); return; }
+            Guid project, task, request;
+            if (!DangDieuChinh || !Guid.TryParse(hfProjectId.Value, out project) ||
+                !Guid.TryParse(hfTaskId.Value, out task) || !Guid.TryParse(hfRequestId.Value, out request) ||
+                !DuocXemDuAn(project))
+            {
+                ShowNotify("Phiên điều chỉnh đã hết hiệu lực, vui lòng mở lại.", MSGType.Warning);
+                return;
+            }
             try
             {
-                TaiDuLieu(project,task,false);
-                if(Ban==null || !Ban.DaChotCong || repNhanVien.Items.Count!=Ban.NhanVien.Count)
+                TaiDuLieu(project, task, false);
+                if (Ban == null || !Ban.DaChotCong || repNhanVien.Items.Count != Ban.NhanVien.Count)
                     throw new InvalidOperationException("Kết quả đã chốt không còn phù hợp. Vui lòng tải lại.");
-                Kbg20PmDongDuyet changed=null;int index=0;
-                foreach(RepeaterItem item in repNhanVien.Items)
+                Kbg20PmDongDuyet changed = null;
+                string tenNhanVien = string.Empty;
+                int index = 0;
+                foreach (RepeaterItem item in repNhanVien.Items)
                 {
-                    var hf=item.FindControl("hfNhanVien") as HiddenField;
-                    Guid posted,expected=Ban.NhanVien[index].IdNhanVien;
-                    if(hf==null || !Guid.TryParse(Request.Form[hf.UniqueID],out posted) || posted!=expected)
+                    var hf = item.FindControl("hfNhanVien") as HiddenField;
+                    Guid posted, expected = Ban.NhanVien[index].IdNhanVien;
+                    if (hf == null || !Guid.TryParse(Request.Form[hf.UniqueID], out posted) || posted != expected)
                         throw new DBConcurrencyException("Danh sách nhân viên thay đổi. Vui lòng mở lại.");
-                    var h=item.FindControl("txtHanhChinh") as TextBox;
-                    var hp=item.FindControl("txtHanhChinhPhut") as TextBox;
-                    var t=item.FindControl("txtTangCa") as TextBox;
-                    var tp=item.FindControl("txtTangCaPhut") as TextBox;
-                    var reason=item.FindControl("txtLyDo") as TextBox;
-                    int a=DocPhut(DocTruongPmTuForm(h,"Giờ theo lịch"),DocTruongPmTuForm(hp,"Phút theo lịch"));
-                    int b=DocPhut(DocTruongPmTuForm(t,"Giờ tăng ca"),DocTruongPmTuForm(tp,"Phút tăng ca"));
-                    var original=Ban.NhanVien[index];
-                    if(a!=original.PhutHanhChinhPmDaChot || b!=original.PhutTangCaPmDaChot)
+                    var h = item.FindControl("txtHanhChinh") as TextBox;
+                    var hp = item.FindControl("txtHanhChinhPhut") as TextBox;
+                    var t = item.FindControl("txtTangCa") as TextBox;
+                    var tp = item.FindControl("txtTangCaPhut") as TextBox;
+                    var reason = item.FindControl("txtLyDo") as TextBox;
+                    int a = DocPhut(DocTruongPmTuForm(h, "Giờ theo lịch"), DocTruongPmTuForm(hp, "Phút theo lịch"));
+                    int b = DocPhut(DocTruongPmTuForm(t, "Giờ tăng ca"), DocTruongPmTuForm(tp, "Phút tăng ca"));
+                    var original = Ban.NhanVien[index];
+                    if (a != original.PhutHanhChinhPmDaChot || b != original.PhutTangCaPmDaChot)
                     {
-                        if(changed!=null)throw new InvalidOperationException("Mỗi lần chỉ được điều chỉnh kết quả của một nhân viên.");
-                        changed=new Kbg20PmDongDuyet{IdNhanVien=posted,PhutHanhChinh=a,PhutTangCa=b,
-                            LyDoDieuChinh=DocTruongPmTuForm(reason,"Lý do điều chỉnh")};
+                        if (changed != null)
+                            throw new InvalidOperationException("Mỗi lần chỉ được điều chỉnh kết quả của một nhân viên.");
+                        changed = new Kbg20PmDongDuyet
+                        {
+                            IdNhanVien = posted, PhutHanhChinh = a, PhutTangCa = b,
+                            LyDoDieuChinh = DocTruongPmTuForm(reason, "Lý do điều chỉnh")
+                        };
+                        tenNhanVien = original.TenNhanVien;
                     }
                     index++;
                 }
-                if(changed==null)throw new InvalidOperationException("Bạn chưa thay đổi số giờ công của nhân viên nào.");
-                new Kbg20PmChotCongTaskManager().DieuChinhGioDaChot(project,task,NguoiHienTai,LaQuanTri,
-                    request,hfSnapshot.Value,changed);
-                ViewState["Kbg20PmDangDieuChinh"]=false;
-                TaiDuLieu(project,task,true);
-                Saved?.Invoke(this,EventArgs.Empty);
-                ShowNotify("Đã điều chỉnh giờ công và giữ lịch sử chốt cũ. Hãy kiểm tra thông báo của nhân viên.",MSGType.Success);
+                if (changed == null)
+                    throw new InvalidOperationException("Bạn chưa thay đổi số giờ công của nhân viên nào.");
+                if (string.IsNullOrWhiteSpace(changed.LyDoDieuChinh))
+                    throw new InvalidOperationException("Bạn cần ghi lý do khi điều chỉnh giờ công đã chốt.");
+                if (!string.Equals(Ban.DauDuLieu, hfSnapshot.Value, StringComparison.Ordinal))
+                    throw new DBConcurrencyException("Kết quả chốt đã thay đổi. Vui lòng tải lại trước khi điều chỉnh.");
+
+                // Chua ghi SQL. Chot form da validate vao ViewState; tren postback
+                // cua MessageBox Request.Form khong con nhung truong nhap gio PM.
+                XoaYeuCauDieuChinhChoXacNhan();
+                ViewState["Kbg20PmPending_Project"] = project.ToString("D");
+                ViewState["Kbg20PmPending_Task"] = task.ToString("D");
+                ViewState["Kbg20PmPending_Request"] = request.ToString("D");
+                ViewState["Kbg20PmPending_Snapshot"] = hfSnapshot.Value;
+                ViewState["Kbg20PmPending_Employee"] = changed.IdNhanVien.ToString("D");
+                ViewState["Kbg20PmPending_Regular"] = changed.PhutHanhChinh;
+                ViewState["Kbg20PmPending_Overtime"] = changed.PhutTangCa;
+                ViewState["Kbg20PmPending_Reason"] = changed.LyDoDieuChinh;
+                ViewState["Kbg20PmPending_CreatedAt"] = DateTime.UtcNow;
+
+                var result = new ConfirmResult { CommandName = XacNhanDieuChinhPm };
+                CURRENT_PAGE.CurrentConfirmResult = result;
+                string message = "Xác nhận lưu giờ công điều chỉnh cho <strong>" +
+                    HttpUtility.HtmlEncode(tenNhanVien) + "</strong>?<br/>" +
+                    "Giờ theo lịch: <strong>" + DinhDangPhut(changed.PhutHanhChinh) +
+                    "</strong>; giờ tăng ca: <strong>" + DinhDangPhut(changed.PhutTangCa) +
+                    "</strong>.<br/>Bản chốt trước đó vẫn được giữ trong lịch sử.";
+                OpenMessageBox(new MessageBox("Xác nhận điều chỉnh giờ công", message,
+                    MSGButton.AcceptCancel, MSGIcon.Warning), result, false, false);
             }
-            catch(Exception ex){ShowNotify(ex.Message,MSGType.Error);}
+            catch (Exception ex) { XoaYeuCauDieuChinhChoXacNhan(); ShowNotify(ex.Message, MSGType.Error); }
+        }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e == null || !string.Equals((e.CommandName ?? "").Trim(),
+                XacNhanDieuChinhPm, StringComparison.Ordinal)) return;
+            if (!e.Submit) { XoaYeuCauDieuChinhChoXacNhan(); return; }
+            if (!CoQuyen) { XoaYeuCauDieuChinhChoXacNhan(); ShowAccessDeniedNotify(); return; }
+            // Khoi tao truoc vi toan tu && co the khong chay cac out-param.
+            Guid project = Guid.Empty, task = Guid.Empty, request = Guid.Empty, employee = Guid.Empty;
+            bool valid = DangDieuChinh &&
+                Guid.TryParse(Convert.ToString(ViewState["Kbg20PmPending_Project"]), out project) &&
+                Guid.TryParse(Convert.ToString(ViewState["Kbg20PmPending_Task"]), out task) &&
+                Guid.TryParse(Convert.ToString(ViewState["Kbg20PmPending_Request"]), out request) &&
+                Guid.TryParse(Convert.ToString(ViewState["Kbg20PmPending_Employee"]), out employee) &&
+                ViewState["Kbg20PmPending_Regular"] is int &&
+                ViewState["Kbg20PmPending_Overtime"] is int &&
+                ViewState["Kbg20PmPending_CreatedAt"] is DateTime &&
+                (DateTime.UtcNow - (DateTime)ViewState["Kbg20PmPending_CreatedAt"]).TotalMinutes <= 5 &&
+                DuocXemDuAn(project);
+            if (!valid)
+            {
+                XoaYeuCauDieuChinhChoXacNhan();
+                ShowNotify("Xác nhận đã hết hiệu lực. Vui lòng mở lại popup điều chỉnh.", MSGType.Warning);
+                return;
+            }
+            var changed = new Kbg20PmDongDuyet
+            {
+                IdNhanVien = employee,
+                PhutHanhChinh = (int)ViewState["Kbg20PmPending_Regular"],
+                PhutTangCa = (int)ViewState["Kbg20PmPending_Overtime"],
+                LyDoDieuChinh = Convert.ToString(ViewState["Kbg20PmPending_Reason"])
+            };
+            string snapshot = Convert.ToString(ViewState["Kbg20PmPending_Snapshot"]);
+            XoaYeuCauDieuChinhChoXacNhan(); // Một xác nhận chỉ được thử lưu một lần.
+            try
+            {
+                new Kbg20PmChotCongTaskManager().DieuChinhGioDaChot(project, task,
+                    NguoiHienTai, LaQuanTri, request, snapshot, changed);
+                ViewState["Kbg20PmDangDieuChinh"] = false;
+                TaiDuLieu(project, task, true);
+                Saved?.Invoke(this, EventArgs.Empty);
+                ShowNotify("Đã điều chỉnh giờ công và giữ lịch sử chốt cũ. Hãy kiểm tra thông báo của nhân viên.", MSGType.Success);
+            }
+            catch (Exception ex) { ShowNotify(ex.Message, MSGType.Error); }
         }
         // PM gui 2 truong rieng, backend KHONG parse "HH:mm" nua.
         private static int DocPhut(string gioText, string phutText)

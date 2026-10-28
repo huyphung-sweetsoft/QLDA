@@ -48,12 +48,20 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         protected bool IsAdministrator => this.CURRENT_PAGE.IsAdministrator;
         protected Dictionary<Guid, string> _dictTaskCodes = new Dictionary<Guid, string>();
         private static Dictionary<Guid, TblDoUuTien> _dictPriorities = new Dictionary<Guid, TblDoUuTien>();
-        // Dot 8: chi truy van mot lan khi bind GridView, khong goi SQL tung row.
-        private Dictionary<Guid, bool> _qlpmTrangThai = new Dictionary<Guid, bool>();
-        private HashSet<Guid> _qlpmTaskCoGio = new HashSet<Guid>();
-        // Cach tinh dieu kien chot giong popup PM, luu theo task de RowDataBound khong truy van SQL.
-        private HashSet<Guid> _qlpmTaskDuocChot = new HashSet<Guid>();
-        private Dictionary<Guid, string> _qlpmLyDoChuaChot = new Dictionary<Guid, string>();
+        // PM du an do TblDuAn quyet dinh; CURRENT_PAGE.IsPM co the khac voi PM duoc gan.
+        // Dung cung nguon xac thuc voi Kbg20PmChotCongTaskManager.ChotCongTapThe.
+        private bool CoQuyenDuyetGioDuAn()
+        {
+            if (this.IsAdministrator) return true;
+            if (this.ProjectId == Guid.Empty || SweetContext.Current == null ||
+                SweetContext.Current.UserId == Guid.Empty) return false;
+            Guid? idPm = DuAnManager.Instance.LayIdNhanVienQuanLy(this.ProjectId);
+            return idPm.HasValue && idPm.Value == SweetContext.Current.UserId;
+        }
+        // Chi luu dau hieu tren nut Duyet; KHONG chi phoi Visible/Enabled.
+        // Tinh mot lan khi bind, khong query SQL trong RowDataBound.
+        private Dictionary<Guid, bool> _qlpmTrangThaiChot = new Dictionary<Guid, bool>();
+        private HashSet<Guid> _qlpmTaskSanSangChot = new HashSet<Guid>();
         protected readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         // Them CanhBao trong ExtraModal ma khong can ghi de *.designer.cs cua partner.
@@ -750,71 +758,54 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 pnlNoTask.Visible = false;
             }
 
-            // Dot 8: mot bulk SQL cho danh sach du an; neu module V2 tat thi nut khong duoc bat.
-            _qlpmTrangThai = new Dictionary<Guid, bool>();
-            _qlpmTaskCoGio = new HashSet<Guid>();
-            _qlpmTaskDuocChot = new HashSet<Guid>();
-            _qlpmLyDoChuaChot = new Dictionary<Guid, string>();
-            if ((IsPM || IsAdministrator) && ProjectId != Guid.Empty && KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+            // Badge la trang thai nghiep vu, doc lap quyen va kha nang nhan nut Duyet.
+            // Bulk la du lieu goi y. Neu bulk bo sot/loi, phai doi chieu voi
+            // LayBanDuyet() - cung nguon dang hien thi popup PM, khong tu suy dien.
+            _qlpmTrangThaiChot = new Dictionary<Guid, bool>();
+            _qlpmTaskSanSangChot = new HashSet<Guid>();
+            if (ProjectId != Guid.Empty && dtTasks != null && dtTasks.Rows.Count > 0 &&
+                KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
             {
+                var pmReader = new Kbg20PmChotCongTaskManager();
                 try
                 {
-                    var pmReader = new Kbg20PmChotCongTaskManager();
-                    _qlpmTrangThai = pmReader.LayTrangThaiNhieuTask(ProjectId);
-                    _qlpmTaskCoGio = pmReader.LayTaskCoNhanVienHoacGio(ProjectId);
-                    // Chi doc chi tiet cac task DA HOAN THANH, CO DU LIEU va CHUA CHOT.
-                    // Chua du dieu kien => khoa nut; khong can query trong RowDataBound.
-                    if (dtTasks != null)
-                    {
-                        foreach (DataRow row in dtTasks.Rows)
-                        {
-                            Guid idTask;
-                            int trangThai = Convert.ToInt32(row["TrangThai"]);
-                            if ((trangThai != 2 && trangThai != 3)
-                                || !Guid.TryParse(Convert.ToString(row["IdCongViec"]), out idTask)
-                                || idTask == Guid.Empty || !_qlpmTaskCoGio.Contains(idTask)) continue;
-                            bool daChot;
-                            if (!_qlpmTrangThai.TryGetValue(idTask, out daChot) || daChot) continue;
-                            try
-                            {
-                                var ban = pmReader.LayBanDuyet(ProjectId, idTask);
-                                if (ban.DaChotCong)
-                                {
-                                    _qlpmTrangThai[idTask] = true;
-                                    continue;
-                                }
-                                bool daCoBanPm = ban.NhanVien.Any(x => x.DaCoSuKienPmChot);
-                                if ((ban.TrangThaiTask == 2 || ban.TrangThaiTask == 3)
-                                    && ban.NhanVien.Count > 0 && !ban.CoPhienDangMo
-                                    && !daCoBanPm && ban.SoNhanVienChuaXacNhan == 0)
-                                {
-                                    _qlpmTaskDuocChot.Add(idTask);
-                                }
-                                else
-                                {
-                                    _qlpmLyDoChuaChot[idTask] = ban.CoPhienDangMo
-                                        ? "Còn đồng hồ đang chạy; chưa thể chốt giờ công."
-                                        : ban.SoNhanVienChuaXacNhan > 0
-                                            ? "Còn " + ban.SoNhanVienChuaXacNhan + " nhân viên chưa báo hoàn thành phần việc."
-                                        : daCoBanPm ? "Đã có kết quả chốt trước đó; cần kiểm tra dữ liệu."
-                                        : "Chưa đủ điều kiện chốt giờ công.";
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _qlpmLyDoChuaChot[idTask] = "Không đọc được dữ liệu đối soát; vui lòng thử lại.";
-                                System.Diagnostics.Trace.TraceError("KBG20: khong doc duoc dieu kien chot cua task " + idTask + ": " + ex);
-                            }
-                        }
-                    }
+                    _qlpmTrangThaiChot = pmReader.LayTrangThaiNhieuTask(ProjectId);
                 }
                 catch (Exception ex)
                 {
-                    // Loi doc du lieu => tat nut, khong duoc suy doan la du dieu kien chot.
-                    _qlpmTrangThai.Clear();
-                    _qlpmTaskCoGio.Clear();
-                    _qlpmTaskDuocChot.Clear();
-                    System.Diagnostics.Trace.TraceError("KBG20: loi doc trang thai nut chot gio cong: " + ex);
+                    // Bulk loi KHONG duoc xoa het dau da chot. Xem chi tiet tung
+                    // Task hoan thanh ben duoi; khong gay loi toan bo danh sach.
+                    System.Diagnostics.Trace.TraceError("KBG20: loi bulk badge PM, thu doi chieu LayBanDuyet: " + ex);
+                }
+                foreach (DataRow row in dtTasks.Rows)
+                {
+                    int trangThai = row["TrangThai"] == DBNull.Value ? -1 : Convert.ToInt32(row["TrangThai"]);
+                    Guid idTask;
+                    if ((trangThai != 2 && trangThai != 3) ||
+                        !Guid.TryParse(Convert.ToString(row["IdCongViec"]), out idTask) ||
+                        idTask == Guid.Empty) continue;
+                    bool bulkDaChot;
+                    if (_qlpmTrangThaiChot.TryGetValue(idTask, out bulkDaChot) && bulkDaChot)
+                        continue; // Bulk da xac nhan, khong truy van lai.
+                    try
+                    {
+                        var ban = pmReader.LayBanDuyet(ProjectId, idTask);
+                        // Popup PM la nguon tham chieu sau cung, ke ca khi bulk bo sot.
+                        if (ban.DaChotCong)
+                        {
+                            _qlpmTrangThaiChot[idTask] = true;
+                            continue;
+                        }
+                        if (ban.NhanVien.Count > 0 && !ban.CoPhienDangMo &&
+                            ban.SoNhanVienChuaXacNhan == 0 &&
+                            !ban.NhanVien.Any(x => x.DaCoSuKienPmChot))
+                            _qlpmTaskSanSangChot.Add(idTask);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Khong ve dau sai neu SQL khong xac minh duoc.
+                        System.Diagnostics.Trace.TraceError("KBG20: khong xac minh duoc badge cua Task " + idTask + ": " + ex);
+                    }
                 }
             }
             grvData.DataSource = dtTasks;
@@ -1118,32 +1109,76 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     break;
 
                 case "REVIEW_HOURS":
-                    if (!this.IsPM && !this.IsAdministrator) { ShowAccessDeniedNotify(); return; }
+                    // Nút luôn hiện với mọi thành viên. Chỉ kiểm tra quyền và điều kiện
+                    // tại server để tránh lệch trạng thái (PM/nhân viên/multi-tab).
+                    bool duocDuyetGioDuAn;
+                    try { duocDuyetGioDuAn = CoQuyenDuyetGioDuAn(); }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.TraceError("KBG20: loi kiem tra PM khi mo popup: " + ex);
+                        ShowNotify("Không kiểm tra được quyền quản lý dự án. Vui lòng thử lại.", MSGType.Error);
+                        return;
+                    }
+                    if (!duocDuyetGioDuAn)
+                    {
+                        ShowNotify("Bạn không có quyền thực hiện hành động này.", MSGType.Error);
+                        return;
+                    }
                     Guid idTaskPm;
                     if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out idTaskPm) || idTaskPm == Guid.Empty)
-                    { ShowInvalidDataError(); return; }
+                    {
+                        ShowNotify("Không xác định được công việc cần duyệt giờ công.", MSGType.Error);
+                        return;
+                    }
                     TblCongViec taskPm = TaskManager.Instance.FetchById(idTaskPm);
                     if (taskPm == null || taskPm.IdDuAn != ProjectId || taskPm.DaXoa == true)
-                    { ShowInvalidNotFoundData(); return; }
+                    {
+                        ShowNotify("Công việc không tồn tại hoặc không thuộc dự án này.", MSGType.Error);
+                        return;
+                    }
+                    if (!KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+                    {
+                        ShowNotify("Chức năng chốt giờ công chưa được kích hoạt.", MSGType.Error);
+                        return;
+                    }
                     if (taskPm.TrangThai != 2 && taskPm.TrangThai != 3)
-                    { ShowNotify("Chỉ chốt giờ công khi công việc đã hoàn thành.", MSGType.Warning); Rebind(); return; }
-                    // Kiểm tra lại từ SQL tại thời điểm click; không tin trạng thái của nút trên trình duyệt.
+                    {
+                        string lyDo = taskPm.TrangThai == 0
+                            ? "Công việc chưa bắt đầu nên chưa thể chốt giờ công."
+                            : taskPm.TrangThai == 1
+                                ? "Công việc đang thực hiện nên chưa thể chốt giờ công."
+                            : taskPm.TrangThai == 4
+                                ? "Công việc đang chờ PM duyệt hoàn thành nên chưa thể chốt giờ công."
+                                : "Công việc chưa hoàn thành nên chưa thể chốt giờ công.";
+                        ShowNotify(lyDo, MSGType.Error);
+                        return;
+                    }
+                    // Kiểm tra lại từ SQL tại lúc nhấn. Chưa đủ điều kiện => notify đỏ;
+                    // đã chốt hoặc đủ điều kiện chốt mới được mở popup hiện hành.
                     Kbg20PmBanDuyet banHienTai;
                     try { banHienTai = new Kbg20PmChotCongTaskManager().LayBanDuyet(ProjectId, idTaskPm); }
                     catch (Exception ex)
-                    { System.Diagnostics.Trace.TraceError("KBG20: loi kiem tra nut chot gio cong: " + ex);
-                      ShowNotify("Không kiểm tra được dữ liệu giờ công. Vui lòng thử lại.", MSGType.Warning); Rebind(); return; }
+                    {
+                        System.Diagnostics.Trace.TraceError("KBG20: loi kiem tra chot gio cong task " + idTaskPm + ": " + ex);
+                        ShowNotify("Không đọc được dữ liệu đối soát giờ công. Vui lòng thử lại.", MSGType.Error);
+                        return;
+                    }
                     bool coBanPm = banHienTai.NhanVien.Any(x => x.DaCoSuKienPmChot);
                     bool duocChotMoi = banHienTai.NhanVien.Count > 0 && !banHienTai.CoPhienDangMo
                         && !coBanPm && banHienTai.SoNhanVienChuaXacNhan == 0;
                     if (!banHienTai.DaChotCong && !duocChotMoi)
                     {
-                        ShowNotify(banHienTai.CoPhienDangMo ? "Vẫn còn đồng hồ đang chạy trên công việc."
+                        string lyDo = banHienTai.CoPhienDangMo
+                            ? "Công việc vẫn còn đồng hồ đang chạy, chưa thể chốt giờ công."
                             : banHienTai.SoNhanVienChuaXacNhan > 0
-                                ? "Còn nhân viên chưa báo hoàn thành phần việc; chưa thể chốt giờ công."
-                            : coBanPm ? "Đã có bản chốt trước đó; cần kiểm tra dữ liệu giờ công."
-                            : "Công việc chưa đủ điều kiện chốt giờ công.", MSGType.Warning);
-                        Rebind(); return;
+                                ? "Còn " + banHienTai.SoNhanVienChuaXacNhan + " nhân viên chưa báo hoàn thành phần việc; chưa thể chốt giờ công."
+                            : coBanPm
+                                ? "Đã có kết quả chốt giờ công trước đó nhưng dữ liệu đối soát chưa hợp lệ. Vui lòng kiểm tra."
+                            : banHienTai.NhanVien.Count == 0
+                                ? "Công việc chưa có nhân viên hoặc dữ liệu giờ công để chốt."
+                            : "Công việc chưa đủ điều kiện chốt giờ công.";
+                        ShowNotify(lyDo, MSGType.Error);
+                        return;
                     }
                     CtrlDuyetGioCongTask1.OpenModal(ProjectId, idTaskPm);
                     break;
@@ -1365,46 +1400,27 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     e.Row.CssClass += " row-overdue-bg";
                 else if (finalSeverity == 1)
                     e.Row.CssClass += " row-warning-bg";
-                // Ba trang thai: chua the chot (khoa), du chot (!) va da chot (V).
-                WebControl btnPm = e.Row.FindControl("lbtDuyetCong") as WebControl;
-                if (btnPm != null)
+                // Khôi phục dấu của bản Task trước: "✓" PM đã chốt, "!" đủ điều kiện chốt.
+                // KHÔNG đổi VisibleConditionKey / Enabled / IsDisabledStyle của SmartLinkButton.
+                var marker = e.Row.FindControl("lblPmPending") as Label;
+                if (marker != null)
                 {
+                    marker.Visible = false;
                     Guid idTask;
+                    int trangThai = rowView["TrangThai"] == DBNull.Value ? -1 : Convert.ToInt32(rowView["TrangThai"]);
                     bool daChot = false;
-                    int trangThai = Convert.ToInt32(rowView["TrangThai"]);
-                    bool hoanThanh = trangThai == 2 || trangThai == 3;
-                    bool idHopLe = Guid.TryParse(Convert.ToString(rowView["IdCongViec"]), out idTask)
-                        && idTask != Guid.Empty;
-                    bool coDuLieu = idHopLe && _qlpmTrangThai.TryGetValue(idTask, out daChot);
-                    bool coQuyen = this.IsPM || this.IsAdministrator;
-                    bool moduleBat = KhaiBaoGioManager.KhaiBaoGio20DaKichHoat();
-                    bool daChotHopLe = coQuyen && moduleBat && hoanThanh && coDuLieu && daChot;
-                    bool duocChot = coQuyen && moduleBat && hoanThanh && coDuLieu && !daChot
-                        && _qlpmTaskDuocChot.Contains(idTask);
-                    bool duocMo = daChotHopLe || duocChot;
-                    btnPm.Enabled = duocMo;
-                    btnPm.CssClass = "btn-grid-action btn-qlpm-review text-decoration-none"
-                        + (!duocMo ? " is-disabled" : daChotHopLe ? " is-final" : "");
-                    btnPm.Attributes["aria-disabled"] = duocMo ? "false" : "true";
-                    string lyDoKhoa;
-                    btnPm.ToolTip = !coQuyen ? "Chỉ quản lý dự án hoặc quản trị viên mới được chốt giờ công."
-                        : !moduleBat ? "Tính giờ công việc chưa được kích hoạt."
-                        : !hoanThanh ? "Công việc chưa hoàn thành, chưa thể chốt giờ công."
-                        : daChotHopLe ? "Đã chốt giờ công — nhấn để xem hoặc điều chỉnh."
-                        : duocChot ? "Đủ điều kiện chốt giờ công — nhấn để chốt."
-                        : _qlpmLyDoChuaChot.TryGetValue(idTask, out lyDoKhoa) ? lyDoKhoa
-                        : !_qlpmTaskCoGio.Contains(idTask) ? "Chưa có nhân viên hoặc giờ công để chốt."
-                        : "Chưa đủ dữ liệu hợp lệ để chốt giờ công.";
-                    // Tooltip nam tren container de nut Disabled van co giai thich khi hover.
-                    var wrapPm = e.Row.FindControl("qlpmActionWrap") as System.Web.UI.HtmlControls.HtmlGenericControl;
-                    if (wrapPm != null) wrapPm.Attributes["title"] = btnPm.ToolTip;
-                    Label marker = e.Row.FindControl("lblPmPending") as Label;
-                    if (marker != null)
+                    if ((trangThai == 2 || trangThai == 3) &&
+                        Guid.TryParse(Convert.ToString(rowView["IdCongViec"]), out idTask))
                     {
-                        marker.Visible = duocMo;
-                        marker.Text = daChotHopLe ? "✓" : "!";
-                        marker.CssClass = daChotHopLe ? "btn-qlpm-final-mark" : "btn-qlpm-pending";
-                        marker.ToolTip = btnPm.ToolTip;
+                        _qlpmTrangThaiChot.TryGetValue(idTask, out daChot);
+                        bool canChot = !daChot && _qlpmTaskSanSangChot.Contains(idTask);
+                        if (daChot || canChot)
+                        {
+                            marker.Visible = true;
+                            marker.Text = daChot ? "✓" : "!";
+                            marker.CssClass = daChot ? "btn-qlpm-final-mark" : "btn-qlpm-pending";
+                            marker.ToolTip = daChot ? "PM đã chốt giờ công." : "Đủ điều kiện chốt giờ công, đang chờ PM chốt.";
+                        }
                     }
                 }
                 LinkButton lbtAssign = (LinkButton)e.Row.FindControl("lbtAssign");
@@ -1427,6 +1443,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (commandName == "CONFIRM_DISCARD_TASK_ASSIGNMENT_CHANGES")
             {
                 CtrlChonNhanVienTask1.ConfirmRequest(e);
+                return;
+            }
+
+            // MessageBox cua popup Dieu chinh gio cong PM. Phai chuyen tiep ca
+            // Dong y/Huy, truoc !e.Submit, va KHONG cho roi vao luong xoa Task.
+            if (commandName == "KBG20_PM_CONFIRM_ADJUST")
+            {
+                if (CtrlDuyetGioCongTask1 != null)
+                    CtrlDuyetGioCongTask1.ConfirmRequest(e);
                 return;
             }
 
