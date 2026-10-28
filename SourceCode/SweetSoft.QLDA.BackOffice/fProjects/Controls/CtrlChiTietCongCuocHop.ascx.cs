@@ -57,6 +57,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             public string Ten { get; set; }
             public DateTime BatDau { get; set; }
             public DateTime KetThuc { get; set; }
+            public DateTime? BatDauThucTe { get; set; }
+            public DateTime? KetThucThucTe { get; set; }
             public bool LaChuTri { get; set; }
             public string SelectedCss { get; set; }
             public string StatusCss { get; set; }
@@ -74,6 +76,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             public bool ChuTri { get; set; }
             public bool ThamGia { get; set; }
             public decimal? GioThucTe { get; set; }
+            public DateTime? GioVaoThucTe { get; set; }
+            public DateTime? GioRaThucTe { get; set; }
+            public string GioVaoText { get; set; }
+            public string GioRaText { get; set; }
+            public string LyDoGioThucTe { get; set; }
             public string AvatarUrl { get; set; }
             public string AvatarColor { get; set; }
             public string Initials { get; set; }
@@ -186,6 +193,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             if (name != null) name.Text = Enc(title);
             var time = Ui<Literal>(upMeeting, "litMeetingTimes");
             if (time != null) time.Text = string.Empty;
+            var actualMeetingTime = Ui<Literal>(upMeeting, "litMeetingActualTimes");
+            if (actualMeetingTime != null) actualMeetingTime.Text = "Chưa ghi nhận";
             var duration = Ui<Literal>(upMeeting, "litMeetingDuration");
             if (duration != null) duration.Text = string.Empty;
             var roster = Ui<Repeater>(upMeeting, "rptRoster");
@@ -358,10 +367,10 @@ SELECT m.IdLichHop,ROW_NUMBER() OVER (ORDER BY CASE WHEN m.ThoiGianKetThuc>GETDA
         private List<CuocHopRow> LoadMeetingPage(SqlConnection connection, Guid member, string search, string filter, DateTime? from, DateTime? to, int page)
         {
             string query = @"WITH DuLieu AS (
-SELECT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc,
+SELECT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc,m.ThoiGianBatDauThucTe,m.ThoiGianKetThucThucTe,
 CASE WHEN m.IdNguoiTao=@UserId THEN 1 ELSE 0 END AS LaChuTri,
 ROW_NUMBER() OVER (ORDER BY CASE WHEN m.ThoiGianKetThuc>GETDATE() THEN 0 ELSE 1 END ASC,m.ThoiGianBatDau DESC,m.IdLichHop DESC) AS Stt" + MeetingWhere + @")
-SELECT IdLichHop,TenCuocHop,ThoiGianBatDau,ThoiGianKetThuc,LaChuTri FROM DuLieu WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
+SELECT IdLichHop,TenCuocHop,ThoiGianBatDau,ThoiGianKetThuc,ThoiGianBatDauThucTe,ThoiGianKetThucThucTe,LaChuTri FROM DuLieu WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
             var rows = new List<CuocHopRow>();
             using (var command = new SqlCommand(query, connection))
             {
@@ -376,6 +385,8 @@ SELECT IdLichHop,TenCuocHop,ThoiGianBatDau,ThoiGianKetThuc,LaChuTri FROM DuLieu 
                             Ten = Convert.ToString(reader["TenCuocHop"], CultureInfo.InvariantCulture),
                             BatDau = Convert.ToDateTime(reader["ThoiGianBatDau"], CultureInfo.InvariantCulture),
                             KetThuc = Convert.ToDateTime(reader["ThoiGianKetThuc"], CultureInfo.InvariantCulture),
+                            BatDauThucTe = reader["ThoiGianBatDauThucTe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["ThoiGianBatDauThucTe"], CultureInfo.InvariantCulture),
+                            KetThucThucTe = reader["ThoiGianKetThucThucTe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["ThoiGianKetThucThucTe"], CultureInfo.InvariantCulture),
                             LaChuTri = Convert.ToInt32(reader["LaChuTri"], CultureInfo.InvariantCulture) == 1
                         });
             }
@@ -421,7 +432,7 @@ COALESCE(NULLIF(LTRIM(RTRIM(mu.Email)),N''),N'') AS Email,
 COALESCE(NULLIF(LTRIM(RTRIM(u.Avatar)),N''),N'') AS Avatar,
 CASE WHEN d.IdNhanVien=m.IdNguoiTao THEN 1 ELSE 0 END AS LaChuTri,
 ISNULL(CAST(g.DaThamGia AS INT),ISNULL((SELECT MAX(CAST(ISNULL(nv.XacNhanThamGia,0) AS INT)) FROM dbo.TblLichHop_NhanVien nv WHERE nv.IdLichHop=@MeetingId AND nv.IdNhanVien=d.IdNhanVien),0)) AS XacNhanThamGia,
-g.SoGioThucTe
+g.SoGioThucTe,g.GioVaoThucTe,g.GioRaThucTe
 FROM DanhSach d CROSS JOIN dbo.TblLichHop m
 LEFT JOIN dbo.aspnet_Users u ON u.UserId=d.IdNhanVien
 LEFT JOIN dbo.aspnet_Membership mu ON mu.UserId=d.IdNhanVien
@@ -442,7 +453,7 @@ WHERE m.IdLichHop=@MeetingId )";
             string sql = RosterCte + @", PhanTrang AS (
 SELECT *,ROW_NUMBER() OVER (ORDER BY TenNhanVien,IdNhanVien) AS Stt FROM TatCa
 )
-SELECT IdNhanVien,TenNhanVien,Email,Avatar,LaChuTri,XacNhanThamGia,SoGioThucTe FROM PhanTrang
+SELECT IdNhanVien,TenNhanVien,Email,Avatar,LaChuTri,XacNhanThamGia,SoGioThucTe,GioVaoThucTe,GioRaThucTe FROM PhanTrang
 WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
 
             var rows = new List<NhanVienRow>();
@@ -461,7 +472,9 @@ WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
                             Avatar = Convert.ToString(reader["Avatar"], CultureInfo.InvariantCulture),
                             ChuTri = Convert.ToInt32(reader["LaChuTri"], CultureInfo.InvariantCulture) == 1,
                             ThamGia = Convert.ToInt32(reader["XacNhanThamGia"], CultureInfo.InvariantCulture) == 1,
-                            GioThucTe = reader["SoGioThucTe"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["SoGioThucTe"], CultureInfo.InvariantCulture)
+                            GioThucTe = reader["SoGioThucTe"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["SoGioThucTe"], CultureInfo.InvariantCulture),
+                            GioVaoThucTe = reader["GioVaoThucTe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["GioVaoThucTe"], CultureInfo.InvariantCulture),
+                            GioRaThucTe = reader["GioRaThucTe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["GioRaThucTe"], CultureInfo.InvariantCulture)
                         });
             }
             return rows;
@@ -493,13 +506,26 @@ WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
             int page = Math.Min(requestedPage, Math.Max(1, (count + SoNhanVienMoiTrang - 1) / SoNhanVienMoiTrang));
             hfRosterPage.Value = page.ToString(CultureInfo.InvariantCulture);
             List<NhanVienRow> staff = LoadRoster(conn, meeting.Id, page);
-            decimal duration = Math.Max(0m, (decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes / 60m);
+            // Cung quy tac EffectiveMeetTimes cua CtrlMeetGioCongTab:
+            // chi dung gio hop thuc te khi ca hai moc co gia tri hop le.
+            bool validActualMeeting = meeting.BatDauThucTe.HasValue && meeting.KetThucThucTe.HasValue
+                && meeting.KetThucThucTe.Value > meeting.BatDauThucTe.Value;
+            DateTime effectiveStart = validActualMeeting ? meeting.BatDauThucTe.Value : meeting.BatDau;
+            DateTime effectiveEnd = validActualMeeting ? meeting.KetThucThucTe.Value : meeting.KetThuc;
+            decimal duration = Math.Round(Math.Max(0m, (decimal)(effectiveEnd - effectiveStart).TotalMinutes / 60m), 2, MidpointRounding.AwayFromZero);
             var name = Ui<Literal>(upMeeting, "litMeetingName");
             if (name != null) name.Text = Enc(meeting.Ten);
             var times = Ui<Literal>(upMeeting, "litMeetingTimes");
             if (times != null) times.Text = meeting.BatDau.ToString("dd/MM/yyyy", Vi) + " · " + meeting.BatDau.ToString("HH:mm", Vi) + " – " + meeting.KetThuc.ToString("HH:mm", Vi);
+            var actualMeetingTimes = Ui<Literal>(upMeeting, "litMeetingActualTimes");
+            if (actualMeetingTimes != null)
+            {
+                actualMeetingTimes.Text = meeting.BatDauThucTe.HasValue && meeting.KetThucThucTe.HasValue && meeting.KetThucThucTe.Value > meeting.BatDauThucTe.Value
+                    ? meeting.BatDauThucTe.Value.ToString("dd/MM/yyyy HH:mm", Vi) + " – " + meeting.KetThucThucTe.Value.ToString("dd/MM/yyyy HH:mm", Vi)
+                    : "Chưa ghi nhận";
+            }
             var hours = Ui<Literal>(upMeeting, "litMeetingDuration");
-            if (hours != null) hours.Text = ((decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes).ToString("0.##", Vi) + " phút = " + Gio(duration);
+            if (hours != null) hours.Text = ((decimal)(effectiveEnd - effectiveStart).TotalMinutes).ToString("0.##", Vi) + " phút = " + Gio(duration);
             foreach (NhanVienRow row in staff)
             {
                 row.AvatarColor = GetAvatarColor(row.IdNhanVien, row.Ten);
@@ -508,7 +534,18 @@ WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
                 row.EmailDisplay = string.IsNullOrWhiteSpace(row.Email) ? "Chưa cập nhật email" : row.Email;
                 decimal theoretical = row.ThamGia ? duration : 0m;
                 row.TheoreticalText = Gio(theoretical);
-                row.ActualText = row.GioThucTe.HasValue ? Gio(row.GioThucTe.Value) : Gio(theoretical);
+                bool hasValidClock = row.GioVaoThucTe.HasValue && row.GioRaThucTe.HasValue && row.GioRaThucTe.Value > row.GioVaoThucTe.Value;
+                // Dong bo cach xem gio voi CtrlMeetGioCongTab: uu tien cap moc vao/ra hop le.
+                decimal actual = !row.ThamGia ? 0m : hasValidClock
+                    ? Math.Round((decimal)(row.GioRaThucTe.Value - row.GioVaoThucTe.Value).TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero)
+                    : (row.GioThucTe ?? theoretical);
+                row.ActualText = Gio(actual);
+                row.GioVaoText = row.GioVaoThucTe.HasValue ? row.GioVaoThucTe.Value.ToString("dd/MM/yyyy HH:mm", Vi) : "Chưa ghi nhận";
+                row.GioRaText = row.GioRaThucTe.HasValue ? row.GioRaThucTe.Value.ToString("dd/MM/yyyy HH:mm", Vi) : "Chưa ghi nhận";
+                if (!row.ThamGia) row.LyDoGioThucTe = "Nhân viên không tham gia cuộc họp nên không được ghi nhận giờ công.";
+                else if (hasValidClock) row.LyDoGioThucTe = "Công thực tế được tính từ thời điểm vào và ra thực tế của nhân viên.";
+                else if (row.GioThucTe.HasValue) row.LyDoGioThucTe = "Công thực tế đã được ghi nhận hoặc điều chỉnh trực tiếp; chưa có đủ mốc giờ vào/ra để đối chiếu.";
+                else row.LyDoGioThucTe = "Chưa có giờ vào/ra hoặc công điều chỉnh riêng; tạm hiển thị công theo thời lượng cuộc họp.";
             }
             var roster = Ui<Repeater>(upMeeting, "rptRoster");
             if (roster != null) { roster.DataSource = staff; roster.DataBind(); }

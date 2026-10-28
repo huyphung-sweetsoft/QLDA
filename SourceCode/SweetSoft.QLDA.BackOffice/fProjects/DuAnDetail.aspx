@@ -769,6 +769,8 @@
         .pd-hour-hover-table td { padding:11px 12px;color:#45546b;border:1px solid #e6eaf1;white-space:nowrap;text-align:center;font-weight:650; }
         .pd-hour-hover-table td:nth-last-child(2) { color:#5b2499;font-weight:800; }
         .pd-hour-hover-empty { padding:15px 18px;color:#7c8798;font-size:12px; }
+        .pd-hour-hover-meeting-pending { display:flex;align-items:center;gap:8px;max-width:min(410px,calc(100vw - 40px));padding:12px 15px;color:#65418c;font-size:12px;font-weight:750;line-height:1.45;white-space:normal; }
+        .pd-hour-hover-meeting-pending i { flex:none;color:#7d4bb6;font-size:13px; }
         .pd-hour-hover-note { padding:8px 13px;color:#7b8798;background:#faf9fc;font-size:10.5px; }
         @keyframes pdHourQuickEnter { from { opacity:0;transform:translateY(5px) scale(.99); } to { opacity:1;transform:translateY(0) scale(1); } }
     
@@ -2025,7 +2027,15 @@
                 hide();
                 var card = button.closest('.pd-personal-item'), source = card && card.querySelector('.pd-hour-hover-source');
                 if (!source) return;
-                var el = document.createElement('div'); el.className = 'pd-hour-hover-floating'; el.setAttribute('role','tooltip'); el.innerHTML = source.innerHTML;
+                var el = document.createElement('div'); el.className = 'pd-hour-hover-floating'; el.setAttribute('role','tooltip');
+                // Trạng thái họp có thể đổi tại chỗ theo đồng hồ 60s, không chỉ khi server render trang.
+                var meetingBadge = card && card.querySelector('[data-pd-meeting-status="1"]');
+                var ongoingWithoutHours = button.getAttribute('data-pd-labor-kind') === 'meeting'
+                    && meetingBadge && meetingBadge.classList.contains('pd-meet-state-2')
+                    && (button.textContent || '').indexOf('Chưa ghi nhận công') !== -1;
+                el.innerHTML = ongoingWithoutHours
+                    ? '<div class="pd-hour-hover-meeting-pending"><i class="far fa-clock" aria-hidden="true"></i><span>Cuộc họp chưa kết thúc nên chưa ghi nhận công</span></div>'
+                    : source.innerHTML;
                 document.body.appendChild(el); tooltip = el; active = button;
                 var rect = button.getBoundingClientRect(), width = el.offsetWidth, height = el.offsetHeight;
                 var gap = 10, edge = 12, vw = window.innerWidth, vh = window.innerHeight;
