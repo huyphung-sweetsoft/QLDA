@@ -153,7 +153,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 }
                 else
                 {
-                    txtEditNgayBatDau.Enabled = isDoing ? false : this.IsEdit;
+                    txtEditNgayBatDau.Enabled = task.TrangThai == 0 && this.IsEdit;
                     txtEditMoTa.Enabled = this.IsEdit;
                     txtEditTenCv.Enabled = this.IsEdit;
                 }
@@ -459,11 +459,17 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             catch (Exception ex) { ShowNotify(ex.Message, MSGType.Error); return; }
 
             TblCongViec task = TaskManager.Instance.FetchById(taskId);
-            if (task == null) return;
+            if (task == null || task.DaXoa == true || task.IdDuAn != CurrentProjectId)
+            {
+                ShowNotify("Không tìm thấy công việc thuộc dự án hiện tại.", MSGType.Warning);
+                return;
+            }
 
             bool isPhase = TaskManager.Instance.CheckPhase(task);
             bool isFatherTask = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
             byte oldStatus = task.TrangThai;
+            // Task cha, bao gồm Giai đoạn, chỉ được đổi ngày bắt đầu khi trạng thái đã lưu là Chưa bắt đầu.
+            // Giữ trạng thái gốc, không tin giá trị disabled/readonly gửi từ trình duyệt.
             // Snapshot truoc khi sua object SubSonic, phuc vu doi chieu sau khi lay AppLock.
             DateTime? ngayBatDauCu = task.NgayBatDau;
             DateTime? ngayKetThucCu = task.NgayKetThuc;
@@ -474,6 +480,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             if (!DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out DateTime ngayBd))
             {
                 ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error);
+                return;
+            }
+
+            bool doiNgayBatDauCha = isFatherTask && oldStatus == 0 &&
+                (!ngayBatDauCu.HasValue || ngayBatDauCu.Value.Date != ngayBd.Date);
+            if (isFatherTask && oldStatus != 0 &&
+                (!ngayBatDauCu.HasValue || ngayBatDauCu.Value.Date != ngayBd.Date))
+            {
+                ShowNotify("Chỉ được thay đổi ngày bắt đầu của công việc cha hoặc giai đoạn khi trạng thái là Chưa bắt đầu.", MSGType.Warning);
+                return;
+            }
+            if (isPhase && oldStatus != 0 &&
+                (!ngayBatDauCu.HasValue || ngayBatDauCu.Value.Date != ngayBd.Date))
+            {
+                ShowNotify("Chỉ được đổi ngày bắt đầu của giai đoạn khi trạng thái là Chưa bắt đầu.", MSGType.Warning);
                 return;
             }
 
@@ -510,8 +531,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 return;
             }
 
-            // Giai đoạn chưa có công việc con được sửa thời hạn như một công việc lá.
-            // Không cho phép PostBack tùy ý sửa thời hạn của giai đoạn có con hoặc đã hoàn thành.
+            // Giai đoạn chưa có con được sửa thời hạn; giai đoạn có con chỉ đổi được mốc bắt đầu.
+            // Thời hạn/kết thúc của giai đoạn có con vẫn do AutoSetParentTime tổng hợp.
             if (isPhase && !isFatherTask && oldStatus != 2 && oldStatus != 3)
             {
                 if (!int.TryParse(txtEditThoiHan.Text.Trim(), out int phaseDuration)
@@ -536,6 +557,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 }
 
                 byte newStatus = Convert.ToByte(ddlEditTrangThai.SelectedValue);
+                if (doiNgayBatDauCha && newStatus != 0)
+                {
+                    ShowNotify("Hãy lưu thay đổi lịch công việc cha trong trạng thái Chưa bắt đầu trước khi chuyển trạng thái.", MSGType.Warning);
+                    return;
+                }
 
                 if (newStatus != 0 && task.IdCongViecPhuThuoc.HasValue)
                 {
@@ -643,15 +669,60 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             task.TenCongViec = tenCv;
             task.MoTa = txtEditMoTa.Text.Trim();
             task.NgayCapNhat = DateTime.Now;
-            // GIU NGUYEN tat ca AutoSet* cua partner (tham so true khong doi).
-            // Chi boc mot giao dich bao ve quanh phan save + lan truyen du lieu.
+            // Giữ các AutoSet* của partner cho các luồng cũ. Với task cha hoặc giai đoạn chưa bắt đầu
+            // đổi ngày, chỉ dời tiến task con thực sự trước mốc mới; không ép lùi task
+            // đã có lịch muộn hơn và không force sửa task đang thực hiện/đã hoàn thành.
+            int soTaskConDuocDoiNgay = 0;
+            string buocDongBo = "Chuẩn bị lưu kế hoạch";
             Action luuVaDongBoLichPartner = () =>
             {
+                // Khi đẩy ngày bắt đầu cha/phase vượt quá hạn kết thúc cũ, không
+                // được lưu trạng thái Begin > End rồi mới kéo con. End tạm chỉ
+                // phục vụ ràng buộc dữ liệu; AutoSetParentTime sẽ tổng hợp lại
+                // chính xác theo các task con trong cùng TransactionScope.
+                if (doiNgayBatDauCha &&
+                    (!task.NgayKetThuc.HasValue ||
+                     task.NgayKetThuc.Value.Date < task.NgayBatDau.Value.Date))
+                {
+                    int thoiHanTam = Math.Max(1, task.ThoiHanNgay.GetValueOrDefault(1));
+                    task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(
+                        task.NgayBatDau.Value.Date, thoiHanTam);
+                }
+                buocDongBo = "Lưu ngày bắt đầu cha/giai đoạn";
                 task.Save();
 
                 if (isFatherTask)
                 {
-                    TaskManager.Instance.AutoSetFirstChildStartTime(CurrentProjectId, task.IdCongViec, task.NgayBatDau.Value, true);
+                    if (doiNgayBatDauCha)
+                    {
+                        buocDongBo = "Dời tiến lịch task con";
+                        // AutoSetFirstChildStartTime() trong TaskManager hiện tại
+                        // GHI ĐÈ lịch firstChild vô điều kiện (kể cả task đã chạy),
+                        // chỉ đệ quy qua firstChild và các task phụ thuộc. Không
+                        // được gọi với force=true cho thao tác dời mốc này.
+                        // Duyệt đầy đủ cây, chỉ dời con có ngày sớm hơn cha.
+                        var taskConDaDoi = new HashSet<Guid>();
+                        for (int lan = 0; lan < 4; lan++)
+                        {
+                            int soDoiTrongLan = DayTienNgayBatDauCayCon(CurrentProjectId,
+                                task.IdCongViec, task.NgayBatDau.Value.Date, new HashSet<Guid>(), taskConDaDoi);
+                            TaskManager.Instance.AutoSetParentTime(CurrentProjectId, task.IdCongViec, false);
+                            if (soDoiTrongLan == 0) break;
+                        }
+                        soTaskConDuocDoiNgay = taskConDaDoi.Count;
+                        buocDongBo = "Kiểm tra cây con sau đồng bộ";
+                        KiemTraNgayCayConSauDongBo(CurrentProjectId, task.IdCongViec,
+                            task.NgayBatDau.Value.Date, new HashSet<Guid>());
+                    }
+                    else if (ngayKetThucCu != task.NgayKetThuc ||
+                             phuThuocCu != task.IdCongViecPhuThuoc)
+                    {
+                        // Không gọi AutoSetFirstChildStartTime khi KHÔNG đổi ngày:
+                        // trước đây sửa tên/mô tả cũng có thể vô tình đổi lịch con.
+                        buocDongBo = "Tổng hợp lịch task cha";
+                        TaskManager.Instance.AutoSetParentTime(CurrentProjectId,
+                            task.IdCongViec, false);
+                    }
                 }
                 else
                 {
@@ -680,9 +751,26 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     {
                         dongBo.KiemTraBanGhiGoc(task.IdCongViec, ngayBatDauCu,
                             ngayKetThucCu, phuThuocCu, oldStatus);
+                        buocDongBo = "Kết toán KBG20 theo lịch cũ";
                         dongBo.ChotGioTheoLichCu();       // Lich CU, dung moc hieu luc.
                         luuVaDongBoLichPartner();          // KHONG thay doi AutoSetDependentTime.
+                        buocDongBo = "Kiểm tra KBG20 với lịch mới";
                         dongBo.KiemTraVaApDungLichMoi();  // Lich MOI, khong tinh nguoc.
+                        giaoDich.Complete();
+                    }
+                }
+                else if (doiNgayBatDauCha)
+                {
+                    // Không để dời được một phần cây con nếu một task bị khóa/trùng lịch.
+                    // Flag KBG20 tắt vẫn phải lưu cha và toàn bộ con trong cùng transaction.
+                    var tuyChon = new TransactionOptions
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+                        Timeout = TimeSpan.FromMinutes(2)
+                    };
+                    using (var giaoDich = new TransactionScope(TransactionScopeOption.Required, tuyChon))
+                    {
+                        luuVaDongBoLichPartner();
                         giaoDich.Complete();
                     }
                 }
@@ -696,22 +784,141 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             {
                 string maThamChieu = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
                 SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,
-                    "KBG20 DongBoKeHoach TaskList | Ma=" + maThamChieu + " | Task=" + task.IdCongViec);
+                    "KBG20 DongBoKeHoach TaskList | Ma=" + maThamChieu +
+                    " | Buoc=" + buocDongBo + " | Task=" + task.IdCongViec);
                 // Chi hien ro loi NGHIEP VU duoc kiem soat; khong dua SQL exception ra trinh duyet.
                 bool loiNghiepVu = ex is InvalidOperationException &&
                     (ex.Message.StartsWith("Du lieu cong viec vua duoc nguoi khac cap nhat") ||
                      ex.Message.StartsWith("Khong the doi ngay bat dau cua cong viec") ||
+                     ex.Message.StartsWith("Không thể đổi ngày bắt đầu của công việc") ||
+                     ex.Message.StartsWith("Không thể chuyển công việc [") ||
+                     ex.Message.StartsWith("Một công việc đang có đồng hồ") ||
                      ex.Message.StartsWith("Khong the chuyen task [") ||
-                     ex.Message.StartsWith("Cong viec ["));
+                     ex.Message.StartsWith("Cong viec [") ||
+                     ex.Message.StartsWith("Không thể dời ngày công việc con") ||
+                     ex.Message.StartsWith("Thời hạn của công việc con") ||
+                     ex.Message.StartsWith("Lịch của công việc con") ||
+                     ex.Message.StartsWith("Cây công việc") ||
+                     ex.Message.StartsWith("Quan hệ công việc") ||
+                     ex.Message.StartsWith("Công việc con ["));
                 ShowNotify(loiNghiepVu ? ex.Message :
-                    "Không thể lưu thay đổi kế hoạch an toàn. Mã tham chiếu: " + maThamChieu,
+                    "Không thể lưu thay đổi kế hoạch an toàn (" + buocDongBo +
+                    "). Mã tham chiếu: " + maThamChieu,
                     MSGType.Error);
                 return;
             }
 
-            ShowNotify(GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);
+            string thongBao = GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY);
+            if (doiNgayBatDauCha && soTaskConDuocDoiNgay > 0)
+                thongBao += " Đã dời lịch " + soTaskConDuocDoiNgay +
+                    " công việc con nằm trước mốc mới (không tính các việc được đồng bộ qua phụ thuộc).";
+            ShowNotify(thongBao, MSGType.Success);
             CtrlTask1.Rebind();
             mdlEditTask.CloseModal();
+        }
+
+        // Dời TIẾN các task con có ngày bắt đầu cũ nhỏ hơn ngày bắt đầu mới của cha.
+        // Không dời ngược task đã có lịch muộn hơn. Các task lệ thuộc được cập nhật
+        // bằng AutoSetDependentTime (KHÔNG force task đã bắt đầu).
+        // Phải chạy trong TransactionScope của btnSaveTask_Click.
+        private int DayTienNgayBatDauCayCon(Guid projectId, Guid parentId,
+            DateTime ngayBatDauCha, HashSet<Guid> daTham, HashSet<Guid> taskConDaDoi)
+        {
+            if (!daTham.Add(parentId))
+                throw new InvalidOperationException("Cây công việc có quan hệ cha/con lặp, không thể đồng bộ ngày an toàn.");
+
+            DataTable dsCon = TaskManager.Instance.GetChildTasks(projectId, parentId);
+            if (dsCon == null || dsCon.Rows.Count == 0) return 0;
+
+            int soTaskDaDoi = 0;
+            foreach (DataRow row in dsCon.Rows)
+            {
+                if (row[TaskManager.ColIdCongViec] == DBNull.Value ||
+                    !Guid.TryParse(Convert.ToString(row[TaskManager.ColIdCongViec]), out Guid childId))
+                    continue;
+                if (daTham.Contains(childId))
+                    throw new InvalidOperationException("Cây công việc có quan hệ cha/con lặp, không thể đồng bộ ngày an toàn.");
+                TblCongViec child = TaskManager.Instance.FetchById(childId);
+                if (child == null || child.DaXoa == true || child.IdDuAn != projectId ||
+                    child.IdCongViecCha != parentId) continue;
+
+                DateTime gioiHanBatDau = ngayBatDauCha.Date;
+                // Tôn trọng quan hệ phụ thuộc (sau ngày kết thúc của task tiền nhiệm).
+                if (child.IdCongViecPhuThuoc.HasValue)
+                {
+                    TblCongViec truoc = TaskManager.Instance.FetchById(child.IdCongViecPhuThuoc.Value);
+                    if (truoc != null && truoc.DaXoa != true && truoc.IdDuAn == projectId && truoc.NgayKetThuc.HasValue &&
+                        truoc.NgayKetThuc.Value.Date.AddDays(1) > gioiHanBatDau)
+                        gioiHanBatDau = truoc.NgayKetThuc.Value.Date.AddDays(1);
+                }
+
+                bool canDoi = child.NgayBatDau.HasValue &&
+                    child.NgayBatDau.Value.Date < gioiHanBatDau;
+                if (canDoi)
+                {
+                    if (child.TrangThai != 0)
+                        throw new InvalidOperationException("Không thể dời ngày công việc con [" +
+                            child.MaCongViec + "] vì công việc không còn ở trạng thái Chưa bắt đầu.");
+                    int thoiHan = child.ThoiHanNgay.GetValueOrDefault(1);
+                    if (thoiHan < 1 || thoiHan > 3500)
+                        throw new InvalidOperationException("Thời hạn của công việc con [" +
+                            child.MaCongViec + "] không hợp lệ; không thể tự dời lịch.");
+                    child.NgayBatDau = gioiHanBatDau;
+                    // Task cha trung gian được roll-up từ con ở bước dưới.
+                    // Cần một ngày kết thúc tạm hợp lệ trước khi save.
+                    if (!TaskManager.Instance.CheckHasChildTasks(projectId, child) ||
+                        !child.NgayKetThuc.HasValue || child.NgayKetThuc.Value.Date < gioiHanBatDau)
+                        child.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(gioiHanBatDau, thoiHan);
+                    child.NgayCapNhat = DateTime.Now;
+                    child.Save();
+                    taskConDaDoi.Add(child.IdCongViec);
+                    soTaskDaDoi++;
+                }
+
+                int soDoiNhanhCon = DayTienNgayBatDauCayCon(projectId, child.IdCongViec,
+                    child.NgayBatDau.HasValue ? child.NgayBatDau.Value.Date : gioiHanBatDau,
+                    daTham, taskConDaDoi);
+                soTaskDaDoi += soDoiNhanhCon;
+                if (soDoiNhanhCon > 0 && TaskManager.Instance.CheckHasChildTasks(projectId, child))
+                    TaskManager.Instance.AutoSetParentTime(projectId, child.IdCongViec, false);
+                else if (canDoi && !TaskManager.Instance.CheckHasChildTasks(projectId, child))
+                    TaskManager.Instance.AutoSetDependentTime(projectId, child.IdCongViec, false);
+            }
+            return soTaskDaDoi;
+        }
+
+        // Bắt các trường hợp phụ thuộc/roll-up đã làm một con chạy trước cha hoặc
+        // giữ nguyên ngày đã bắt đầu. Exception sẽ rollback toàn bộ thay đổi.
+        private void KiemTraNgayCayConSauDongBo(Guid projectId, Guid parentId,
+            DateTime ngayBatDauCha, HashSet<Guid> daTham)
+        {
+            if (!daTham.Add(parentId))
+                throw new InvalidOperationException("Quan hệ công việc không hợp lệ trong khi kiểm tra lịch.");
+            DataTable dsCon = TaskManager.Instance.GetChildTasks(projectId, parentId);
+            if (dsCon == null) return;
+            foreach (DataRow row in dsCon.Rows)
+            {
+                if (row[TaskManager.ColIdCongViec] == DBNull.Value ||
+                    !Guid.TryParse(Convert.ToString(row[TaskManager.ColIdCongViec]), out Guid childId))
+                    continue;
+                TblCongViec child = TaskManager.Instance.FetchById(childId);
+                if (child == null || child.DaXoa == true || child.IdDuAn != projectId || child.IdCongViecCha != parentId)
+                    continue;
+                if (child.NgayBatDau.HasValue && child.NgayBatDau.Value.Date < ngayBatDauCha)
+                    throw new InvalidOperationException("Lịch của công việc con [" + child.MaCongViec +
+                        "] còn sớm hơn ngày bắt đầu của công việc cha; chưa lưu thay đổi.");
+                if (child.NgayBatDau.HasValue && child.IdCongViecPhuThuoc.HasValue)
+                {
+                    TblCongViec taskTruoc = TaskManager.Instance.FetchById(child.IdCongViecPhuThuoc.Value);
+                    if (taskTruoc != null && taskTruoc.DaXoa != true && taskTruoc.IdDuAn == projectId &&
+                        taskTruoc.NgayKetThuc.HasValue &&
+                        child.NgayBatDau.Value.Date <= taskTruoc.NgayKetThuc.Value.Date)
+                        throw new InvalidOperationException("Công việc con [" + child.MaCongViec +
+                            "] còn bắt đầu trước khi công việc phụ thuộc kết thúc; chưa lưu thay đổi.");
+                }
+                KiemTraNgayCayConSauDongBo(projectId, childId,
+                    child.NgayBatDau.HasValue ? child.NgayBatDau.Value.Date : ngayBatDauCha, daTham);
+            }
         }
 
         private List<TblCongViec> GetOrderedProjectPhases(DataTable phaseTable)

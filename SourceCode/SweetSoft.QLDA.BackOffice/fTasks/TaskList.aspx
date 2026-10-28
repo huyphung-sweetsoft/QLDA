@@ -100,6 +100,8 @@
     .task-lock-notice {padding:10px 14px;background:#fff7ed;border:1px dashed #fdba74;border-radius:9px;display:flex;align-items:center;gap:8px;}
     .task-lock-notice i {font-size:16px;color:#f59e0b;}
     .task-lock-notice span {color:#9a3412;font-size:13px;font-weight:600;}
+    .task-lock-notice.task-rollup-info {background:#eff6ff;border-color:#bfdbfe;}
+    .task-lock-notice.task-rollup-info i,.task-lock-notice.task-rollup-info span {color:#1e40af;}
 
     .task-lockable {position:relative;}
     .task-lockable.is-locked {cursor:help;}
@@ -379,9 +381,9 @@
                                 </div>
 
                                 <div id="divRollUpNotice" runat="server" class="mb-3" visible="false">
-                                    <div class="task-lock-notice">
-                                        <i class="fas fa-lock"></i>
-                                        <span>Ngày tháng và Trạng thái bị khóa do tổng hợp tự động từ task con.</span>
+                                    <div class="task-lock-notice task-rollup-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Thời hạn và ngày kết thúc giai đoạn được tổng hợp từ task con. Nếu giai đoạn Chưa bắt đầu, bạn có thể đổi ngày bắt đầu; task con có lịch sớm hơn sẽ được dời khi lưu.</span>
                                     </div>
                                 </div>
                                 <div id="divChildCompletedNotice" class="mb-3" style="display:none;">
@@ -599,15 +601,14 @@
         var rollup=phase&&hasChildren;
         var state={rollup:rollup,completed:completed,inProgress:doing,
             startLocked:false,durationLocked:false,startReason:'',durationReason:''};
-        if(phase&&hasChildren) {
-            state.startReason='Ngày bắt đầu của giai đoạn đang chịu quy tắc tổng hợp tự động từ các công việc con.';
-            state.durationReason='Thời hạn và ngày kết thúc được tổng hợp từ các công việc con, không thể sửa trực tiếp.';
-        } else if(completed) {
+        if(completed) {
             state.startReason='Công việc đã hoàn thành nên không thể chỉnh sửa ngày bắt đầu.';
             state.durationReason='Công việc đã hoàn thành nên không thể chỉnh sửa thời hạn hoặc ngày kết thúc.';
         } else if(doing) {
             state.startReason='Công việc đang thực hiện nên ngày bắt đầu đã bị khóa.';
             if(hasChildren) state.durationReason='Thời hạn được tổng hợp từ các công việc con, không thể sửa trực tiếp.';
+        } else if(phase&&hasChildren) {
+            state.durationReason='Thời hạn và ngày kết thúc giai đoạn được tổng hợp từ task con; ngày bắt đầu có thể đổi khi Chưa bắt đầu.';
         } else if(hasChildren) {
             state.durationReason='Thời hạn được tổng hợp từ các công việc con, nhưng ngày bắt đầu vẫn có thể thay đổi khi chưa thực hiện.';
         }
@@ -628,7 +629,7 @@
         var $start=$('#'+qlTaskStartId),$duration=$('#'+qlTaskDurationId);
         qlRememberBaseDisabled($start);qlRememberBaseDisabled($duration);
         // C# đặt quyền gốc khi mở task; JS chỉ có thể siết chặt, không được mở khóa trái quyền server.
-        state.startLocked=!!($start.data('ql-base-disabled') || state.rollup || state.completed || state.inProgress);
+        state.startLocked=!!($start.data('ql-base-disabled') || state.completed || state.inProgress);
         state.durationLocked=!!($duration.data('ql-base-disabled') || state.completed || state.rollup);
         // Trạng thái đang thực hiện trên client chỉ dùng để diễn giải lock đã áp ở server.
         if(state.inProgress)state.startLocked=true;
@@ -648,11 +649,9 @@
         qlApplyLockable($('#qlWrapCalEnd'),state.durationLocked,
             state.durationReason || 'Không thể chọn ngày kết thúc vì thời hạn đang bị khóa.');
         // Mỗi lần chỉ hiện MỘT lý do khóa, giữ đúng quy tắc ưu tiên ban đầu.
-        // Phase có con: tổng hợp tự động (kể cả khi đã hoàn thành).
-        // Các trường hợp còn lại: hoàn thành > đang thực hiện.
-        var showRollupNotice=state.rollup;
-        var showCompletedNotice=!showRollupNotice&&state.completed;
-        var showInProgressNotice=!showRollupNotice&&!showCompletedNotice&&state.inProgress;
+        // Ưu tiên lý do khóa của trạng thái. Phase có con chỉ khóa THỜI HẠN, không khóa ngày bắt đầu khi status=0.
+        var showCompletedNotice=state.completed;
+        var showInProgressNotice=!showCompletedNotice&&state.inProgress;
         $('#divChildCompletedNotice').toggle(showCompletedNotice);
         $('#divChildInProgressNotice').toggle(showInProgressNotice);
         return state;
@@ -694,11 +693,11 @@
                 .prop('disabled',isStart?!qlCanStart():!qlCanEnd());
         });
         if(!qlCanStart()&&!qlCanEnd()) {
-            qlMessage(lockState.rollup?'Lịch giai đoạn được tổng hợp từ các công việc con.':
-                lockState.completed?'Công việc đã hoàn thành nên không thể chỉnh lại ngày trên lịch.':
+            qlMessage(lockState.completed?'Công việc đã hoàn thành nên không thể chỉnh lại ngày trên lịch.':
+                lockState.inProgress?'Công việc đang thực hiện, không thể chỉnh lại ngày trên lịch.':
                 'Không thể chỉnh ngày do quyền hạn hoặc ràng buộc tiến độ.',false);
         } else if(m==='end') qlMessage('Chọn ngày kết thúc (ngày làm việc); thời hạn sẽ tự tính lại.',false);
-        else qlMessage('Chọn ngày bắt đầu; hạn kết thúc sẽ tính lại theo lịch làm việc.',false);
+        else qlMessage(((qlGet(qlTaskStartId)||{}).getAttribute && qlGet(qlTaskStartId).getAttribute('data-ql-task-children')==='1') ? 'Đổi ngày bắt đầu task cha/giai đoạn: những task con có lịch sớm hơn sẽ được dời tiến khi lưu. Thời hạn và ngày kết thúc tổng hợp lại sau khi lưu.' : 'Chọn ngày bắt đầu; hạn kết thúc sẽ tính lại theo lịch làm việc.',false);
     }
     function qlInitialSchedule() {
         var hidden=qlGet('<%= hdfLocalScheduleJson.ClientID %>');var model=null;
@@ -726,8 +725,9 @@
             var r=response&&response.d?response.d:response;
             if(!r||!r.success){qlMessage(r&&r.message?r.message:'Không tính được ngày theo lịch làm việc.',true);return;}
             if(r.days) $.extend(st.days,r.days);
-            if(r.duration!=null) duration.value=String(r.duration);
-            if(r.endDate) {qlGet(qlTaskEndId).value=r.endDate;$(qlGet(qlTaskEndLabelId)).text(qlTextDate(r.endDate));}
+            var isRollup=qlGetTaskLockState().rollup;
+            if(!isRollup && r.duration!=null) duration.value=String(r.duration);
+            if(!isRollup && r.endDate) {qlGet(qlTaskEndId).value=r.endDate;$(qlGet(qlTaskEndLabelId)).text(qlTextDate(r.endDate));}
             qlRefreshTaskCompletionLate();
             qlDrawScheduleMonth();
             qlSetMode(st.mode);
