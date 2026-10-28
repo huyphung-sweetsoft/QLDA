@@ -3,6 +3,7 @@ using SweetSoft.QLDA.BackOffice.fMeets.Controls;
 using SweetSoft.QLDA.BackOffice.fTasks.Controls;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
+using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.SysManager;
 using System;
@@ -309,9 +310,10 @@ ORDER BY h.ThoiGianBatDau;";
                              daysRemaining == 0 ? "Hạn hoàn thành là hôm nay" :
                              "Còn " + daysRemaining + " ngày đến hạn";
 
-            sb.Append("<article class='today-schedule-item' data-today-row-index='").Append(index).Append("'");
+            sb.Append("<article class='today-schedule-item today-schedule-flip-row' data-today-row-index='").Append(index).Append("'");
             if (index >= SchedulePageSize) sb.Append(" hidden");
-            sb.Append("><div class='today-schedule-task-top'><button type='button' class='today-schedule-task-title today-schedule-link' data-today-open-kind='task' data-today-open-id='")
+            sb.Append("><div class='today-schedule-flip-inner'><div class='today-schedule-flip-face today-schedule-flip-front'>")
+              .Append("<div class='today-schedule-task-top'><button type='button' class='today-schedule-task-title today-schedule-link' data-today-open-kind='task' data-today-open-id='")
               .Append(E(task["IdCongViec"])).Append("' title='Xem chi tiết: ")
               .Append(HttpUtility.HtmlAttributeEncode(code + ". " + taskName))
               .Append("'><span class='today-schedule-task-code'>").Append(E(code)).Append(".</span> ")
@@ -333,7 +335,34 @@ ORDER BY h.ThoiGianBatDau;";
                   .Append(notice).Append("</span>");
             sb.Append("</div><div class='today-schedule-meta'><i class='fas fa-folder-open'></i>");
             AppendProjectLink(sb, task["IdDuAn"], task["TenDuAn"]);
-            sb.Append("</div></article>");
+            sb.Append("</div></div><div class='today-schedule-flip-face today-schedule-flip-back'>")
+              .Append("<div class='today-schedule-flip-back-title'>")
+              .Append(E((string.IsNullOrWhiteSpace(code) ? "" : code.TrimEnd('.') + ". ") + taskName))
+              .Append("</div><div class='today-schedule-flip-actions'>")
+              .Append("<button type='button' class='today-schedule-flip-action is-detail' data-today-open-kind='task' data-today-open-id='")
+              .Append(E(task["IdCongViec"]))
+              .Append("'><i class='far fa-eye' aria-hidden='true'></i><span class='today-schedule-flip-label'>Xem chi tiết</span></button>");
+            Guid projectId;
+            if (task["IdDuAn"] != DBNull.Value && Guid.TryParse(Convert.ToString(task["IdDuAn"]), out projectId) && projectId != Guid.Empty)
+            {
+                // Route giong KhaiBaoGio 2.0 / ProjectTabs: ProtectedProjectId, khong dua GUID tho len URL.
+                string url = "/Project/" + SecurityUtilities.ProtectUrlParameter(projectId.ToString("D")) + "/TimeTracking";
+                sb.Append("<a class='today-schedule-flip-action is-time' href='")
+                  .Append(HttpUtility.HtmlAttributeEncode(url))
+                  .Append("' title='Khai báo giờ cho dự án này'><i class='far fa-clock' aria-hidden='true'></i><span class='today-schedule-flip-label'>Khai báo giờ</span></a>");
+                string projectName = Convert.ToString(task["TenDuAn"]);
+                if (string.IsNullOrWhiteSpace(projectName)) projectName = "Dự án";
+                sb.Append("<button type='button' class='today-schedule-flip-action is-project' data-today-open-kind='project' data-today-open-id='")
+                  .Append(E(projectId))
+                  .Append("' title='")
+                  .Append(HttpUtility.HtmlAttributeEncode("Đến dự án: " + projectName))
+                  .Append("' aria-label='")
+                  .Append(HttpUtility.HtmlAttributeEncode("Đến dự án " + projectName))
+                  .Append("'><i class='fas fa-folder-open' aria-hidden='true'></i><span class='today-schedule-flip-label'>")
+                  .Append(E(projectName))
+                  .Append("</span></button>");
+            }
+            sb.Append("</div></div></div></article>");
         }
 
         private static void AppendProjectLink(StringBuilder sb, object projectId, object projectName)

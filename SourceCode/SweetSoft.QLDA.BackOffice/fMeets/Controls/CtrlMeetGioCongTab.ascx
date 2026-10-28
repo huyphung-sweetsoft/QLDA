@@ -356,8 +356,8 @@
 .mlt-time-launch-copy { display:flex;align-items:baseline;gap:8px;white-space:nowrap; }
 .mlt-time-launch-copy small { font-size:10.5px;font-weight:800;color:#7f67a0;text-transform:uppercase;letter-spacing:.02em; }
 .mlt-time-launch-copy b { font-size:12.5px;font-weight:800;color:#54218d; }
-.mlt-time-popover { position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:none;width:360px;padding:12px;border:1px solid #dfd2ed;border-radius:12px;background:#fff;box-shadow:0 18px 42px rgba(48,23,85,.16); }
-.mlt-time-popover::after { content:"";position:absolute;right:28px;bottom:100%;width:12px;height:12px;border-top:1px solid #dfd2ed;border-left:1px solid #dfd2ed;background:#fff;transform:translateY(6px) rotate(45deg); }
+.mlt-time-popover { position:fixed;right:auto;top:0;left:0;z-index:2147480400;display:none;width:min(630px,calc(100vw - 20px));max-width:calc(100vw - 20px);padding:12px;border:1px solid #dfd2ed;border-radius:12px;background:#fff;box-shadow:0 18px 42px rgba(48,23,85,.16);box-sizing:border-box; }
+.mlt-time-popover::after { display:none!important;content:none!important; }
 .mlt-time-popover.is-open { display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end; }
 .mlt-time-popover-head { grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#572d87;font-size:11px;font-weight:800; }
 .mlt-time-popover-close { width:24px;height:24px;border:1px solid #deceed;border-radius:7px;background:#fff;color:#7c60a2;cursor:pointer; }
@@ -411,11 +411,11 @@
 .mlt-hm-trigger { display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;min-width:40px;padding:5px 9px;border:1px solid #cdb9e5;border-radius:8px;background:#f9f6fe;color:#5d2c91;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer; }
 .mlt-hm-trigger:hover,.mlt-hm-trigger:focus-visible { background:#eee5fc;border-color:#a980d8; }
 .mlt-hm-trigger:disabled { opacity:.45;cursor:not-allowed; }
-.mlt-time-popover { width:min(480px,calc(100vw - 24px)); }
-.mlt-time-popover.is-open { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end; }
-.mlt-time-popover .mlt-time-save { grid-column:1/-1;justify-self:end; }
-.mlt-time-popover .mlt-datetime-control { display:flex;flex-wrap:wrap;gap:5px; }
-.mlt-time-popover .mlt-datetime-control .mlt-meet-date { flex:1 1 132px;max-width:none; }
+.mlt-time-popover { width:min(630px,calc(100vw - 20px)); }
+.mlt-time-popover.is-open { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end; }
+.mlt-time-popover .mlt-time-save { grid-column:3;align-self:end;justify-self:end;white-space:nowrap; }
+.mlt-time-popover .mlt-datetime-control { display:flex;flex-wrap:nowrap;gap:5px;min-width:0; }
+.mlt-time-popover .mlt-datetime-control .mlt-meet-date { flex:1 1 auto;min-width:0;max-width:none; }
 .mlt-time-editor .mlt-staff-hour { display:flex;align-items:center;gap:4px;min-width:0; }
 .mlt-time-editor .mlt-staff-hour input[type=time] { min-width:0;flex:1 1 68px;cursor:pointer;padding-right:3px; }
 .mlt-time-editor .mlt-staff-hour input[type=time]::-webkit-calendar-picker-indicator { display:none; }
@@ -424,6 +424,12 @@
 .mlt-employee-time-error:not(:empty) { display:block; }
 .mlt-hm-picker { position:fixed;z-index:2147480500;width:min(470px,calc(100vw - 18px));max-height:calc(100dvh - 18px);overflow:auto;box-sizing:border-box;padding:15px;border:1px solid #dfe4ed;border-radius:17px;background:#fff;color:#475569;box-shadow:0 18px 42px rgba(31,41,55,.18); }
 .mlt-hm-picker[hidden] { display:none!important; }
+/* Khi chọn giờ thực tế cuộc họp, hai khung nằm nối tiếp nhau, không che nhau. */
+.mlt-time-popover.is-picker-stacked { overflow:visible;box-sizing:border-box; }
+.mlt-time-popover.is-open { overflow:visible!important;max-height:none!important; }
+@media(max-width:640px) { .mlt-time-popover.is-open { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .mlt-time-popover .mlt-time-save { grid-column:1/-1;justify-self:end; } .mlt-time-popover .mlt-datetime-control { flex-wrap:wrap; } .mlt-time-popover .mlt-datetime-control .mlt-meet-date { min-width:100px; } }
+
+.mlt-main-head:has(.mlt-time-popover.is-picker-stacked) { z-index:2147480400; }
 .mlt-hm-picker-head { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px; }
 .mlt-hm-picker-head strong { color:#334155;font-size:13px;font-weight:800; }
 .mlt-hm-picker-head span { color:#94a3b8;font-size:10px;font-weight:650; }
@@ -644,7 +650,7 @@
         var baseline = null, baselineRows = null, lastRenderedPane = null, lastMeetingId = null;
         var pendingAfterSave = null, savingForNavigation = false, bypassGuard = false;
         var pinnedTimeRow = null, hoverTimeRow = null, hoverTimeTimer = null, timePopoverPinned = false, timePopupSubmitting = false;
-        var activeHourPicker = null, pickerValue = {hour:0,minute:0}, pickerFinish = null;
+        var activeHourPicker = null, pickerValue = {hour:0,minute:0}, pickerFinish = null, pickerStackedForMeet = false;
         var dialog = null;
         var filterTimer = null, focusSearchAfterReload = null;
         var rangePopup = null, rangeMonth = null, rangeTarget = 'from', draftFrom = '', draftTo = '';
@@ -658,11 +664,38 @@
         function editable() { var rr = rows(); return laborActive() && rr.length > 0 && rr[0].getAttribute('data-can-edit') === '1'; }
         function timeLaunch() { var r = root(); return r && r.querySelector('#mltActualTimeLaunch'); }
         function timePopover() { var r = root(); return r && r.querySelector('#mltActualTimePopover'); }
+        function positionMeetTimePopover() {
+            var pop = timePopover(), launch = timeLaunch();
+            if (!pop || !launch || !pop.classList.contains('is-open') || pickerStackedForMeet) return;
+            var pad = 10, gap = 10;
+            var vw = window.innerWidth || document.documentElement.clientWidth;
+            var vh = window.innerHeight || document.documentElement.clientHeight;
+            pop.style.position = 'fixed';
+            pop.style.right = 'auto';
+            pop.style.bottom = 'auto';
+            // Popup thiet lap luon giu chieu cao tu nhien, khong co thanh cuon doc.
+            pop.style.removeProperty('max-height');
+            pop.style.removeProperty('overflow-y');
+            var rect = launch.getBoundingClientRect();
+            var width = pop.getBoundingClientRect().width;
+            var height = pop.getBoundingClientRect().height;
+            // Canh canh phai popup voi canh phai nut de popup nam ben tren va lech trai.
+            var left = Math.max(pad, Math.min(vw - width - pad, rect.right - width));
+            var idealTop = rect.top - height - gap;
+            var top = Math.max(pad, Math.min(vh - height - pad, idealTop));
+            pop.classList.toggle('is-clamped', top + height > rect.top - 2);
+            pop.style.left = Math.round(left) + 'px';
+            pop.style.top = Math.round(top) + 'px';
+        }
         function closeMeetTimePopover() {
             var btn = timeLaunch(), pop = timePopover();
+            if (pickerStackedForMeet) closeHourPicker();
             timePopoverPinned = false;
             if (btn) { btn.classList.remove('is-open'); btn.setAttribute('aria-expanded', 'false'); }
-            if (pop) pop.classList.remove('is-open');
+            if (pop) {
+                pop.classList.remove('is-open', 'is-clamped', 'is-picker-stacked');
+                ['position','top','left','right','bottom','max-height','overflow-y','z-index'].forEach(function (name) { pop.style.removeProperty(name); });
+            }
         }
         function openMeetTimePopover() {
             var btn = timeLaunch(), pop = timePopover();
@@ -671,6 +704,7 @@
             btn.classList.add('is-open');
             btn.setAttribute('aria-expanded', 'true');
             pop.classList.add('is-open');
+            positionMeetTimePopover();
         }
         function normalizeHours(v) {
             var s = String(v == null ? '' : v).trim().replace(',', '.');
@@ -1263,17 +1297,65 @@
                 b.classList.toggle('is-selected', b.hasAttribute('data-hour')?Number(b.dataset.hour)===pickerValue.hour:Number(b.dataset.minute)===pickerValue.minute);
             });
         }
+        function resetMeetPickerStack() {
+            var pop = timePopover();
+            if (pop) {
+                pop.classList.remove('is-picker-stacked');
+                pop.style.removeProperty('max-height');
+                pop.style.removeProperty('overflow-y');
+            }
+            var picker = document.getElementById('mltReusableHourPicker');
+            if (picker) picker.style.removeProperty('max-height');
+            pickerStackedForMeet = false;
+            positionMeetTimePopover();
+        }
         function closeHourPicker(){
             if(activeHourPicker){activeHourPicker.hidden=true;activeHourPicker=null;}
             pickerFinish=null;
+            if(pickerStackedForMeet)resetMeetPickerStack();
+        }
+        // Với giờ họp: ưu tiên hai popup XẾP DỌC; nếu viewport thấp, co chiều cao
+        // picker và cho cuộn nội bộ, không đảo picker lên trên che khung thiết lập.
+        function positionMeetHourPickerStack() {
+            var pop=timePopover(),launch=timeLaunch(),picker=activeHourPicker;
+            if(!pickerStackedForMeet||!pop||!launch||!picker||picker.hidden||!pop.classList.contains('is-open'))return;
+            var vw=window.innerWidth||document.documentElement.clientWidth;
+            var vh=window.innerHeight||document.documentElement.clientHeight;
+            var margin=10,gap=10;
+            var available=Math.max(150,vh-margin*2-gap);
+            // Popup thiet lap (nho) luon hien du; chi popup chon gio (lon) moi cuon neu viewport thap.
+            pop.style.removeProperty('max-height');pop.style.removeProperty('overflow-y');
+            picker.style.removeProperty('max-height');
+            pop.classList.add('is-picker-stacked');
+            pop.style.position='fixed';pop.style.right='auto';pop.style.bottom='auto';
+            pop.style.zIndex='2147480400';
+            var popH=pop.getBoundingClientRect().height;
+            var pickerLimit=Math.max(100,available-popH);
+            picker.style.maxHeight=Math.floor(pickerLimit)+'px';
+            var pickerH=picker.getBoundingClientRect().height;
+            var groupH=popH+gap+pickerH;
+            var launchRect=launch.getBoundingClientRect();
+            var width=Math.max(pop.getBoundingClientRect().width,picker.getBoundingClientRect().width);
+            var left=Math.max(margin,Math.min(vw-width-margin,launchRect.right-width));
+            // Popup thiet lap o tren; bo chon gio mo NGAY ben duoi popup thiet lap.
+            // Neu man hinh thap, ca cum tu dich len va chi scroll ben trong picker.
+            var desiredTop=launchRect.top-popH-8;
+            var top=Math.max(margin,Math.min(desiredTop,vh-groupH-margin));
+            pop.classList.add('is-clamped');
+            pop.style.left=Math.round(left)+'px';pop.style.top=Math.round(top)+'px';
+            picker.style.left=Math.round(left)+'px';picker.style.top=Math.round(top+popH+gap)+'px';
         }
         function showHourPicker(anchor,sourceValue,label,done){
+            if(activeHourPicker)closeHourPicker();
             var parts=/^(\d{2}):(\d{2})$/.exec(sourceValue||'');
             pickerValue.hour=parts?Number(parts[1]):0;pickerValue.minute=parts?Number(parts[2]):0;
             if(pickerValue.hour>23||pickerValue.minute>59){pickerValue.hour=0;pickerValue.minute=0;}
             var el=createHourPicker();activeHourPicker=el;pickerFinish=done;el.hidden=false;
             el.querySelector('#mltPickerTitle').textContent=label;
             refreshPickerSelection();
+            pickerStackedForMeet=!!(anchor&&anchor.classList&&anchor.classList.contains('mlt-meet-hm-trigger')&&timePopover()&&timePopover().classList.contains('is-open'));
+            if(pickerStackedForMeet){positionMeetHourPickerStack();return;}
+            // Giữ nguyên hành vi của bộ chọn giờ nhân viên.
             var r=anchor.getBoundingClientRect(),w=el.offsetWidth,h=el.offsetHeight,pad=9;
             var left=Math.max(pad,Math.min(window.innerWidth-w-pad,r.left));
             var top=r.bottom+8;
@@ -1281,6 +1363,8 @@
             top=Math.max(pad,Math.min(window.innerHeight-h-pad,top));
             el.style.left=Math.round(left)+'px';el.style.top=Math.round(top)+'px';
         }
+        window.addEventListener('resize',function(){if(pickerStackedForMeet)positionMeetHourPickerStack();else positionMeetTimePopover();},{passive:true});
+        window.addEventListener('scroll',function(){if(pickerStackedForMeet)positionMeetHourPickerStack();else positionMeetTimePopover();},{passive:true});
         document.addEventListener('change',function(e){
             var day=e.target.closest && e.target.closest('.meet-panel-labor .mlt-meet-date');
             if(day)syncMeetingRawTime(day.dataset.datetimeFor);

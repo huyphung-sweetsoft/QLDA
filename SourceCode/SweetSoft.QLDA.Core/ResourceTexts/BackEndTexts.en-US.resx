@@ -3508,4 +3508,7 @@
   <data name="TASK_TIME_TRACKING" xml:space="preserve">
     <value>Task time tracking</value>
   </data>
+  <data name="EMPLOYEE_DASHBOARD" xml:space="preserve">
+    <value>Employee dashboard</value>
+  </data>
 </root>
