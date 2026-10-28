@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.Core.EnumHelper.Defines;
+﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using TrangThaiTask = SweetSoft.QLDA.Core.EnumHelper.TrangThaiCongViec;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -877,6 +877,33 @@ namespace SweetSoft.QLDA.Core.Managers
 
     public sealed class KhaiBaoGio20Manager
     {
+        // KBG20: khi PM tu choi, Task tro ve Dang thuc hien va LanThucHien tang.
+        // Chi ban bao trong LUOT HIEN TAI moi khoa Start. Lich su cac luot cu
+        // van duoc giu nguyen trong TblKhaiBaoGioDoiSoat de doi chieu.
+        // Dung chung cho Start gio thuong / tang ca / kiem tra auto Start Task cha.
+        private static bool CaNhanDaBaoXongLuotHienTai(SqlConnection con, SqlTransaction tx,
+            Guid idNhanVien, Guid idCongViec)
+        {
+            const string sql = @"SELECT TOP (1) s.LoaiSuKien
+                FROM dbo.TblKhaiBaoGioDoiSoat s WITH (HOLDLOCK)
+                INNER JOIN dbo.TblCongViec t ON t.IdCongViec=s.IdCongViec
+                    AND t.IdDuAn=s.IdDuAn AND t.LanThucHien=s.LanThucHien
+                WHERE s.IdNhanVien=@U AND s.IdCongViec=@T
+                    AND s.LoaiSuKien IN (1,2,3,4,5)
+                ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC";
+            using (var cmd = new SqlCommand(sql, con, tx))
+            {
+                cmd.CommandTimeout = 45;
+                cmd.Parameters.Add("@U", SqlDbType.UniqueIdentifier).Value = idNhanVien;
+                cmd.Parameters.Add("@T", SqlDbType.UniqueIdentifier).Value = idCongViec;
+                object value = cmd.ExecuteScalar();
+                if (value == null || value == DBNull.Value) return false;
+                int eventType = Convert.ToInt32(value, CultureInfo.InvariantCulture);
+                // 2 = da rut bao; 1/3/5 = da bao, 4 = PM da chot.
+                return eventType == 1 || eventType == 3 || eventType == 4 || eventType == 5;
+            }
+        }
+
         private readonly KhaiBaoGio20Repository _repo;
         private readonly TimeZoneInfo _muiGio;
         public KhaiBaoGio20Manager()
@@ -1077,7 +1104,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     if (!HopLe(task)) return Kbg20KetQua.Loi(LoiTrangThaiKhongTheStart(task));
                     buocXuLy = "Kiem tra phan cong truc tiep";
                     if (!_repo.CoPhanCong(con, tx, idCongViec, idNhanVien)) return Kbg20KetQua.Loi("Bạn chưa được phân công trực tiếp vào công việc này nên không thể bắt đầu tính giờ.");
-                    if (_repo.CaNhanDaBaoXong(con,tx,idNhanVien,idCongViec)) return Kbg20KetQua.Loi("Bạn đã báo hoàn thành phần việc. Hãy rút báo trước khi tiếp tục tính giờ.");
+                    if (CaNhanDaBaoXongLuotHienTai(con,tx,idNhanVien,idCongViec)) return Kbg20KetQua.Loi("Bạn đã báo hoàn thành phần việc. Hãy rút báo trước khi tiếp tục tính giờ.");
                     // Dot 5: Start som chi cho gio THUONG tren Task duoc giao truc tiep.
                     // Ngay ke hoach giu nguyen, Task 0->1 van nam trong transaction Start chung.
                     if (task.NgayBatDau.HasValue && nowLocal.Date < task.NgayBatDau.Value.Date)
@@ -1133,7 +1160,7 @@ namespace SweetSoft.QLDA.Core.Managers
                             // Dung quy tac: neu da tung Start (bat ke da dung), KHONG tu Resume.
                             buocXuLy = "Kiem tra da Start cha/phase " + cha.MaCongViec;
                             if (_repo.DaTungBatDau(con, tx, nv, cha.IdCongViec) ||
-                                _repo.CaNhanDaBaoXong(con,tx,nv,cha.IdCongViec)) continue;
+                                CaNhanDaBaoXongLuotHienTai(con,tx,nv,cha.IdCongViec)) continue;
                             buocXuLy = "Tao phien tu dong cha/phase " + cha.MaCongViec;
                             _repo.TaoPhien(con, tx, nv, cha, Kbg20LoaiGio.Thuong, nowUtc,
                                 Kbg20NguonBatDau.TuDongTuCongViecCon, task.IdCongViec, idNhanVien, idThaoTac, false);
@@ -1258,7 +1285,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     if (!HopLe(task)) return Kbg20KetQua.Loi(LoiTrangThaiKhongTheStart(task));
                     if (!_repo.CoPhanCong(con, tx, idCongViec, idNhanVien))
                         return Kbg20KetQua.Loi("Bạn chưa được phân công trực tiếp vào công việc này nên không thể bắt đầu tính giờ.");
-                    if (_repo.CaNhanDaBaoXong(con,tx,idNhanVien,idCongViec))
+                    if (CaNhanDaBaoXongLuotHienTai(con,tx,idNhanVien,idCongViec))
                         return Kbg20KetQua.Loi("Bạn đã báo hoàn thành phần việc. Hãy rút báo trước khi bắt đầu tăng ca.");
                     // Start sớm tăng ca: cùng danh sách công việc cản trở như Start theo lịch.
                     if (task.NgayBatDau.HasValue && local.Date < task.NgayBatDau.Value.Date)
@@ -1315,7 +1342,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         foreach (Guid nv in _repo.LayNguoiPhanCong(con,tx,cha.IdCongViec))
                         {
                             if (_repo.DaTungBatDau(con,tx,nv,cha.IdCongViec) ||
-                                _repo.CaNhanDaBaoXong(con,tx,nv,cha.IdCongViec)) continue;
+                                CaNhanDaBaoXongLuotHienTai(con,tx,nv,cha.IdCongViec)) continue;
                             _repo.TaoPhien(con,tx,nv,cha,Kbg20LoaiGio.Thuong,nowUtc,
                                 Kbg20NguonBatDau.TuDongTuCongViecCon,task.IdCongViec,
                                 idNhanVien,idThaoTac,false);
