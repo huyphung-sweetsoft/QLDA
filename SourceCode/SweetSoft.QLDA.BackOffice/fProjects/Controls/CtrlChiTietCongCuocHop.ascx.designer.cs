@@ -213,6 +213,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.WebControls.Literal litMeetingTimes;
 
         /// <summary>
+        /// litMeetingActualTimes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetingActualTimes;
+
+        /// <summary>
         /// litMeetingDuration control.
         /// </summary>
         /// <remarks>

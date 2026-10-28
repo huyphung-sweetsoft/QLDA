@@ -849,7 +849,7 @@ AND (m.IdNguoiTao=@UserId OR EXISTS
                 ? new[] { "Không tải được dữ liệu", "Không tải được dữ liệu", "Không tải được dữ liệu" }
                 : data == null ? new[] { "Chưa xác nhận", "Chưa ghi nhận công", "Chưa ghi nhận công" }
                 : new[] { data.ThamGia ? "Có tham gia" : "Không tham gia",
-                    data.ThamGia ? PersonalHourText(PersonalMeetingHours(meeting)) : "Chưa ghi nhận công",
+                    data.ThamGia ? PersonalHourValue(PersonalMeetingHours(meeting)) + " giờ công" : "Chưa ghi nhận công",
                     data.ThamGia ? PersonalLaborHour(data.GioThucTe ?? PersonalMeetingHours(meeting)) : "Chưa ghi nhận công" };
             return PersonalLaborTooltip("Cuộc họp: " + PersonalText(meeting, "TenCuocHop"), columns, values);
         }

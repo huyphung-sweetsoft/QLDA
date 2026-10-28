@@ -283,12 +283,40 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
 @keyframes pmcFocusYellow { 0%,100% { box-shadow:inset 0 0 0 0 transparent; } 18%,58% { box-shadow:inset 0 0 0 3px #f4b82b;background:#fff7cf; } 35%,77% { box-shadow:inset 0 0 0 1px #f6d67d;background:#fffbee; } }
 @media(prefers-reduced-motion:reduce) { .pmc-popup-modal #pmcPopupRoot .pmc-meeting.pmc-focus-flash { animation:none;box-shadow:inset 0 0 0 2px #f4b82b; } }
 
+/* V22 | Không giãn hàng khi phân trang chỉ có 1-4 cuộc họp; 5 hàng luôn cùng cỡ. */
+.pmc-popup-modal #pmcPopupRoot .pmc-list .pmc-meeting { flex:0 0 88px;height:88px;min-height:88px;max-height:88px;box-sizing:border-box; }
+@media(max-width:540px) { .pmc-popup-modal #pmcPopupRoot .pmc-list .pmc-meeting { flex-basis:82px;height:82px;min-height:82px;max-height:82px; } }
 /* Tên cuộc họp mở ViewDetail; phần còn lại của hàng vẫn chọn cuộc họp để chấm công. */
 .pmc-popup-modal #pmcPopupRoot .pmc-meeting-name.pd-view-object-link { cursor:pointer;text-decoration:none; }
 .pmc-popup-modal #pmcPopupRoot .pmc-meeting-name.pd-view-object-link:hover { color:#2563eb!important;text-decoration:none!important; }
 .pmc-popup-modal #pmcPopupRoot .pmc-meeting-name.pd-view-object-link:focus-visible { outline:2px solid #a777d1;outline-offset:2px;border-radius:3px; }
 .pmc-popup-modal #pmcPopupRoot .pmc-view-current-name { cursor:pointer; }
 .pmc-popup-modal #pmcPopupRoot .pmc-view-current-name:hover { color:#2563eb!important;text-decoration:none!important; }
+/* V25 | Hai bang dung khung 5 dong co dinh; khong gian hang khi it hon 5 ban ghi. */
+.pmc-popup-modal #pmcPopupRoot .pmc-list .pmc-meeting { flex:0 0 var(--pmc-meeting-row-height,88px)!important;height:var(--pmc-meeting-row-height,88px)!important;min-height:var(--pmc-meeting-row-height,88px)!important;max-height:var(--pmc-meeting-row-height,88px)!important;box-sizing:border-box!important;overflow:hidden; }
+.pmc-popup-modal #pmcPopupRoot .pmc-table tbody tr { height:var(--pmc-roster-row-height,88px)!important;min-height:var(--pmc-roster-row-height,88px)!important; }
+.pmc-popup-modal #pmcPopupRoot .pmc-table tbody tr td { height:var(--pmc-roster-row-height,88px)!important;vertical-align:middle!important; }
+
+/* V26 | Gio thuc te cuoc hop, xem moc vao/ra theo tung nhan vien; chi doc. */
+.pmc-popup-modal #pmcPopupRoot { position:relative; }
+.pmc-popup-modal #pmcPopupRoot .pmc-real-meeting-time { display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:4px 0 0;color:#64748b;font-size:11.5px;line-height:1.35; }
+.pmc-popup-modal #pmcPopupRoot .pmc-real-meeting-time i,.pmc-popup-modal #pmcPopupRoot .pmc-real-meeting-time strong { color:#54218d; }
+.pmc-popup-modal #pmcPopupRoot .pmc-actual-hour-cell { display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-view { display:inline-grid;place-items:center;flex:0 0 28px;width:28px;height:28px;padding:0;border:1px solid #ddcff0;border-radius:8px;background:#fff;color:#68369f;cursor:pointer;transition:background .16s,border-color .16s; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-view:hover,.pmc-popup-modal #pmcPopupRoot .pmc-clock-view[aria-expanded="true"] { background:#f1e9fd;border-color:#ab83d1; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-view:focus-visible { outline:2px solid #8856bc;outline-offset:2px; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect[hidden] { display:none!important; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect { position:absolute;z-index:105;box-sizing:border-box;width:min(375px,calc(100% - 24px));padding:0;border:1px solid #d7c2ec;border-radius:13px;background:#fff;box-shadow:0 15px 45px rgba(44,25,73,.22);color:#334155;font-size:12px; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-head { display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 13px;border-bottom:1px solid #e7ddee;border-radius:12px 12px 0 0;background:#f5effb;color:#54218d; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-head strong { display:inline-flex;align-items:center;gap:7px;font-size:13px; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-close { display:grid;place-items:center;width:26px;height:26px;border:1px solid #dfd2ed;border-radius:7px;background:#fff;color:#674087;cursor:pointer; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-person { padding:12px 13px 0;font-size:13px;font-weight:800;color:#3d2c52; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 13px; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-grid>div { display:flex;flex-direction:column;gap:5px;min-width:0;padding:9px 10px;border:1px solid #e2e7ef;border-radius:8px;background:#f8fafc; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-grid small { font-size:10.5px;font-weight:750;color:#64748b; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-grid strong { font-size:12px;color:#54218d;font-weight:800;overflow-wrap:anywhere; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-reason { margin:0 13px 11px;padding:9px 10px;border:1px solid #dce5f6;border-radius:8px;background:#f1f6ff;color:#365b89;line-height:1.55; }
+.pmc-popup-modal #pmcPopupRoot .pmc-clock-inspect-foot { display:flex;align-items:center;gap:6px;padding:9px 13px;border-top:1px solid #ebe6f2;color:#738096;font-size:10.5px; }
 </style>
 <SweetSoft:ExtraModal ID="mdlMeetingDetail" runat="server" Type="Primary" Title="Chi tiết cuộc họp" Width="92%">
     <ContentTemplate>
@@ -333,7 +361,7 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
                             </asp:UpdatePanel>
                         </section>
                         <section class="pmc-pane" aria-label="Nhân viên tham gia và giờ công">
-                            <div class="pmc-right-head"><div><h5><span class="pd-view-object-link pmc-view-current-name" role="link" tabindex="0" data-pd-view-kind="meet" data-pd-view-current="1" data-pd-view-id="" title="Xem chi tiết cuộc họp"><asp:Literal ID="litMeetingName" runat="server" /></span></h5><p><asp:Literal ID="litMeetingTimes" runat="server" /></p></div><span class="pmc-duration"><i class="far fa-clock"></i> <asp:Literal ID="litMeetingDuration" runat="server" /></span></div>
+                            <div class="pmc-right-head"><div><h5><span class="pd-view-object-link pmc-view-current-name" role="link" tabindex="0" data-pd-view-kind="meet" data-pd-view-current="1" data-pd-view-id="" title="Xem chi tiết cuộc họp"><asp:Literal ID="litMeetingName" runat="server" /></span></h5><p><asp:Literal ID="litMeetingTimes" runat="server" /></p><p class="pmc-real-meeting-time"><i class="far fa-clock" aria-hidden="true"></i> <strong>Giờ thực tế cuộc họp:</strong> <asp:Literal ID="litMeetingActualTimes" runat="server" /></p></div><span class="pmc-duration"><i class="far fa-clock"></i> <asp:Literal ID="litMeetingDuration" runat="server" /></span></div>
                             <div class="pmc-roster" id="pmcRoster">
                                 <table class="pmc-table">
                                     <thead><tr><th>Tên nhân viên</th><th>Trạng thái tham gia</th><th>Công lý thuyết</th><th>Công thực tế</th></tr></thead>
@@ -348,7 +376,16 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
                                                     <div class="pmc-staff-name"><b><%#: Eval("Ten") %> <asp:PlaceHolder runat="server" Visible='<%# Eval("ChuTri") %>'><i class="fas fa-crown pmc-host" title="Chủ trì"></i></asp:PlaceHolder></b>
                                                         <small><%#: Eval("EmailDisplay") %></small></div>
                                                 </div></td><td><span class='<%# Convert.ToBoolean(Eval("ThamGia")) ? "pmc-yes" : "pmc-no" %>'><%# Convert.ToBoolean(Eval("ThamGia")) ? "Có tham gia" : "Không tham gia" %></span></td>
-                                                    <td class="pmc-hour"><%#: Eval("TheoreticalText") %></td><td class="pmc-hour"><%#: Eval("ActualText") %></td></tr>
+                                                    <td class="pmc-hour"><%#: Eval("TheoreticalText") %> công</td>
+                                                    <td class="pmc-hour"><div class="pmc-actual-hour-cell"><span><%#: Eval("ActualText") %></span>
+                                                        <button type="button" class="pmc-clock-view" data-pmc-clock="1"
+                                                            data-pmc-person='<%# EncodeMeetingAttr(Eval("Ten")) %>'
+                                                            data-pmc-theory='<%# EncodeMeetingAttr(Eval("TheoreticalText")) %>'
+                                                            data-pmc-actual='<%# EncodeMeetingAttr(Eval("ActualText")) %>'
+                                                            data-pmc-in='<%# EncodeMeetingAttr(Eval("GioVaoText")) %>'
+                                                            data-pmc-out='<%# EncodeMeetingAttr(Eval("GioRaText")) %>'
+                                                            data-pmc-explanation='<%# EncodeMeetingAttr(Eval("LyDoGioThucTe")) %>'
+                                                            aria-haspopup="dialog" aria-expanded="false" title="Xem chi tiết giờ thực tế (chỉ đọc)" aria-label='Xem giờ thực tế của <%# EncodeMeetingAttr(Eval("Ten")) %>'><i class="far fa-clock" aria-hidden="true"></i></button></div></td></tr>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                         <asp:PlaceHolder ID="phRosterEmpty" runat="server" Visible="false"><tr><td colspan="4" class="pmc-empty"><asp:Literal ID="litRosterEmptyMessage" runat="server" /></td></tr></asp:PlaceHolder>
@@ -364,48 +401,54 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
                     </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
+            <div class="pmc-clock-inspect" id="pmcClockInspect" role="dialog" aria-modal="false" aria-labelledby="pmcClockInspectTitle" hidden>
+                <div class="pmc-clock-inspect-head"><strong id="pmcClockInspectTitle"><i class="far fa-clock" aria-hidden="true"></i> Chi tiết giờ thực tế</strong><button type="button" class="pmc-clock-inspect-close" aria-label="Đóng chi tiết giờ"><i class="fas fa-times" aria-hidden="true"></i></button></div>
+                <div class="pmc-clock-inspect-person" id="pmcClockInspectPerson"></div>
+                <div class="pmc-clock-inspect-grid"><div><small>Giờ vào thực tế</small><strong id="pmcClockInspectIn"></strong></div><div><small>Giờ ra thực tế</small><strong id="pmcClockInspectOut"></strong></div><div><small>Công lý thuyết</small><strong id="pmcClockInspectTheory"></strong></div><div><small>Công thực tế</small><strong id="pmcClockInspectActual"></strong></div></div>
+                <div class="pmc-clock-inspect-reason" id="pmcClockInspectReason"></div><div class="pmc-clock-inspect-foot"><i class="fas fa-lock" aria-hidden="true"></i> Chỉ xem, không thể chỉnh sửa</div>
+            </div>
         </div>
     </ContentTemplate>
 </SweetSoft:ExtraModal>
 <script type="text/javascript">
     (function () {
         var modalId ='<%= ModalClientId %>';
-    var selector = { action: 'hfAction', kind: 'hfKind', member: 'hfMember', search: 'hfSearch', state: 'hfState', from: 'hfDateFrom', to: 'hfDateTo', page: 'hfMeetingPage', rosterPage: 'hfRosterPage', meeting: 'hfMeetingId' };
-    var busy = false, debounceHandle = null, openRequest = false;
-    var hourFocusId = '';
-    var requestKind = '', liveInFlight = false, liveSent = '', liveCompleted = null, liveDraft = null, liveQueued = false, liveComposing = false;
-    var pendingFilter = false, pendingSelection = null, pendingPage = null;
-    function el(name) { var m = modal(); return m ? m.querySelector('input[id$="' + selector[name] + '"]') : null; }
-    function modal() { var n = document.getElementById(modalId); return n && n.classList && n.classList.contains('modal') ? n : (n ? n.querySelector('.modal') : null); }
-    function root() { return document.getElementById('pmcPopupRoot'); }
-    function val(name, v) { var e = el(name); if (e) e.value = v == null ? '' : String(v); }
-    function get(name) { var e = el(name); return e ? e.value : ''; }
-    function searchInput() { var r = root(); return r ? r.querySelector('#pmcSearchInput') : null; }
-    function clearLiveTimer() { if (debounceHandle !== null) { clearTimeout(debounceHandle); debounceHandle = null; } }
-    function normalizeText(value) { var s = String(value == null ? '' : value).toLowerCase().trim(); if (s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); return s.replace(/đ/g, 'd'); }
-    function liveState() { var r = root(); return r ? r.querySelector('.pmc-search') : null; }
-    function busyIndicator(on) { var box = liveState(); if (box) box.classList.toggle('is-live-searching', !!on); }
-    function previewNote(list) { var note = list.querySelector('.pmc-live-search-note'); if (!note) { note = document.createElement('div'); note.className = 'pmc-live-search-note'; note.setAttribute('role', 'status'); list.appendChild(note); } return note; }
-    function previewFilter() {
-        var r = root(), list = r && r.querySelector('#pmcList'), input = searchInput(); if (!list || !input) return;
-        var text = normalizeText(input.value), rows = list.querySelectorAll('.pmc-meeting'), shown = 0;
-        for (var i = 0; i < rows.length; i++) {
-            var title = rows[i].querySelector('.pmc-meeting-name');
-            var yes = !text || normalizeText(title ? title.textContent : '').indexOf(text) !== -1;
-            rows[i].hidden = !yes; if (yes) shown++;
+        var selector = { action: 'hfAction', kind: 'hfKind', member: 'hfMember', search: 'hfSearch', state: 'hfState', from: 'hfDateFrom', to: 'hfDateTo', page: 'hfMeetingPage', rosterPage: 'hfRosterPage', meeting: 'hfMeetingId' };
+        var busy = false, debounceHandle = null, openRequest = false;
+        var hourFocusId = '';
+        var requestKind = '', liveInFlight = false, liveSent = '', liveCompleted = null, liveDraft = null, liveQueued = false, liveComposing = false;
+        var pendingFilter = false, pendingSelection = null, pendingPage = null;
+        function el(name) { var m = modal(); return m ? m.querySelector('input[id$="' + selector[name] + '"]') : null; }
+        function modal() { var n = document.getElementById(modalId); return n && n.classList && n.classList.contains('modal') ? n : (n ? n.querySelector('.modal') : null); }
+        function root() { return document.getElementById('pmcPopupRoot'); }
+        function val(name, v) { var e = el(name); if (e) e.value = v == null ? '' : String(v); }
+        function get(name) { var e = el(name); return e ? e.value : ''; }
+        function searchInput() { var r = root(); return r ? r.querySelector('#pmcSearchInput') : null; }
+        function clearLiveTimer() { if (debounceHandle !== null) { clearTimeout(debounceHandle); debounceHandle = null; } }
+        function normalizeText(value) { var s = String(value == null ? '' : value).toLowerCase().trim(); if (s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); return s.replace(/đ/g, 'd'); }
+        function liveState() { var r = root(); return r ? r.querySelector('.pmc-search') : null; }
+        function busyIndicator(on) { var box = liveState(); if (box) box.classList.toggle('is-live-searching', !!on); }
+        function previewNote(list) { var note = list.querySelector('.pmc-live-search-note'); if (!note) { note = document.createElement('div'); note.className = 'pmc-live-search-note'; note.setAttribute('role', 'status'); list.appendChild(note); } return note; }
+        function previewFilter() {
+            var r = root(), list = r && r.querySelector('#pmcList'), input = searchInput(); if (!list || !input) return;
+            var text = normalizeText(input.value), rows = list.querySelectorAll('.pmc-meeting'), shown = 0;
+            for (var i = 0; i < rows.length; i++) {
+                var title = rows[i].querySelector('.pmc-meeting-name');
+                var yes = !text || normalizeText(title ? title.textContent : '').indexOf(text) !== -1;
+                rows[i].hidden = !yes; if (yes) shown++;
+            }
+            var pending = !!text && (liveInFlight || liveQueued || liveCompleted === null || liveCompleted !== input.value);
+            var note = previewNote(list);
+            // Preview tung ky tu tren cac dong hien co; khi server tra ve se bo sung ket qua tu cac trang khac.
+            note.hidden = !(pending && shown === 0);
+            if (!note.hidden) note.textContent = 'Đang tìm thêm cuộc họp phù hợp trong dự án...';
+            list.classList.toggle('is-live-preview', pending);
+            busyIndicator(liveInFlight || liveQueued);
         }
-        var pending = !!text && (liveInFlight || liveQueued || liveCompleted === null || liveCompleted !== input.value);
-        var note = previewNote(list);
-        // Preview tung ky tu tren cac dong hien co; khi server tra ve se bo sung ket qua tu cac trang khac.
-        note.hidden = !(pending && shown === 0);
-        if (!note.hidden) note.textContent = 'Đang tìm thêm cuộc họp phù hợp trong dự án...';
-        list.classList.toggle('is-live-preview', pending);
-        busyIndicator(liveInFlight || liveQueued);
-    }
-    function submit(action) {
-        if (busy) return false;
-        val('action', action);
-        var btn = document.getElementById('<%= ActionButtonId %>'); if (!btn) return false;
+        function submit(action) {
+            if (busy) return false;
+            val('action', action);
+            var btn = document.getElementById('<%= ActionButtonId %>'); if (!btn) return false;
             busy = true; requestKind = action;
             try { btn.click(); } catch (error) { busy = false; requestKind = ''; if (window.console) console.error(error); }
             return false;
@@ -576,14 +619,19 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
         function pmcFitRoster() {
             var r = root(), panel = r && r.querySelector('#pmcRoster');
             if (!panel) return;
+            // Hai bang deu lay khung 5 dong lam chuan, khong lay so dong thuc te.
+            var meetingList = r.querySelector('#pmcList');
+            if (meetingList && meetingList.clientHeight > 0) {
+                var meetingHeight = Math.min(88, Math.floor((meetingList.clientHeight - 2) / 5));
+                r.style.setProperty('--pmc-meeting-row-height', Math.max(72, meetingHeight) + 'px');
+            }
             var table = panel.querySelector('.pmc-table'), head = table && table.querySelector('thead');
-            var rows = table && table.querySelectorAll('tbody tr');
-            if (!rows || !rows.length) return;
+            if (!table) return;
             var available = Math.max(0, panel.clientHeight - (head ? head.offsetHeight : 49) - 2);
-            var perRow = available / rows.length;
-            // 5 nhan vien: can deu chieu cao. Trang co it nguoi: khong keo mot hang qua cao.
-            var target = Math.max(74, Math.min(96, Math.floor(perRow)));
-            r.style.setProperty('--pmc-roster-row-height', target + 'px');
+            if (available > 0) {
+                var rosterHeight = Math.min(88, Math.floor(available / 5));
+                r.style.setProperty('--pmc-roster-row-height', Math.max(72, rosterHeight) + 'px');
+            }
         }
         function pmcScheduleFit() {
             if (pmcLayoutFrame) return;
@@ -625,13 +673,52 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
             var y = Math.max(pad, Math.min(a.top + (a.height - b.height) / 2, window.innerHeight - b.height - pad));
             box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px';
         }
+
+        // Chi tiet gio thuc te dung popover doc-tren-view; khong mo ExtraModal thu hai/backdrop thu hai.
+        var pmcClockTrigger = null;
+        function pmcCloseClock() {
+            var p = document.getElementById('pmcClockInspect'); if (p) p.hidden = true;
+            if (pmcClockTrigger && pmcClockTrigger.isConnected) pmcClockTrigger.setAttribute('aria-expanded', 'false');
+            pmcClockTrigger = null;
+        }
+        function pmcOpenClock(button) {
+            var r = root(), p = document.getElementById('pmcClockInspect'); if (!r || !p || !button) return;
+            if (!p.hidden && pmcClockTrigger === button) { pmcCloseClock(); return; }
+            pmcCloseClock(); pmcClockTrigger = button; button.setAttribute('aria-expanded', 'true');
+            var fields = { pmcClockInspectPerson: 'person', pmcClockInspectTheory: 'theory', pmcClockInspectActual: 'actual', pmcClockInspectIn: 'in', pmcClockInspectOut: 'out', pmcClockInspectReason: 'explanation' };
+            Object.keys(fields).forEach(function (id) { var n = document.getElementById(id); if (n) n.textContent = button.getAttribute('data-pmc-' + fields[id]) || 'Chưa ghi nhận'; });
+            var th = document.getElementById('pmcClockInspectTheory'), ac = document.getElementById('pmcClockInspectActual');
+            if (th) th.textContent += ' công'; if (ac) ac.textContent += ' công';
+            p.hidden = false;
+            var rr = r.getBoundingClientRect(), br = button.getBoundingClientRect(), w = p.offsetWidth, h = p.offsetHeight;
+            var x = br.right - rr.left - w, y = br.top - rr.top - h - 10;
+            if (y < 6) y = br.bottom - rr.top + 10;
+            x = Math.max(8, Math.min(x, r.clientWidth - w - 8));
+            y = Math.max(8, Math.min(y, r.clientHeight - h - 8));
+            p.style.left = Math.round(x) + 'px'; p.style.top = Math.round(y) + 'px';
+        }
         function pmcUiEnhance() {
-            pmcHideHostTip(); pmcPrepareHostIcons(); pmcScheduleFit();
+            pmcCloseClock(); pmcHideHostTip(); pmcPrepareHostIcons(); pmcScheduleFit();
             var r = root(); if (!r) return;
             if (window.ResizeObserver) {
                 if (pmcObserver) pmcObserver.disconnect();
                 pmcObserver = new ResizeObserver(pmcScheduleFit);
                 var panel = r.querySelector('#pmcRoster'); if (panel) pmcObserver.observe(panel);
+            }
+            if (!window.__pmcReadOnlyClockBound26) {
+                window.__pmcReadOnlyClockBound26 = true;
+                document.addEventListener('click', function (e) {
+                    var button = e.target.closest ? e.target.closest('[data-pmc-clock]') : null;
+                    if (button && root() && root().contains(button)) { e.preventDefault(); e.stopPropagation(); pmcOpenClock(button); return; }
+                    if (e.target.closest && e.target.closest('.pmc-clock-inspect-close')) { e.preventDefault(); pmcCloseClock(); return; }
+                    var popup = document.getElementById('pmcClockInspect');
+                    if (popup && !popup.hidden && !popup.contains(e.target)) pmcCloseClock();
+                });
+                document.addEventListener('keydown', function (e) {
+                    var popup = document.getElementById('pmcClockInspect');
+                    if (e.key === 'Escape' && popup && !popup.hidden) { pmcCloseClock(); e.preventDefault(); e.stopImmediatePropagation(); }
+                }, true);
+                document.addEventListener('scroll', function () { pmcCloseClock(); }, true);
             }
             if (window.__pmcHostTooltipGlobalBound21) return;
             window.__pmcHostTooltipGlobalBound21 = true;
@@ -648,10 +735,11 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
             document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && datePop && !datePop.hidden) { hideDatePop(); event.stopPropagation(); } });
             window.addEventListener('scroll', function () { if (datePop && !datePop.hidden) positionDatePop(); }, true);
             window.addEventListener('resize', function () { pmcHideHostTip(); pmcScheduleFit(); positionDatePop(); });
-            document.addEventListener('hidden.bs.modal', function (e) { if (e.target === modal()) { pmcHideHostTip(); hideDatePop(); } });
+            document.addEventListener('hidden.bs.modal', function (e) { if (e.target === modal()) { pmcCloseClock(); pmcHideHostTip(); hideDatePop(); } });
             document.addEventListener('shown.bs.modal', function (e) { if (e.target === modal()) pmcScheduleFit(); });
         }
         function received(isOpen) {
+            pmcCloseClock();
             var finished = requestKind;
             busy = false; requestKind = '';
             if (finished === 'search-preview') {
