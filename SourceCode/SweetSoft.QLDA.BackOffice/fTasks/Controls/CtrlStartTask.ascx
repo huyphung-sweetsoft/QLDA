@@ -126,68 +126,68 @@
 
 
 <script type="text/javascript">
-    // Chặn bấm lặp, phản hồi ngay, nhưng KHÔNG chặn postback WebForms của LinkButton.
-    window.SweetStartTaskLoading = window.SweetStartTaskLoading || (function () {
-        var inProgress = false, activeButton = null, oldButtonHtml = '', currentRequestManager = null;
+// Chặn bấm lặp, phản hồi ngay, nhưng KHÔNG chặn postback WebForms của LinkButton.
+window.SweetStartTaskLoading = window.SweetStartTaskLoading || (function() {
+    var inProgress = false, activeButton = null, oldButtonHtml = '', currentRequestManager = null;
 
-        function getOverlay() {
-            var overlay = document.getElementById('st-start-processing-overlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'st-start-processing-overlay';
-                overlay.setAttribute('role', 'status');
-                overlay.setAttribute('aria-live', 'polite');
-                overlay.innerHTML = '<span class="st-start-loading-ring" aria-hidden="true"></span>' +
-                    '<strong class="st-start-loading-title">Đang bắt đầu công việc...</strong>' +
-                    '<span class="st-start-loading-subtitle">Hệ thống đang ghi nhận thao tác</span>';
-                document.body.appendChild(overlay);
-            }
-            return overlay;
+    function getOverlay() {
+        var overlay = document.getElementById('st-start-processing-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'st-start-processing-overlay';
+            overlay.setAttribute('role', 'status');
+            overlay.setAttribute('aria-live', 'polite');
+            overlay.innerHTML = '<span class="st-start-loading-ring" aria-hidden="true"></span>' +
+                '<strong class="st-start-loading-title">Đang bắt đầu công việc...</strong>' +
+                '<span class="st-start-loading-subtitle">Hệ thống đang ghi nhận thao tác</span>';
+            document.body.appendChild(overlay);
         }
+        return overlay;
+    }
 
-        function finish() {
-            inProgress = false;
-            var overlay = document.getElementById('st-start-processing-overlay');
-            if (overlay) overlay.classList.remove('is-active');
-            if (activeButton && document.documentElement.contains(activeButton)) {
-                activeButton.innerHTML = oldButtonHtml;
-                activeButton.classList.remove('st-start-busy');
-                activeButton.removeAttribute('aria-disabled');
-            }
-            activeButton = null;
-            oldButtonHtml = '';
+    function finish() {
+        inProgress = false;
+        var overlay = document.getElementById('st-start-processing-overlay');
+        if (overlay) overlay.classList.remove('is-active');
+        if (activeButton && document.documentElement.contains(activeButton)) {
+            activeButton.innerHTML = oldButtonHtml;
+            activeButton.classList.remove('st-start-busy');
+            activeButton.removeAttribute('aria-disabled');
         }
+        activeButton = null;
+        oldButtonHtml = '';
+    }
 
-        function begin(button) {
-            if (inProgress || !button) return false;
-            // Request khác đang chạy: WebForms sẽ không xử lý đồng thời hai async postback.
-            var prm = currentRequestManager;
-            if (prm && typeof prm.get_isInAsyncPostBack === 'function' && prm.get_isInAsyncPostBack()) return false;
-            inProgress = true;
-            activeButton = button;
-            oldButtonHtml = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2" aria-hidden="true"></i> Đang bắt đầu...';
-            button.classList.add('st-start-busy');
-            button.setAttribute('aria-disabled', 'true');
-            getOverlay().classList.add('is-active');
-            // Trả về true để LinkButton tiếp tục __doPostBack / WebForm_DoPostBackWithOptions.
-            return true;
-        }
+    function begin(button) {
+        if (inProgress || !button) return false;
+        // Request khác đang chạy: WebForms sẽ không xử lý đồng thời hai async postback.
+        var prm = currentRequestManager;
+        if (prm && typeof prm.get_isInAsyncPostBack === 'function' && prm.get_isInAsyncPostBack()) return false;
+        inProgress = true;
+        activeButton = button;
+        oldButtonHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2" aria-hidden="true"></i> Đang bắt đầu...';
+        button.classList.add('st-start-busy');
+        button.setAttribute('aria-disabled', 'true');
+        getOverlay().classList.add('is-active');
+        // Trả về true để LinkButton tiếp tục __doPostBack / WebForm_DoPostBackWithOptions.
+        return true;
+    }
 
-        function wirePostback() {
-            if (!window.Sys || !Sys.WebForms || !Sys.WebForms.PageRequestManager) return;
-            var prm = Sys.WebForms.PageRequestManager.getInstance();
-            if (!prm || currentRequestManager === prm) return;
-            currentRequestManager = prm;
-            // Dù server thành công hay báo lỗi, khi AJAX kết thúc thì gỡ loading.
-            prm.add_endRequest(function () { if (inProgress) finish(); });
-        }
+    function wirePostback() {
+        if (!window.Sys || !Sys.WebForms || !Sys.WebForms.PageRequestManager) return;
+        var prm = Sys.WebForms.PageRequestManager.getInstance();
+        if (!prm || currentRequestManager === prm) return;
+        currentRequestManager = prm;
+        // Dù server thành công hay báo lỗi, khi AJAX kết thúc thì gỡ loading.
+        prm.add_endRequest(function() { if (inProgress) finish(); });
+    }
 
-        wirePostback();
-        if (window.Sys && Sys.Application) Sys.Application.add_load(wirePostback);
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wirePostback);
-        window.addEventListener('pageshow', function (e) { if (e.persisted) finish(); });
-        return { begin: begin, finish: finish };
+    wirePostback();
+    if (window.Sys && Sys.Application) Sys.Application.add_load(wirePostback);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wirePostback);
+    window.addEventListener('pageshow', function(e) { if (e.persisted) finish(); });
+    return { begin: begin, finish: finish };
     })();
 </script>
 
