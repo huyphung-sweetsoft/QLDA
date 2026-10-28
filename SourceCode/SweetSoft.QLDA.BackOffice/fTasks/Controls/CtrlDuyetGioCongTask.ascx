@@ -92,6 +92,7 @@
 .qlpm-alert-suppressed{display:none!important}
 .qlpm-footer-notice{flex:1 1 320px;min-width:170px;max-width:650px;margin-right:auto;color:#176944;background:#edf9f1;border:1px solid #c0e6ce;border-radius:6px;padding:7px 10px;line-height:1.35;font-weight:650;font-size:10.75px}
 .qlpm-footer-notice[hidden]{display:none!important}
+.qlpm-footer-notice.qlpm-validation-error{background:#fff1f2;color:#9f1239;border-color:#fecdd3}
 .qlpm-footer-total{font-size:10.5px;font-weight:650;color:#8190a0;margin-right:auto}
 .qlpm-footer-notice:not([hidden])+.qlpm-footer-total{display:none!important}
 .qlpm-one .qlpm-employee-grid{display:none}
@@ -168,7 +169,7 @@
             <asp:LinkButton ID="btnLamMoiDuyet" runat="server" CssClass="btn btn-outline-secondary" OnClick="btnLamMoiDuyet_Click" CausesValidation="false"><i class="fas fa-sync-alt me-1"></i> Làm mới</asp:LinkButton>
             <asp:LinkButton ID="btnNhacBaoHoanThanh" runat="server" CssClass="btn btn-outline-warning" OnClick="btnNhacBaoHoanThanh_Click" CausesValidation="false"><i class="fas fa-bell me-1"></i> Gửi nhắc nhở</asp:LinkButton>
             <asp:LinkButton ID="btnBatDauDieuChinh" runat="server" CssClass="btn btn-outline-primary" OnClick="btnBatDauDieuChinh_Click" CausesValidation="false"><i class="fas fa-pen me-1"></i> Điều chỉnh giờ đã chốt</asp:LinkButton>
-            <asp:LinkButton ID="btnLuuDieuChinh" runat="server" CssClass="btn btn-primary" OnClick="btnLuuDieuChinh_Click" CausesValidation="false" OnClientClick="if (!confirm('Lưu kết quả giờ công điều chỉnh? Bản chốt trước đó vẫn được giữ trong lịch sử.')) return false;"><i class="fas fa-check me-1"></i> Xác nhận điều chỉnh</asp:LinkButton>
+            <asp:LinkButton ID="btnLuuDieuChinh" runat="server" CssClass="btn btn-primary" OnClick="btnLuuDieuChinh_Click" CausesValidation="false"><i class="fas fa-check me-1"></i> Xác nhận điều chỉnh</asp:LinkButton>
             <asp:LinkButton ID="btnChotGioCong" runat="server" CssClass="btn btn-primary" OnClick="btnChotGioCong_Click" OnClientClick="if (!QldaPmHours.confirmOnce(this)) return false;"><i class="fas fa-check-double me-1"></i> Xác nhận duyệt giờ công</asp:LinkButton>
         </ContentTemplate></asp:UpdatePanel>
     </FooterTemplate>
@@ -182,8 +183,8 @@ window.QldaPmHours=window.QldaPmHours||{};
  function pairFor(group){return {hours:group.querySelector('.qlpm-part-hours'),minutes:group.querySelector('.qlpm-part-minutes')};}
  function readGroup(group,validate){if(!window.Kbg20HourInput)return null;var p=pairFor(group);return validate?window.Kbg20HourInput.validatePair(p):window.Kbg20HourInput.readPair(p.hours,p.minutes);}
  function fmt(n){return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
- function notice(message){if(window.CMSMasterJs&&typeof CMSMasterJs.ShowNotify==='function')CMSMasterJs.ShowNotify(message,'error');else window.alert(message);} 
- function syncFooterNotice(){var modal=getModal();if(!modal)return;var alert=modal.querySelector('.qlpm-alert'),footer=modal.querySelector('.modal-footer'),notice=footer?footer.querySelector('.qlpm-footer-notice'):null;if(!notice)return;var content=alert?(alert.textContent||'').trim():'';var isSuccess=content.toLowerCase().indexOf('giờ công đã được pm duyệt')!==-1;notice.hidden=!isSuccess;notice.textContent=isSuccess?content:'';if(alert)alert.classList.toggle('qlpm-alert-suppressed',isSuccess);}
+ function notice(message){if(window.CMSMasterJs&&typeof CMSMasterJs.ShowNotify==='function'){CMSMasterJs.ShowNotify(message,'error');return;}var modal=getModal(),node=modal?modal.querySelector('.qlpm-footer-notice'):null;if(node){node.hidden=false;node.textContent=message;node.classList.add('qlpm-validation-error');}else if(window.console&&console.warn)console.warn('KBG20 PM:',message);} 
+ function syncFooterNotice(){var modal=getModal();if(!modal)return;var alert=modal.querySelector('.qlpm-alert'),footer=modal.querySelector('.modal-footer'),notice=footer?footer.querySelector('.qlpm-footer-notice'):null;if(!notice)return;if(notice.classList.contains('qlpm-validation-error'))return;var content=alert?(alert.textContent||'').trim():'';var isSuccess=content.toLowerCase().indexOf('giờ công đã được pm duyệt')!==-1;notice.hidden=!isSuccess;notice.textContent=isSuccess?content:'';if(alert)alert.classList.toggle('qlpm-alert-suppressed',isSuccess);}
  function isModalReallyOpen(element){if(!element)return false;var shown=element.classList.contains('show')||element.classList.contains('in')||element.getAttribute('aria-modal')==='true';if(!shown)return false;var style=window.getComputedStyle(element);return style.display!=='none'&&style.visibility!=='hidden';}
  function cleanOrphanBackdrop(){var modal=getModal();if(isModalReallyOpen(modal))return;var other=document.querySelectorAll('.modal');for(var i=0;i<other.length;i++){if(other[i]!==modal&&isModalReallyOpen(other[i]))return;}var all=document.querySelectorAll('.modal-backdrop');for(var j=0;j<all.length;j++)if(all[j].parentNode)all[j].parentNode.removeChild(all[j]);document.body.classList.remove('modal-open');document.body.style.removeProperty('padding-right');document.body.style.removeProperty('overflow');}
  function deferredModalCleanup(){window.setTimeout(cleanOrphanBackdrop,420);window.setTimeout(cleanOrphanBackdrop,750);}

@@ -90,3 +90,17 @@
 @media(max-width:1190px){.kbg20-page .kbg20-ui-table-grid{grid-template-columns:minmax(200px,2.2fr) minmax(110px,1fr) minmax(110px,1fr) minmax(115px,1fr);gap:10px}.kbg20-page .kbg20-ui-table-grid>:nth-child(4){display:none}#mdlKbg20Manual .kbg20-ui-workspace{grid-template-columns:minmax(0,1fr) minmax(245px,.75fr)}}
 @media(max-width:780px){.kbg20-page .kbg20-ui-table-head{display:none}.kbg20-page .kbg20-ui-table-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:13px}.kbg20-page .kbg20-ui-table-grid>:nth-child(4){display:flex}.kbg20-page .kbg20-ui-cell-task{grid-column:1/-1}.kbg20-page .kbg20-ui-cell-status{grid-column:1/-1}.kbg20-page .kbg20-ui-cell-actions{grid-column:1/-1;justify-content:flex-start}#mdlKbg20Manual .kbg20-ui-workspace{grid-template-columns:1fr}#mdlKbg20Manual .kbg20-ui-cards{grid-template-columns:1fr 1fr}#mdlKbg20Manual .kbg20-ui-history-panel{min-height:145px}#mdlKbg20Manual .kbg20-ui-history-list{max-height:200px}}
 @media(max-width:520px){#mdlKbg20Manual .kbg20-ui-cards{grid-template-columns:1fr}#mdlKbg20Manual .kbg20-reconcile-content{padding:10px}#mdlKbg20Manual .kbg20-ui-top-title h3{font-size:15px}.kbg20-page .kbg20-ui-cell-sys,.kbg20-page .kbg20-ui-cell-self{flex-wrap:wrap}#mdlKbg20Manual .kbg20-ui-input-pair{grid-template-columns:1fr}}
+
+/* 20261028 - Personal hours UI: same desktop history viewport for Task and Issue regardless of event count.
+   Keep internal history scroll instead of growing the entire ExtraModal. Does not affect other modals. */
+@media(min-width:781px){
+#mdlKbg20Manual .kbg20-ui-workspace{min-height:clamp(240px,calc(50vh - 23px),395px)}
+#mdlKbg20Manual .kbg20-ui-side{align-self:stretch;min-height:0}
+/* Edit form only: align system-hour values with the self-reported input row, instead of sticking to card bottom. */
+#mdlKbg20Manual .kbg20-ui-cards:has(.kbg20-ui-input-pair) .kbg20-ui-hours-card:first-child .kbg20-ui-hour-pair{margin-top:16px;margin-bottom:auto}
+#mdlKbg20Manual .kbg20-ui-side>.kbg20-ui-history-panel{flex:1 1 auto;min-height:0;height:100%;overflow:hidden}
+#mdlKbg20Manual .kbg20-ui-history-list{flex:1 1 auto;min-height:0;max-height:clamp(180px,calc(50vh - 82px),335px);overflow-y:auto}
+}
+@media(max-width:780px){
+#mdlKbg20Manual .kbg20-ui-workspace{min-height:0}
+}

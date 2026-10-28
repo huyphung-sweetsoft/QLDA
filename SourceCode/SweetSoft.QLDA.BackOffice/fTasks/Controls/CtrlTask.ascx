@@ -607,10 +607,9 @@
                              </SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>' ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger me-1" ResourceKey='<%# BackEndResourceKeys.DELETE %>' ButtonIcon="fas fa-trash">
                             </SweetSoft:SmartLinkButton>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' ID="lbtViewSchedule" CommandName="VIEW_SCHEDULE" CssClass="btn-grid-action text-decoration-none text-info" ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-calendar-alt">
-                            </SweetSoft:SmartLinkButton>
+
                             <span runat="server" id="qlpmActionWrap" class="qlpm-action-wrap">
-                                <SweetSoft:SmartLinkButton runat="server" ID="lbtDuyetCong" CommandName="REVIEW_HOURS" CommandArgument='<%# Eval("IdCongViec") %>' VisibleConditionKey='<%# this.IsView || this.IsEdit || this.IsPM || this.IsAdministrator %>' ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-file-invoice" CssClass="btn-grid-action btn-qlpm-review text-decoration-none" CausesValidation="false" ToolTip="Duyệt giờ công">
+                                <SweetSoft:SmartLinkButton runat="server" ID="lbtDuyetCong" CommandName="REVIEW_HOURS" CommandArgument='<%# Eval("IdCongViec") %>' VisibleConditionKey="true" ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-file-invoice" CssClass="btn-grid-action btn-qlpm-review text-decoration-none" CausesValidation="false" ToolTip="Duyệt giờ công">
                                 </SweetSoft:SmartLinkButton>
                                 <asp:Label ID="lblPmPending" runat="server" CssClass="btn-qlpm-pending" Text="!" Visible="false" />
                             </span>
