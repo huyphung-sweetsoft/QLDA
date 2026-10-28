@@ -84,7 +84,7 @@ public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
             DateTime nowUtc = DateTime.UtcNow;
             var views = new KhaiBaoGio20Manager().LayDongHoHienThi(user.UserId, nowUtc);
             var projectUrls = new Dictionary<Guid, string>();
-            var items = views.Select(x =>
+            var taskItems = views.Select(x =>
             {
                 Kbg20Phien p = x.Phien;
                 string projectUrl;
@@ -96,6 +96,7 @@ public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
                 return new
                 {
                     id = p.IdPhien.ToString("D"),
+                    kind = "task", // chi them loai; moi truong Task truoc day van giu nguyen.
                     taskId = p.IdCongViec.ToString("D"),
                     projectId = p.IdDuAn.ToString("D"),
                     code = p.MaCongViec ?? "",
@@ -111,6 +112,40 @@ public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
                     boundary = MsNullable(x.MocDungCongLucUtc)
                 };
             }).ToArray();
+
+            // Issue cung su dung 1 widget va cung data contract, nhung KHONG gia lap taskId.
+            // Giu nguyen mang taskItems nhu truoc; khong thay nguon gio Task.
+            var issueViews = new GioXuLyVanDeManager().LayDongHoNoi(user.UserId, nowUtc);
+            var issueItems = issueViews.Select(x =>
+            {
+                string projectUrl;
+                if (!projectUrls.TryGetValue(x.IdDuAn, out projectUrl))
+                {
+                    projectUrl = ProjectTimeTrackingUrl(x.IdDuAn);
+                    projectUrls[x.IdDuAn] = projectUrl;
+                }
+                return new
+                {
+                    id = x.IdPhien.ToString("D"),
+                    kind = "issue",
+                    taskId = "",
+                    issueId = x.IdVanDe.ToString("D"),
+                    projectId = x.IdDuAn.ToString("D"),
+                    code = x.MaVanDe ?? "",
+                    name = x.TenVanDe ?? "",
+                    projectCode = x.MaDuAn ?? "",
+                    projectName = x.TenDuAn ?? "",
+                    projectUrl = projectUrl,
+                    type = x.LaTangCa ? 2 : 1, // contract floating: 1 thuong / 2 tang ca
+                    source = 1, // Issue khong tu Start theo Task con
+                    overdue = false, // Issue khong co deadline Task
+                    seconds = x.SoGiayHienTai,
+                    counting = x.DangCongGio,
+                    boundary = MsNullable(x.MocDungCongLucUtc)
+                };
+            }).ToArray();
+            // Anonymous types khac nhau -> cast ve object truoc Concat.
+            var items = taskItems.Cast<object>().Concat(issueItems.Cast<object>()).ToArray();
 
             Write(response, new
             {

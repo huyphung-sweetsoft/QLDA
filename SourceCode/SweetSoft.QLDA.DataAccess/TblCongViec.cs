@@ -1159,7 +1159,7 @@ namespace SweetSoft.QLDA.DataAccess
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoat item in colTblKhaiBaoGioDoiSoatRecords)
                     {
-                        if (item.IdCongViec != IdCongViec)
+                        if (item.IdCongViec == null ||item.IdCongViec != IdCongViec)
                         {
                             item.IdCongViec = IdCongViec;
                         }
@@ -1170,7 +1170,7 @@ namespace SweetSoft.QLDA.DataAccess
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhien item in colTblKhaiBaoGioPhienRecords)
                     {
-                        if (item.IdCongViec != IdCongViec)
+                        if (item.IdCongViec == null ||item.IdCongViec != IdCongViec)
                         {
                             item.IdCongViec = IdCongViec;
                         }

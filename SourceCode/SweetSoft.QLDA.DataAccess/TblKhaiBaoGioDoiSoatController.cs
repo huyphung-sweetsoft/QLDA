@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdDoiSoat,Guid IdNhanVien,Guid IdCongViec,Guid IdDuAn,int LanDoiSoat,int PhienBan,bool LaBanHienTai,Guid? IdYeuCauHoanThanh,long SoGiayThuongHeThong,long SoGiayTangCaHeThong,int? SoPhutThuongTuKhai,int? SoPhutTangCaTuKhai,string LyDoDieuChinh,DateTime ChotGioHeThongLuc,string NguoiTao,DateTime NgayTao,byte LoaiSuKien,Guid? IdThaoTac,int? SoPhutThuongPmChot,int? SoPhutTangCaPmChot,Guid? IdPmChot,int LanThucHien)
+	    public void Insert(Guid IdDoiSoat,Guid IdNhanVien,Guid? IdCongViec,Guid IdDuAn,int LanDoiSoat,int PhienBan,bool LaBanHienTai,Guid? IdYeuCauHoanThanh,long SoGiayThuongHeThong,long SoGiayTangCaHeThong,int? SoPhutThuongTuKhai,int? SoPhutTangCaTuKhai,string LyDoDieuChinh,DateTime ChotGioHeThongLuc,string NguoiTao,DateTime NgayTao,byte LoaiSuKien,Guid? IdThaoTac,int? SoPhutThuongPmChot,int? SoPhutTangCaPmChot,Guid? IdPmChot,int LanThucHien,Guid? IdVanDe,Guid? IdNguoiThaoTacVanDe)
 	    {
 		    TblKhaiBaoGioDoiSoat item = new TblKhaiBaoGioDoiSoat();
 		    
@@ -128,6 +128,10 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.LanThucHien = LanThucHien;
             
+            item.IdVanDe = IdVanDe;
+            
+            item.IdNguoiThaoTacVanDe = IdNguoiThaoTacVanDe;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -136,7 +140,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdDoiSoat,Guid IdNhanVien,Guid IdCongViec,Guid IdDuAn,int LanDoiSoat,int PhienBan,bool LaBanHienTai,Guid? IdYeuCauHoanThanh,long SoGiayThuongHeThong,long SoGiayTangCaHeThong,int? SoPhutThuongTuKhai,int? SoPhutTangCaTuKhai,string LyDoDieuChinh,DateTime ChotGioHeThongLuc,string NguoiTao,DateTime NgayTao,byte LoaiSuKien,Guid? IdThaoTac,int? SoPhutThuongPmChot,int? SoPhutTangCaPmChot,Guid? IdPmChot,int LanThucHien)
+	    public void Update(Guid IdDoiSoat,Guid IdNhanVien,Guid? IdCongViec,Guid IdDuAn,int LanDoiSoat,int PhienBan,bool LaBanHienTai,Guid? IdYeuCauHoanThanh,long SoGiayThuongHeThong,long SoGiayTangCaHeThong,int? SoPhutThuongTuKhai,int? SoPhutTangCaTuKhai,string LyDoDieuChinh,DateTime ChotGioHeThongLuc,string NguoiTao,DateTime NgayTao,byte LoaiSuKien,Guid? IdThaoTac,int? SoPhutThuongPmChot,int? SoPhutTangCaPmChot,Guid? IdPmChot,int LanThucHien,Guid? IdVanDe,Guid? IdNguoiThaoTacVanDe)
 	    {
 		    TblKhaiBaoGioDoiSoat item = new TblKhaiBaoGioDoiSoat();
 	        item.MarkOld();
@@ -185,6 +189,10 @@ namespace SweetSoft.QLDA.DataAccess
 			item.IdPmChot = IdPmChot;
 				
 			item.LanThucHien = LanThucHien;
+				
+			item.IdVanDe = IdVanDe;
+				
+			item.IdNguoiThaoTacVanDe = IdNguoiThaoTacVanDe;
 				
 	        item.Save(UserName);
 	    }

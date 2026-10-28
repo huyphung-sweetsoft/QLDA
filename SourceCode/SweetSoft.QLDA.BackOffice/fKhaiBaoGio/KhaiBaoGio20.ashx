@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.Script.Serialization;
@@ -78,6 +79,26 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 string raw=context.Request.QueryString["projectId"];
                 if(!string.IsNullOrEmpty(raw) && !Guid.TryParse(raw,out project)) {Error(context,400,"Ma du an khong hop le.");return;}
                 var man=new KhaiBaoGio20Manager();
+                // Chi tai khoan dang dang nhap duoc doc gio PM chot cua chinh minh.
+                if(string.Equals(context.Request.QueryString["view"],"pm-final",StringComparison.OrdinalIgnoreCase)) {
+                    Guid task,eventId=Guid.Empty;
+                    if(project==Guid.Empty || !Guid.TryParse(context.Request.QueryString["taskId"],out task) || task==Guid.Empty)
+                        {Error(context,400,"Thiếu dự án hoặc công việc cần xem.");return;}
+                    string rawEvent=context.Request.QueryString["eventId"];
+                    if(!string.IsNullOrWhiteSpace(rawEvent) && !Guid.TryParse(rawEvent,out eventId))
+                        {Error(context,400,"Mã kết quả giờ công không hợp lệ.");return;}
+                    var pmFinalDetail=new Kbg20PmChotCongTaskManager().LayKetQuaCaNhan(user.UserId,project,task,eventId);
+                    Func<Kbg20PmChotCongTaskManager.Kbg20GioDaChot,object> map=x=>new {
+                        id=x.IdBan.ToString("D"),pmId=x.IdPm.ToString("D"),regularMinutes=x.PhutHanhChinh,
+                        overtimeMinutes=x.PhutTangCa,declaredRegular=x.PhutNhanVienBaoHanhChinh,
+                        declaredOvertime=x.PhutNhanVienBaoTangCa,systemRegularMinutes=PhutHeThongDaLamTron(x.GiayHanhChinhHeThong),
+                        systemOvertimeMinutes=PhutHeThongDaLamTron(x.GiayTangCaHeThong),
+                        reason=x.LyDo,createdUtc=Ms(x.NgayTaoUtc)
+                    };
+                    Write(context,new {ok=true,code=pmFinalDetail.MaCongViec,name=pmFinalDetail.TenCongViec,
+                        selected=map(pmFinalDetail.BanDuocThongBao),latest=map(pmFinalDetail.BanMoiNhat),
+                        history=pmFinalDetail.LichSu.Select(map).ToArray()});return;
+                }
                 if(string.Equals(context.Request.QueryString["view"],"switch-preview",StringComparison.OrdinalIgnoreCase)) {
                     Guid target;
                     if(!Guid.TryParse(context.Request.QueryString["taskId"],out target)||target==Guid.Empty)
@@ -136,7 +157,7 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         results.Add(new {
                             taskId=x.IdCongViec.ToString("D"),code=x.MaCongViec,name=x.TenCongViec,
                             status=x.CoGocXacNhanSauTask?5:x.LoaiSuKien,round=x.Lan,version=x.PhienBan,
-                            taskStatus=known?taskState.TrangThai:-1,
+                            taskStatus=known?taskState.TrangThai:x.TrangThaiTask,deleted=x.DaXoa,
                             systemRegularMinutes=known?PhutHeThongDaLamTron(taskState.GiayHanhChinh):PhutHeThongDaLamTron(x.GiayThuong),
                             systemOvertimeMinutes=known?PhutHeThongDaLamTron(taskState.GiayTangCa):PhutHeThongDaLamTron(x.GiayTangCa),
                             declaredRegular=(x.DangBaoXong||x.LoaiSuKien==4)?x.PhutTuKhaiThuong:(int?)null,
@@ -147,7 +168,7 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                     foreach(var x in pending)if(!statuses.ContainsKey(x.IdCongViec)) {
                         results.Add(new {
                             taskId=x.IdCongViec.ToString("D"),code=x.MaCongViec,name=x.TenCongViec,
-                            status=0,round=0,version=0,taskStatus=x.TrangThai,
+                            status=0,round=0,version=0,taskStatus=x.TrangThai,deleted=false,
                             systemRegularMinutes=PhutHeThongDaLamTron(x.GiayHanhChinh),
                             systemOvertimeMinutes=PhutHeThongDaLamTron(x.GiayTangCa),
                             declaredRegular=(int?)null,declaredOvertime=(int?)null,
@@ -164,13 +185,13 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                     var v=detail.HienTai;
                     Write(context,new {ok=true,taskId=task.ToString("D"),
                         status=v==null?0:(v.CoGocXacNhanSauTask?5:v.LoaiSuKien),round=v==null?0:v.Lan,version=v==null?0:v.PhienBan,
-                        canEdit=!detail.KhoaPm && v!=null && v.DangBaoXong,
-                        canWithdraw=!detail.KhoaPm && detail.TrangThaiTask==1 && v!=null &&
+                        canEdit=!detail.KhoaPm && !detail.DaXoa && v!=null && v.DangBaoXong,
+                        canWithdraw=!detail.KhoaPm && !detail.DaXoa && detail.TrangThaiTask==1 && v!=null &&
                             (v.LoaiSuKien==1 || v.LoaiSuKien==3),
-                        canConfirm=!detail.KhoaPm && (detail.TrangThaiTask==4 ||
+                        canConfirm=!detail.KhoaPm && !detail.DaXoa && (detail.TrangThaiTask==4 ||
                             detail.TrangThaiTask==2 || detail.TrangThaiTask==3) &&
                             (v==null || v.LoaiSuKien==2),
-                        taskStatus=detail.TrangThaiTask,
+                        taskStatus=detail.TrangThaiTask,deleted=detail.DaXoa,
                         assigned=detail.ConPhanCong,pmLocked=detail.KhoaPm,
                         regular=detail.GiayThuongHeThong,overtime=detail.GiayTangCaHeThong,
                         systemRegularMinutes=PhutHeThongDaLamTron(detail.GiayThuongHeThong),
@@ -199,7 +220,7 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                     string staffName=staff!=null && !string.IsNullOrWhiteSpace(staff.DisplayName)?staff.DisplayName:"Nhân viên";
                     Write(context,new {ok=true,employeeName=staffName,@readonly=true,taskId=task.ToString("D"),employeeId=employee.ToString("D"),
                         status=v==null?0:(v.CoGocXacNhanSauTask?5:v.LoaiSuKien),round=v==null?0:v.Lan,version=v==null?0:v.PhienBan,
-                        taskStatus=detail.TrangThaiTask,pmLocked=detail.KhoaPm,
+                        taskStatus=detail.TrangThaiTask,deleted=detail.DaXoa,pmLocked=detail.KhoaPm,
                         systemRegularMinutes=PhutHeThongDaLamTron(detail.GiayThuongHeThong),
                         systemOvertimeMinutes=PhutHeThongDaLamTron(detail.GiayTangCaHeThong),
                         declaredRegular=v==null||v.LoaiSuKien==2?null:v.PhutTuKhaiThuong,
@@ -220,11 +241,16 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                            CultureInfo.InvariantCulture,DateTimeStyles.None,out chiTietNgay))
                        {Error(context,400,"Ngày hoặc công việc không hợp lệ.");return;}
                      var chiTietPhien=man.LayPhienChiTietTheoNgay(user.UserId,project,chiTietTaskGuid,chiTietNgay);
+                     var thongTinNguon=man.LayNguonStartTheoPhien(user.UserId,project,chiTietPhien.Select(p=>p.IdPhien).ToArray(),null);
                      Write(context,new {ok=true,projectId=project.ToString("D"),taskId=chiTietTaskGuid.ToString("D"),
                          day=chiTietNgay.ToString("yyyy-MM-dd"),items=chiTietPhien.ConvertAll(p=>new {
                          id=p.IdPhien.ToString("D"),type=p.LoaiGio,
                          started=Ms(p.BatDauLucUtc),ended=MsNullable(p.KetThucLucUtc),
-                         committedSeconds=p.SoGiayDaKetToanTrongNgay})});return;
+                         committedSeconds=p.SoGiayDaKetToanTrongNgay,
+                         source=thongTinNguon.ContainsKey(p.IdPhien)?thongTinNguon[p.IdPhien].NguonBatDau:0,
+                         triggerTaskCode=thongTinNguon.ContainsKey(p.IdPhien)?thongTinNguon[p.IdPhien].MaCongViecKichHoat:null,
+                         triggerTaskName=thongTinNguon.ContainsKey(p.IdPhien)?thongTinNguon[p.IdPhien].TenCongViecKichHoat:null,
+                         triggerActor=thongTinNguon.ContainsKey(p.IdPhien)?thongTinNguon[p.IdPhien].TenNguoiKichHoat:null})});return;
                  }
                 if(string.Equals(context.Request.QueryString["view"],"history",StringComparison.OrdinalIgnoreCase)) {
                     // Lich su chi duoc doc cho CHINH NHAN VIEN va DU AN hien tai.
@@ -236,6 +262,9 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                     }
                     var lichSu=man.LayLichSuTheoNgay(user.UserId,project,day);
                     var dauMocSomNhatKy=man.LayDauMocStartSom(user.UserId,project);
+                    var nguonStartNhatKy=man.LayNguonStartTheoPhien(user.UserId,project,null,day);
+                    DateTime batDauNgayUtc=DateTime.SpecifyKind(day.Date.AddHours(-7),DateTimeKind.Utc);
+                    DateTime ketThucNgayUtc=batDauNgayUtc.AddDays(1);
                     Write(context,new {ok=true,projectId=project.ToString("D"),day=day.ToString("yyyy-MM-dd"),
                         serverNow=Ms(lichSu.ServerNowUtc),
                         regular=lichSu.SoGiayThuong,overtime=lichSu.SoGiayTangCa,total=lichSu.TongSoGiay,
@@ -243,7 +272,12 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                             code=x.MaCongViec,name=x.TenCongViec,
                             regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,total=x.TongSoGiay,
                             hadActivity=x.CoHoatDong,isOpen=x.DangCoPhienMo,deleted=x.DaXoa,
+                            startSources=nguonStartNhatKy.Values.Where(src=>src.IdCongViec==x.IdCongViec
+                                && src.BatDauUtc<ketThucNgayUtc && (!src.KetThucUtc.HasValue || src.KetThucUtc.Value>=batDauNgayUtc))
+                                .Select(src=>new {source=src.NguonBatDau,triggerTaskCode=src.MaCongViecKichHoat,
+                                   triggerTaskName=src.TenCongViecKichHoat,triggerActor=src.TenNguoiKichHoat}).ToList(),
                             isEarly=dauMocSomNhatKy.ContainsKey(x.IdCongViec),
+                            earlyInferred=dauMocSomNhatKy.ContainsKey(x.IdCongViec) && dauMocSomNhatKy[x.IdCongViec].LaSuyDoan,
                             earlyStarted=dauMocSomNhatKy.ContainsKey(x.IdCongViec)?
                                 Ms(dauMocSomNhatKy[x.IdCongViec].BatDauUtc):(long?)null,
                             earlyPlan=dauMocSomNhatKy.ContainsKey(x.IdCongViec)?
@@ -266,6 +300,8 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 var personalStates=new Kbg20BaoXongManager().LayTomTat(user.UserId,project);
                 var earlyBlockers=man.LayViecCanXuLyTruocStartSom(user.UserId,view.IdDuAn,localDay);
                 var dauMocSom=man.LayDauMocStartSom(user.UserId,view.IdDuAn);
+                var nguonPhien=man.LayNguonStartTheoPhien(user.UserId,view.IdDuAn,
+                    view.DongHo.Select(x=>x.Phien.IdPhien).Concat(view.LichSu.Select(x=>x.IdPhien)).ToArray(),null);
                 Write(context,new {ok=true,serverNow=Ms(now),workflowEnabled=Kbg20TichHopTask.DuocKichHoat,
                     earlyStart=new {allowed=earlyBlockers.Count==0,remainingCount=earlyBlockers.Count,
                         blockingTasks=earlyBlockers.GetRange(0,Math.Min(4,earlyBlockers.Count)).ToArray()},
@@ -297,6 +333,7 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,
                         startedRegular=x.DaTungBatDauThuong,startedOvertime=x.DaTungBatDauTangCa,
                         isEarly=dauMocSom.ContainsKey(x.IdCongViec),
+                        earlyInferred=dauMocSom.ContainsKey(x.IdCongViec) && dauMocSom[x.IdCongViec].LaSuyDoan,
                         earlyStarted=dauMocSom.ContainsKey(x.IdCongViec)?
                             Ms(dauMocSom[x.IdCongViec].BatDauUtc):(long?)null,
                         earlyPlan=dauMocSom.ContainsKey(x.IdCongViec)?
@@ -308,11 +345,18 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         projectId=x.Phien.IdDuAn.ToString("D"),code=x.Phien.MaCongViec,name=x.Phien.TenCongViec,
                         projectCode=x.Phien.MaDuAn,projectName=x.Phien.TenDuAn,
                         type=(byte)x.Phien.LoaiGio,source=x.Phien.NguonBatDau,
+                        triggerTaskCode=nguonPhien.ContainsKey(x.Phien.IdPhien)?nguonPhien[x.Phien.IdPhien].MaCongViecKichHoat:null,
+                        triggerTaskName=nguonPhien.ContainsKey(x.Phien.IdPhien)?nguonPhien[x.Phien.IdPhien].TenCongViecKichHoat:null,
+                        triggerActor=nguonPhien.ContainsKey(x.Phien.IdPhien)?nguonPhien[x.Phien.IdPhien].TenNguoiKichHoat:null,
                         overdue=x.Phien.LaTiepTucQuaHan,
                         seconds=x.SoGiayHienTai,counting=x.DangCongGio,boundary=MsNullable(x.MocDungCongLucUtc)}),
                     history=view.LichSu.ConvertAll(x=>new {
-                        id=x.IdPhien.ToString("D"),code=x.MaCongViec,name=x.TenCongViec,
+                        id=x.IdPhien.ToString("D"),taskId=x.IdCongViec.ToString("D"),
+                        code=x.MaCongViec,name=x.TenCongViec,
                         type=(byte)x.LoaiGio,source=x.NguonBatDau,
+                        triggerTaskCode=nguonPhien.ContainsKey(x.IdPhien)?nguonPhien[x.IdPhien].MaCongViecKichHoat:null,
+                        triggerTaskName=nguonPhien.ContainsKey(x.IdPhien)?nguonPhien[x.IdPhien].TenCongViecKichHoat:null,
+                        triggerActor=nguonPhien.ContainsKey(x.IdPhien)?nguonPhien[x.IdPhien].TenNguoiKichHoat:null,
                         started=Ms(x.BatDauLucUtc),ended=MsNullable(x.KetThucLucUtc),seconds=x.SoGiayDaKetToan})
                 });
                 return;
@@ -375,9 +419,23 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                     if(!Guid.TryParse(rawId,out parsed)){Error(context,400,"ID phiên cần dừng không hợp lệ.");return;}
                     stops.Add(parsed);
                 }
+                // Older clients may omit the snapshot: keep the previous API contract.
+                // New clients always send it to reject stale stop/keep choices.
+                var expectedRaw=context.Request.Form["expectedSessionIds"];
+                List<Guid> expected=null;
+                if(expectedRaw!=null){
+                    var expectedParts=expectedRaw.Split(new[]{','},StringSplitOptions.RemoveEmptyEntries);
+                    if(expectedParts.Length>100){Error(context,400,"Danh sách đồng hồ quá dài.");return;}
+                    expected=new List<Guid>();
+                    foreach(var rawId in expectedParts){Guid parsed;
+                        if(!Guid.TryParse(rawId,out parsed)||parsed==Guid.Empty||expected.Contains(parsed))
+                            {Error(context,400,"Danh sách đồng hồ đã xem không hợp lệ.");return;}
+                        expected.Add(parsed);
+                    }
+                }
                 result=manager.DungPhienThuCongVaBatDau(user.UserId,projectId,taskId,requestId,stops,
                     context.Request.Form["hourType"]=="2",context.Request.Form["confirmOverdue"]=="true",
-                    context.Request.Form["confirmDependency"]=="true");
+                    context.Request.Form["confirmDependency"]=="true",expected);
             } else if(action=="start") {
                 result=manager.BatDauGioThuong(user.UserId,projectId,taskId,requestId,
                     context.Request.Form["confirmOverdue"]=="true", context.Request.Form["confirmDependency"]=="true");

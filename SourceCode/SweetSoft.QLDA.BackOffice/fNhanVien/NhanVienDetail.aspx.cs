@@ -33,11 +33,88 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             set { ViewState["IdNhanVien"] = value; }
         }
         protected Guid CurrentDetailProjectId { get; set; }
+        // Chỉ thay cách xưng hô trên UI, không thay phân quyền đọc báo cáo của trang.
+        protected bool IsOwnEmployeeProfile { get { return CurrentIdNhanVien != Guid.Empty && CurrentIdNhanVien == SweetContext.Current.UserId; } }
+
+        protected string GetProjectStatusCss(object rawStatus)
+        {
+            byte code;
+            if (rawStatus == null || !byte.TryParse(Convert.ToString(rawStatus), out code)) return "";
+            switch ((DuAnStatus)code)
+            {
+                case DuAnStatus.ChuaBatDau: return "nvd-project-not-started";
+                case DuAnStatus.DangThucHien: return "nvd-project-in-progress";
+                case DuAnStatus.TamDung: return "nvd-project-paused";
+                case DuAnStatus.HoanThanh: return "nvd-project-complete";
+                case DuAnStatus.KetThuc: return "nvd-project-ended";
+                default: return "";
+            }
+        }
+        protected string GetProjectCardInsight(object item)
+        {
+            var project = item as NhanVienProjectSummaryDTO;
+            if (project == null) return "Chi tiết giờ công của dự án.";
+            if (project.DaKetToanDuAn) return "Các công việc phát sinh giờ đã được kết toán.";
+            if (project.LaDuAnKetThuc) return "Dự án đã kết thúc; giờ công vẫn còn chờ kết toán.";
+            if ((DuAnStatus)project.TrangThai == DuAnStatus.ChuaBatDau) return project.CoGioHeThong ? "Có dữ liệu giờ cần kiểm tra." : "Chưa phát sinh giờ công.";
+            if ((DuAnStatus)project.TrangThai == DuAnStatus.TamDung) return "Đang tạm dừng; các giờ đã ghi vẫn được bảo lưu.";
+            int pending = Math.Max(0, project.SoTaskLienQuan-project.SoTaskDaChot);
+            if (pending > 0) return "Còn " + pending + " công việc của nhân viên chưa được chốt giờ.";
+            return "Giờ công đang được cập nhật theo tiến độ dự án.";
+        }
+        // UX V4: Một số giờ công trong card, không cộng ba nguồn số liệu với nhau.
+        // Khi dự án đã kết toán: dùng tổng PM chốt; ngược lại: giờ hệ thống đã ghi nhận.
+        // Giữ nhãn rõ ràng để người dùng không hiểu số tạm tính là giờ đã duyệt.
+        protected string GetProjectListHoursLabel(object item)
+        {
+            var project = item as NhanVienProjectSummaryDTO;
+            if (project == null) return "Giờ công của nhân viên";
+            if (project.DaKetToanDuAn) return project.CoPmChot ? "Tổng giờ công đã kết toán" : "Giờ công của nhân viên";
+            if (project.CoGioHeThong) return "Giờ công đã ghi nhận";
+            if (project.CoPmChot) return "Giờ công đã được PM chốt";
+            return "Giờ công của nhân viên";
+        }
+
+        protected string GetProjectListHoursValue(object item)
+        {
+            var project = item as NhanVienProjectSummaryDTO;
+            if (project == null) return "—";
+            if (project.DaKetToanDuAn) return project.CoPmChot ? project.GioPmChotText : "Chưa phát sinh";
+            if (project.CoGioHeThong) return project.GioHeThongText;
+            if (project.CoPmChot) return project.GioPmChotText;
+            return "Chưa phát sinh";
+        }
+
+        protected string GetProjectListHoursNote(object item)
+        {
+            var project = item as NhanVienProjectSummaryDTO;
+            if (project == null) return "Xem chi tiết để biết nguồn dữ liệu.";
+            if (project.DaKetToanDuAn) return project.CoPmChot ? "Tổng giờ đã được PM xác nhận sau kết toán." : "Dự án đã kết toán; nhân viên chưa có giờ công được chốt.";
+            if (project.CoGioHeThong)
+                return project.CoPhienDangMo
+                    ? "Số liệu tạm tính; chưa bao gồm đầy đủ phiên đang chạy."
+                    : "Số liệu hệ thống đã ghi nhận; chưa phải tổng giờ kết toán.";
+            if (project.CoPmChot) return "Mới có giờ được chốt ở một phần công việc; xem chi tiết.";
+            if ((DuAnStatus)project.TrangThai == DuAnStatus.ChuaBatDau)
+                return "Dự án chưa bắt đầu, chưa có giờ công ghi nhận.";
+            return "Chưa có giờ được ghi nhận; xem chi tiết nếu cần.";
+        }
+
+        protected string GetTaskWorkProgressText(object taskStatus, object daChot)
+        {
+            bool completed = daChot != null && Convert.ToBoolean(daChot);
+            if (completed) return "Giờ công đã được PM chốt";
+            int st;
+            if (!int.TryParse(Convert.ToString(taskStatus), out st)) return "Giờ công chưa chốt";
+            if (st == 2 || st == 3) return "Công việc hoàn thành · Chờ PM chốt giờ";
+            if (st == 4) return "Công việc chờ duyệt hoàn thành · Giờ chưa chốt";
+            if (st == 1) return "Công việc đang thực hiện · Giờ chưa chốt";
+            return "Công việc chưa bắt đầu · Giờ chưa chốt";
+        }
         public override bool IsLogin { get { return true; } }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            PrepareSearchControls();
             bool isFromProfile = CommonHelpers.QueryString("from") == "profile";
             CtrlNhanVienPopup1.SavedHandlerCallback += (s, ev) =>
             {
@@ -78,7 +155,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL);
 
                 ApplyControlsText();
-                InitFilterControls();
                 CtrlNhanVienPopup1.InitControls();
 
                 if (tempId != Guid.Empty)
@@ -93,30 +169,26 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             }
         }
 
-        private void PrepareSearchControls()
-        {
-            ScriptManager script = ScriptManager.GetCurrent(this.Page);
-            if (script != null)
-            {
-                script.RegisterAsyncPostBackControl(btnSearchDuAn);
-                script.RegisterAsyncPostBackControl(ddlSearchTrangThaiDuAn);
-            }
-            txtSearchDuAn.EnterSubmitClientID = btnSearchDuAn.ClientID;
-        }
-
         private void ApplyControlsText()
         {
             Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL);
             btnEditProfile.Text = btnEditProfile.ToolTip = GetResourceText(BackEndResourceKeys.EDIT_INFORMATION);
-            ddlSearchTrangThaiDuAn.SearchTagItemText = "Trạng thái dự án";
-            txtSearchDuAn.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL));
         }
 
-        private void InitFilterControls()
+        // Render options from the SAME DuAnStatus enum used for the colored status badge.
+        // This select is purely client-side; it never triggers a WebForms postback.
+        protected string GetDuAnStatusOptionsHtml()
         {
-            new ControlHelpers().BindDuAnStatus(ddlSearchTrangThaiDuAn);
-            ddlSearchTrangThaiDuAn.ClearSelection();
+            var html = new System.Text.StringBuilder();
+            foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
+            {
+                int code=Convert.ToInt32(status);
+                if(code<0 || code>255)continue;
+                html.Append("<option value='").Append(code).Append("'>")
+                    .Append(HttpUtility.HtmlEncode(GetDuAnStatusText(code))).Append("</option>");
+            }
+            return html.ToString();
         }
 
         private void LoadDataDetail(Guid idNhanVien, bool isFromProfile)
@@ -231,37 +303,32 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
         private void BindProjectList(bool isInitialLoad = false)
         {
-            string keyword = (txtSearchDuAn.Text ?? string.Empty).Trim();
-            byte? statusId = null;
-            string statusFilter = ddlSearchTrangThaiDuAn.SelectedValue;
-
-            if (!string.IsNullOrEmpty(statusFilter) && byte.TryParse(statusFilter, out byte parsedStatusId))
-            {
-                statusId = parsedStatusId;
-            }
-
-            List<NhanVienProjectSummaryDTO> projects = ThanhVienDuAnManager.Instance.GetDanhSachDuAnCuaNhanVien(CurrentIdNhanVien, keyword, statusId);
-
-            if (isInitialLoad)
-            {
-                int totalProjectCount = ThanhVienDuAnManager.Instance.CountDuAnCuaNhanVien(CurrentIdNhanVien);
-                ltrCountAllProj.Text = totalProjectCount.ToString();
-            }
-
-            if (projects != null && projects.Count > 0)
-            {
-                rptAllProjects.DataSource = projects;
-                rptAllProjects.DataBind();
-                emptyAll.Visible = false;
-            }
-            else
-            {
-                rptAllProjects.DataSource = null;
-                rptAllProjects.DataBind();
-                emptyAll.Visible = true;
-            }
-
+            // Initial/reload only: search and status filtering are performed in the browser.
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            List<NhanVienProjectSummaryDTO> projects = ThanhVienDuAnManager.Instance.GetDanhSachDuAnCuaNhanVien(CurrentIdNhanVien, null, null);
+            long queryMs=watch.ElapsedMilliseconds;
+            ltrCountAllProj.Text=(projects==null?0:projects.Count).ToString();
+            rptAllProjects.DataSource = projects;
+            rptAllProjects.DataBind();
+            emptyAll.Visible = projects==null || projects.Count==0;
             upListDuAn.Update();
+            ScriptManager.RegisterStartupScript(this.Page, GetType(), "NvdApplyFilterAfterReload", "nvdRestoreProjectFilter();", true);
+            if(string.Equals(System.Configuration.ConfigurationManager.AppSettings["NvdPerfDiagnostics"],"true",StringComparison.OrdinalIgnoreCase))
+            {
+                string note=string.Format("projectBind queryAndMap={0}ms totalAfterBind={1}ms projects={2}",
+                    queryMs,watch.ElapsedMilliseconds,projects==null?0:projects.Count);
+                System.Diagnostics.Trace.WriteLine("[NVD PERF] "+note);
+                this.Trace.Warn("NVD PERF",note);
+            }
+        }
+
+        protected void btnReloadProjects_Click(object sender, EventArgs e)
+        {
+            BindProjectList();
+            // LinkButton nam trong UpdatePanel; sau khi cap nhat du lieu, phai mo lai danh sach
+            // vi DOM side panel co the vua duoc render lai. Khong F5, khong mo panel chi tiet.
+            ScriptManager.RegisterStartupScript(upnlMainDetail, upnlMainDetail.GetType(),
+                "NvdReopenProjectListAfterRefresh", "nvdRestoreProjectFilter();openSidePanel(true);", true);
         }
 
         protected void rptAllProjects_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -291,122 +358,79 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 return;
             }
 
-            ltrDetailTenDuAn.Text = project.TenDuAn ?? string.Empty;
-            ltrDetailMaDuAn.Text = project.MaDuAn ?? string.Empty;
-            ltrDetailVaiTro.Text = project.VaiTro ?? string.Empty;
-            ltrDetailTrangThai.Text = GetDuAnStatusText(project.TrangThai);
-            ltrDetailProjectTime.Text = FormatDateRange(project.ProjectStartDate, project.ProjectEndDate);
-            ltrDetailContribution.Text = project.ContributionPercent.ToString("0.0");
-            ltrHeSoCao.Text = "-";
-            ltrHeSoTrungBinh.Text = "-";
-            ltrHeSoThap.Text = "-";
+            // KBG 2.0: chỉ đọc báo cáo; không gọi HeSoDongGopManager và không sửa phiên giờ.
+            ltrDetailTenDuAn.Text = HttpUtility.HtmlEncode(project.TenDuAn ?? string.Empty);
+            ltrDetailMaDuAn.Text = HttpUtility.HtmlEncode(project.MaDuAn ?? string.Empty);
+            ltrDetailVaiTro.Text = HttpUtility.HtmlEncode(project.VaiTro ?? string.Empty);
+            ltrDetailTrangThai.Text = "<span class=\"project-status-tag " + GetProjectStatusCss(project.TrangThai) + "\">" + HttpUtility.HtmlEncode(GetDuAnStatusText(project.TrangThai)) + "</span>";
+            ltrDetailProjectTime.Text = (project.ProjectActualEndDate.HasValue ? "Kết thúc thực tế: " : "Dự kiến: ") +
+                FormatDateRange(project.ProjectStartDate,project.ProjectActualEndDate ?? project.ProjectEndDate);
+            ltrDetailContribution.Text = RenderProjectHours(project);
+            if(project.Tasks.Count==0)
+                ltrDetailContribution.Text += "<div class=\"empty-detail mt-3\">Chưa có công việc được phân công hoặc phát sinh giờ công trong dự án này.</div>";
 
-            DataTable dtHeSo = HeSoDongGopManager.Instance.GetHeSoCuaDuAn(idDuAn);
-            if (dtHeSo != null && dtHeSo.Rows.Count > 0)
-            {
-                foreach (DataRow row in dtHeSo.Rows)
-                {
-                    if (row["DiemUuTien"] != DBNull.Value && row["HeSoDongGop"] != DBNull.Value)
-                    {
-                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
-                        // Ép về dấu chấm cho chuẩn giao diện
-                        string heSo = Convert.ToDecimal(row["HeSoDongGop"]).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-
-                        if (diemUuTien == 3) ltrHeSoCao.Text = heSo;
-                        else if (diemUuTien == 2) ltrHeSoTrungBinh.Text = heSo;
-                        else if (diemUuTien == 1) ltrHeSoThap.Text = heSo;
-                    }
-                }
-            }
-            rptDetailPhases.DataSource = project.Phases;
-            rptDetailPhases.DataBind();
+            // Repeater phang nam trong UpdatePanel; tra theo template de khong buoc sua designer.cs.
+            Repeater taskRepeater = upProjectDetail.ContentTemplateContainer.FindControl("rptDetailTasks") as Repeater;
+            if (taskRepeater == null)
+                throw new InvalidOperationException("Khong tim thay rptDetailTasks trong upProjectDetail.");
+            taskRepeater.DataSource = project.Tasks;
+            taskRepeater.DataBind();
             upProjectDetail.Update();
         }
 
-        private void UpdateSearchTags()
+        private static string RenderProjectHours(NhanVienProjectDTO project)
         {
-            searchTagBoxDuAn.TagItems.Clear();
-            string statusValue = ddlSearchTrangThaiDuAn.SelectedValue;
-
-            if (!string.IsNullOrEmpty(statusValue) && ddlSearchTrangThaiDuAn.SearchTagItem != null)
-            {
-                searchTagBoxDuAn.TagItems.Add(ddlSearchTrangThaiDuAn.SearchTagItem);
-            }
-
-            string keyword = txtSearchDuAn.Text.Trim();
-            if (!string.IsNullOrEmpty(keyword) && txtSearchDuAn.SearchTagItem != null)
-            {
-                searchTagBoxDuAn.TagItems.Add(txtSearchDuAn.SearchTagItem);
-            }
-
-            searchTagBoxDuAn.Update();
-            upSearchTagDuAn.Update();
-        }
-
-        protected void btnSearchDuAn_Click(object sender, EventArgs e)
-        {
-            UpdateSearchTags();
-            BindProjectList(false);
-        }
-
-        protected void ddlSearchTrangThaiDuAn_SelectedValueChanged(object sender, EventArgs e)
-        {
-            UpdateSearchTags();
-            BindProjectList(false);
-        }
-
-        protected void searchTagBoxDuAn_TagClosed(object sender, SearchTagItem tag)
-        {
-            try
-            {
-                if (tag.Key == ddlSearchTrangThaiDuAn.ClientID)
-                {
-                    ddlSearchTrangThaiDuAn.ClearSelection();
-                    upnlSearchDuAn.Update();
-                }
-                else if (tag.Key == txtSearchDuAn.ClientID)
-                {
-                    txtSearchDuAn.Text = string.Empty;
-                    ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "ClearTxtSearchDuAn", string.Format("$('#{0}').val('');", txtSearchDuAn.ClientID), true);
-                    upnlSearchDuAn.Update();
-                }
-
-                UpdateSearchTags();
-                BindProjectList(false);
-            }
-            catch (Exception)
-            {
-                ShowNotify(GetResourceText(BackEndResourceKeys.ERROR_OCCURED) ?? "Có lỗi xảy ra.", MSGType.Error);
-            }
+            Func<string,string,string,string,string> cell = (title,value,notes,css) =>
+                "<div class=\"nvd-detail-metric "+css+"\"><div class=\"nvd-metric-name\">"+
+                HttpUtility.HtmlEncode(title)+"</div><strong>"+HttpUtility.HtmlEncode(value)+
+                "</strong><small>"+HttpUtility.HtmlEncode(notes)+"</small></div>";
+            var html = new System.Text.StringBuilder();
+            html.Append("<div class=\"nvd-detail-metrics\">");
+            html.Append(cell("Giờ hệ thống ghi nhận",project.GioHeThongText,
+                "Theo lịch "+project.GioHanhChinhText+" · Tăng ca "+project.GioTangCaText,""));
+            html.Append(cell("Giờ của nhân viên được PM chốt",project.GioPmChotText,
+                "Theo lịch "+project.GioPmThuongText+" · Tăng ca "+project.GioPmTangCaText,"nvd-detail-metric--final"));
+            html.Append("</div><div class=\"nvd-detail-self-report\"><span>Nhân viên đã báo</span><strong>")
+                .Append(HttpUtility.HtmlEncode(project.GioTuKhaiText)).Append("</strong><small>Theo lịch ")
+                .Append(HttpUtility.HtmlEncode(project.GioTuKhaiThuongText)).Append(" · Tăng ca ")
+                .Append(HttpUtility.HtmlEncode(project.GioTuKhaiTangCaText)).Append("</small></div>");
+            int total = project.SoTaskLienQuan;
+            int done = project.SoTaskDaChot;
+            int pending = Math.Max(0,total-done);
+            int percent = total <= 0 ? 0 : Math.Min(100,(int)Math.Round(100.0*done/total));
+            html.Append("<div class=\"nvd-work-progress\"><div class=\"nvd-work-progress-head\"><strong>Tiến độ chốt giờ của nhân viên</strong><span>")
+                .Append(done).Append("/").Append(total).Append(" công việc</span></div>")
+                .Append("<div class=\"nvd-work-progress-track\"><span class=\"nvd-work-progress-fill\" style=\"width:")
+                .Append(percent.ToString(System.Globalization.CultureInfo.InvariantCulture)).Append("%\"></span></div>")
+                .Append("<div class=\"nvd-work-progress-note\">");
+            if (total == 0) html.Append("Chưa có công việc liên quan phát sinh giờ công.");
+            else if (pending > 0) html.Append("Còn ").Append(pending).Append(" công việc của nhân viên chưa được PM chốt. Có thể xem các dòng tương ứng ở bên dưới.");
+            else html.Append("Tất cả công việc liên quan của nhân viên đã được chốt giờ.");
+            html.Append("</div></div><div class=\"nvd-detail-status\"><span class=\"nvd-time-state ")
+                .Append(project.TrangThaiGioCss).Append("\">")
+                .Append(HttpUtility.HtmlEncode(project.TinhTrangGioText)).Append("</span>")
+                .Append("<span>Toàn dự án: ").Append(HttpUtility.HtmlEncode(project.TienDoChotText)).Append("</span>");
+            if(project.HienThiTyTrong)
+                html.Append("<span class=\"nvd-share\">Tỷ trọng giờ công đã quyết toán: <strong>")
+                    .Append(HttpUtility.HtmlEncode(project.TyTrongText)).Append("</strong></span>");
+            html.Append("</div><details class=\"nvd-help-details\"><summary>Giải thích trạng thái và phạm vi giờ công</summary><div>")
+                .Append(HttpUtility.HtmlEncode(project.GhiChuGioText)).Append("</div></details>");
+            return html.ToString();
         }
 
         protected string GetDuAnStatusText(object statusValue)
         {
-            if (statusValue == null || statusValue == DBNull.Value) return string.Empty;
-            string value = statusValue.ToString();
-            if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-
-            foreach (object item in ddlSearchTrangThaiDuAn.Items)
+            byte code;
+            if(statusValue==null || !byte.TryParse(Convert.ToString(statusValue),out code))return string.Empty;
+            switch((DuAnStatus)code)
             {
-                if (item == null) continue;
-                Type itemType = item.GetType();
-                var valueProperty = itemType.GetProperty("Value");
-                var textProperty = itemType.GetProperty("Text");
-                if (valueProperty == null || textProperty == null) continue;
-
-                object itemValueObject = valueProperty.GetValue(item, null);
-                string itemValue = itemValueObject != null ? itemValueObject.ToString() : string.Empty;
-                if (!string.Equals(itemValue, value, StringComparison.OrdinalIgnoreCase)) continue;
-
-                object itemTextObject = textProperty.GetValue(item, null);
-                string itemText = itemTextObject != null ? itemTextObject.ToString() : string.Empty;
-                if (!string.IsNullOrWhiteSpace(itemText))
-                {
-                    return itemText;
-                }
-                break;
+                case DuAnStatus.ChuaBatDau:return "Chưa bắt đầu";
+                case DuAnStatus.DangThucHien:return "Đang thực hiện";
+                case DuAnStatus.TamDung:return "Tạm dừng";
+                case DuAnStatus.HoanThanh:return "Hoàn thành";
+                case DuAnStatus.KetThuc:return "Kết thúc";
+                default:return ((DuAnStatus)code).ToString();
             }
-            return value;
         }
 
         private static string ReadOptionalColumn(DataRow row, string columnName)
@@ -506,38 +530,57 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             return false;
         }
 
+        /// <summary>
+        /// Badge trang thai cong viec: dung dung bang mau CtrlTask (0/1/4/2/3).
+        /// Trang thai 3 su dung badge Hoan thanh mau xanh + ghi chu tre han mau do rieng.
+        /// Khong su dung he so dong gop / tinh lai gio cong.
+        /// </summary>
         protected string GetTaskStatusDisplay(object status, object plannedEndDate, object actualEndDate)
         {
-            if (IsTaskCompletedLate(status, plannedEndDate, actualEndDate))
+            int code;
+            if (!int.TryParse(Convert.ToString(status), out code)) code = -1;
+            string css;
+            string text;
+            switch (code)
+            {
+                case 0: css = "badge-status-todo"; text = "Chưa bắt đầu"; break;
+                case 1: css = "badge-status-doing"; text = "Đang thực hiện"; break;
+                case 2: css = "badge-status-done"; text = "Hoàn thành"; break;
+                case 3: css = "badge-status-done"; text = "Hoàn thành"; break;
+                case 4: css = "badge-status-review"; text = "Chờ duyệt"; break;
+                default: css = "badge-status-todo"; text = "Chưa xác định"; break;
+            }
+            string html = "<span class=\"nvd-task-status " + css + "\">" + HttpUtility.HtmlEncode(text) + "</span>";
+            // Trường hợp dữ liệu có trạng thái 2 nhưng ngày thực tế > kế hoạch:
+            // vẫn giữ cảnh báo trễ từ giao diện trước, không đổi trạng thái trong DB.
+            if (code == 3 || (code == 2 && IsTaskCompletedLate(status, plannedEndDate, actualEndDate)))
             {
                 int lateDays = 0;
+                DateTime planned, actual;
                 if (plannedEndDate != null && actualEndDate != null &&
-                    DateTime.TryParse(plannedEndDate.ToString(), out DateTime plannedEnd) &&
-                    DateTime.TryParse(actualEndDate.ToString(), out DateTime actualEnd))
-                {
-                    if (plannedEnd.Year > 1900 && actualEnd.Year > 1900)
-                    {
-                        lateDays = (actualEnd.Date - plannedEnd.Date).Days;
-                    }
-                }
-
-                // Nếu có ngày cụ thể thì hiển thị số ngày, nếu không thì cứ báo "Hoàn thành trễ"
-                if (lateDays > 0)
-                    return string.Format("Hoàn thành trễ ({0} ngày)", lateDays);
-                else
-                    return "Hoàn thành trễ";
+                    plannedEndDate != DBNull.Value && actualEndDate != DBNull.Value &&
+                    DateTime.TryParse(Convert.ToString(plannedEndDate), out planned) &&
+                    DateTime.TryParse(Convert.ToString(actualEndDate), out actual) &&
+                    planned.Year > 1900 && actual.Year > 1900)
+                    lateDays = (actual.Date - planned.Date).Days;
+                html += "<span class=\"nvd-task-late-note\">(Trễ hạn" +
+                    (lateDays > 0 ? " · " + lateDays + " ngày" : "") + ")</span>";
             }
-
-            return GetTaskStatusBadge(status);
+            return html;
         }
+        // Tương thích cho những chỗ cũ còn gọi class trạng thái. UI V3 dùng GetTaskStatusDisplay.
         protected string GetTaskStatusWrapperClass(object status, object plannedEndDate, object actualEndDate)
         {
-            if (IsTaskCompletedLate(status, plannedEndDate, actualEndDate))
+            int code;
+            if (!int.TryParse(Convert.ToString(status), out code)) code = -1;
+            switch (code)
             {
-                return "ui-status-wrapper task-status-late";
+                case 1: return "nvd-task-status badge-status-doing";
+                case 2:
+                case 3: return "nvd-task-status badge-status-done";
+                case 4: return "nvd-task-status badge-status-review";
+                default: return "nvd-task-status badge-status-todo";
             }
-
-            return "ui-status-wrapper";
         }
 
         protected bool HasTasks(object tasksObj)
@@ -550,6 +593,12 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 return enumerator.MoveNext();
             }
             return false;
+        }
+
+        protected string FormatProjectPeriod(object start,object planned,object actual)
+        {
+            bool hasActual=actual!=null && actual!=DBNull.Value;
+            return FormatDateRange(start,hasActual?actual:planned)+(hasActual?" · Thực tế":" · Dự kiến");
         }
 
         protected string FormatDateSafe(object dateObj, string defaultEmptyText = "")
@@ -571,21 +620,50 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             if (start == "?" && end == defaultEndText) return string.Empty;
             return string.Format("{0} — {1}", start, end);
         }
+        // Cung mot nguon lich voi LichCaNhan: task + cuoc hop cua nhan vien.
+        // Chi tai data gon cho tooltip; khong mo modal hoac lay thong tin doi soat.
         private string GenerateScheduleJson(Guid userId, DateTime start, DateTime end)
         {
-            var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, start, end);
+            var lich = LichTrinhManager.Instance.LayLichTrinhNhanVienCoCuocHop(userId, start, end);
             var dict = new Dictionary<string, object>();
+            if (lich == null) return JsonConvert.SerializeObject(dict);
 
             foreach (var ngay in lich)
             {
+                if (ngay == null) continue;
                 int dow = (int)ngay.Ngay.DayOfWeek;
                 string dayName = dow == 0 ? "CN" : dow == 6 ? "T7" : $"T{dow + 1}";
-                string text;
-
-                // [MỚI]: Khởi tạo mảng chứa chi tiết Task
                 var activeTasks = new List<object>();
+                if (ngay.DanhSachCongViec != null)
+                {
+                    foreach (var t in ngay.DanhSachCongViec.Where(t => t != null))
+                        activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec, projectName = t.TenDuAn });
+                }
 
-                switch (ngay.TrangThaiLich)
+                var meetings = new List<object>();
+                if (ngay.DanhSachCuocHop != null)
+                {
+                    // Cung tap cuoc hop cua LichCaNhan, giu thu tu thoi gian trong ngay.
+                    foreach (var meeting in ngay.DanhSachCuocHop.Where(m => m != null).OrderBy(m => m.ThoiGianBatDau))
+                    {
+                        DateTime from = meeting.ThoiGianBatDau > ngay.Ngay.Date
+                            ? meeting.ThoiGianBatDau : ngay.Ngay.Date;
+                        DateTime until = meeting.ThoiGianKetThuc < ngay.Ngay.Date.AddDays(1)
+                            ? meeting.ThoiGianKetThuc : ngay.Ngay.Date.AddDays(1);
+                        string toText = until == ngay.Ngay.Date.AddDays(1) ? "24:00" : until.ToString("HH:mm");
+                        meetings.Add(new
+                        {
+                            time = from.ToString("HH:mm") + "–" + toText,
+                            name = meeting.TenCuocHop,
+                            projectName = meeting.TenDuAn,
+                            isHost = meeting.LaChuTri
+                        });
+                    }
+                }
+
+                string text;
+                string status = ngay.TrangThaiLich ?? "free";
+                switch (status)
                 {
                     case "holiday":
                         text = "🎉 " + GetResourceText(BackEndResourceKeys.HOLIDAY);
@@ -594,24 +672,27 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                         text = "⬜ " + GetResourceText(BackEndResourceKeys.WEEKEND);
                         break;
                     case "busy":
-                        text = $"🔴 {ngay.DanhSachCongViec.Count} {GetResourceText(BackEndResourceKeys.TASK).ToLower()}";
-                        // [MỚI]: Nạp thông tin Task vào mảng
-                        foreach (var t in ngay.DanhSachCongViec)
-                        {
-                            activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec, projectName = t.TenDuAn });
-                        }
+                        text = $"🔴 {activeTasks.Count} {GetResourceText(BackEndResourceKeys.TASK).ToLower()}";
                         break;
                     default:
-                        text = "🟢 " + GetResourceText(BackEndResourceKeys.FREE);
+                        // Ngay co hop khong duoc ghi 'Trong'.
+                        text = meetings.Count > 0 ? "Có lịch họp" : "🟢 " + GetResourceText(BackEndResourceKeys.FREE);
                         break;
                 }
 
-                // [MỚI]: Đẩy mảng tasks vào chuỗi JSON
-                dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName = dayName, text = text, tasks = activeTasks });
+                dict[ngay.Ngay.ToString("yyyy-MM-dd")] = new
+                {
+                    status = status,
+                    dayName = dayName,
+                    text = text,
+                    tasks = activeTasks,
+                    meetingCount = meetings.Count,
+                    meetings = meetings
+                };
             }
-
             return JsonConvert.SerializeObject(dict);
         }
+
     }
 }
     

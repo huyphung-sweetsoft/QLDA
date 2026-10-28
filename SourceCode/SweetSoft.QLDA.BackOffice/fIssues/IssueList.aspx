@@ -1,8 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="IssueList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fIssues.IssueList" %>
+<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="IssueList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fIssues.IssueList" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
 <%@ Register Src="~/fIssues/Controls/CtrlIssue.ascx" TagPrefix="SweetSoft" TagName="CtrlIssue" %>
+<%@ Register Src="~/fIssues/Controls/CtrlFastCompleteIssue.ascx" TagPrefix="SweetSoft" TagName="CtrlFastCompleteIssue" %>
+<%@ Register Src="~/fIssues/Controls/CtrlFastReviewIssue.ascx" TagPrefix="SweetSoft" TagName="CtrlFastReviewIssue" %>
+<%@ Register Src="~/fIssues/Controls/CtrlDuyetGioCongIssue.ascx" TagPrefix="SweetSoft" TagName="CtrlDuyetGioCongIssue" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
@@ -206,6 +209,9 @@
 </asp:Content>
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
+    <SweetSoft:CtrlFastCompleteIssue runat="server" ID="CtrlFastCompleteIssue1" />
+    <SweetSoft:CtrlFastReviewIssue runat="server" ID="CtrlFastReviewIssue1" />
+    <SweetSoft:CtrlDuyetGioCongIssue runat="server" ID="CtrlDuyetGioCongIssue1" />
     <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" DefaultButton="lbtSubmit">
         <ContentTemplate>
             <div class="issue-edit-form js-validation validationEngineContainer">

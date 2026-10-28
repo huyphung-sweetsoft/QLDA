@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
@@ -17,12 +17,29 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using SweetSoft.QLDA.BackOffice.fIssues.Controls;
 
 namespace SweetSoft.QLDA.BackOffice.fIssues
 {
     public partial class IssueList : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Issue;
+        // IssueList is an existing Web Application page whose designer belongs to the host project.
+        // Resolve new controls by ID to avoid overwriting the partner-generated IssueList.designer.cs.
+        private T TimPopupIssue<T>(string id) where T : Control
+        {
+            var modalRoot = Master == null ? null : Master.FindControl("cpModalMain");
+            var found = modalRoot == null ? null : modalRoot.FindControl(id) as T;
+            if (found == null) throw new InvalidOperationException("Không tìm thấy popup Issue: " + id);
+            return found;
+        }
+        private CtrlFastCompleteIssue FastCompleteIssueControl
+        { get { return TimPopupIssue<CtrlFastCompleteIssue>("CtrlFastCompleteIssue1"); } }
+        private CtrlFastReviewIssue FastReviewIssueControl
+        { get { return TimPopupIssue<CtrlFastReviewIssue>("CtrlFastReviewIssue1"); } }
+        private CtrlDuyetGioCongIssue DuyetGioIssueControl
+        { get { return TimPopupIssue<CtrlDuyetGioCongIssue>("CtrlDuyetGioCongIssue1"); } }
+
         private Guid IssueId
         {
             get
@@ -38,8 +55,40 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlIssue1.NewIssueHandlerCallback += NewIssueAction;
             CtrlIssue1.EditIssueHandlerCallback += EditIssueAction;
+            CtrlIssue1.GuiDuyetIssueCallback += OpenSendIssue;
+            CtrlIssue1.DuyetIssueCallback += OpenReviewIssue;
+            CtrlIssue1.TinhCongIssueCallback += OpenPmIssue;
+            FastCompleteIssueControl.ActionCompleted += IssueWorkflowSaved;
+            FastReviewIssueControl.ActionCompleted += IssueWorkflowSaved;
+            DuyetGioIssueControl.Saved += IssueWorkflowSaved;
             if (!IsPostBack)
             {
+                // Existing PM notices still point to IssueList (GioXuLyVanDe:*:detail).
+                // Redirect only verified PM hour notices to the unified personal-hours popup.
+                // Run before IsView: an assigned employee might have KhaiBaoGio access but no IssueList access.
+                Guid pmResultIssueId,pmResultNotificationId;
+                if(CurrentProjectId!=Guid.Empty
+                   && Guid.TryParse(Request.QueryString["resultIssueId"],out pmResultIssueId)
+                   && Guid.TryParse(Request.QueryString["notificationId"],out pmResultNotificationId))
+                {
+                    var notification=ThongBaoManager.Instance.GetById(pmResultNotificationId);
+                    string title=notification==null?string.Empty:notification.TieuDe??string.Empty;
+                    bool isPmHourNotice=title.IndexOf("chốt giờ",StringComparison.OrdinalIgnoreCase)>=0
+                        || title.IndexOf("điều chỉnh giờ",StringComparison.OrdinalIgnoreCase)>=0;
+                    string expected="GioXuLyVanDe:"+pmResultIssueId.ToString("D")+":detail";
+                    if(notification!=null && notification.DaXoa!=true
+                       && SweetContext.Current!=null && notification.UserId==SweetContext.Current.UserId
+                       && notification.IdDuAn.HasValue && notification.IdDuAn.Value==CurrentProjectId
+                       && string.Equals(notification.DuongDanLienKet,expected,StringComparison.OrdinalIgnoreCase)
+                       && isPmHourNotice)
+                    {
+                        string destination=RewriteURLHelper.ProjectDetail(CurrentProjectId).TrimEnd('/')
+                            + "/TimeTracking?pmFinalIssueId=" + HttpUtility.UrlEncode(pmResultIssueId.ToString("D"))
+                            + "&pmFinalNotificationId=" + HttpUtility.UrlEncode(pmResultNotificationId.ToString("D"));
+                        Response.Redirect(GetRelativeClientPath(destination),true);
+                        return;
+                    }
+                }
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                 if (CurrentProjectId == Guid.Empty)
@@ -56,6 +105,26 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                 };
                 ApplyControlsText();
                 CtrlIssue1.InitControls();
+
+                Guid noticeIssueId;
+                if (Guid.TryParse(Request.QueryString["sendIssueId"], out noticeIssueId))
+                {
+                    FastCompleteIssueControl.OpenModalWhenDialogReady(noticeIssueId);
+                }
+                else if (Guid.TryParse(Request.QueryString["reviewIssueId"], out noticeIssueId))
+                {
+                    FastReviewIssueControl.OpenModalWhenDialogReady(noticeIssueId);
+                }
+                else if (Guid.TryParse(Request.QueryString["pmIssueId"], out noticeIssueId))
+                {
+                    DuyetGioIssueControl.OpenModalWhenDialogReady(noticeIssueId);
+                }
+                else if (Guid.TryParse(Request.QueryString["resultIssueId"], out noticeIssueId))
+                {
+                    Guid notificationId;
+                    if (Guid.TryParse(Request.QueryString["notificationId"], out notificationId))
+                        FastReviewIssueControl.OpenNotificationResult(noticeIssueId, notificationId, true);
+                }
 
                 Guid issueId;
                 if (Guid.TryParse(Request.QueryString["issueId"], out issueId))
@@ -107,7 +176,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             }
             RefreshIssueInfo();
             divTrangThaiVanDe.Visible = true;
-            ddlTrangThaiVanDe.Enabled = this.IsEdit;
+            ddlTrangThaiVanDe.Enabled = false; // Khong cho doi trang thai khi chinh sua Issue.
             lbtSubmit.Visible = this.IsEdit;
             TblVanDe issue = TblVanDe.FetchByID(issueId);
             if (issue == null || issue.DaXoa == true)
@@ -144,7 +213,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             controlHelpers.BindTrangThaiVanDe(ddlTrangThaiVanDe);
             lbtSubmit.Visible = false;
             divTrangThaiVanDe.Visible = true;
-            ddlTrangThaiVanDe.Enabled = true;
+            ddlTrangThaiVanDe.Enabled = false; // Trang thai hoan thanh do quy trinh duyet cap nhat.
             txtTenVanDe.Text = txtMoTaChiTiet.Text = txtKeHoachXuLy.Text = "";
             if (ddlCongViecBiAnhHuong.Items.Count > 0) ddlCongViecBiAnhHuong.SelectedIndex = 0;
             if (ddlCongViecPhatSinh.Items.Count > 0) ddlCongViecPhatSinh.SelectedIndex = 0;
@@ -192,7 +261,14 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                 if (GetValue(ddlNguonGocVanDe, out nguonGoc))
                     issueDto.NguonGocVanDe = nguonGoc;
 
-                if (byte.TryParse(ddlTrangThaiVanDe.SelectedValue, out byte trangThaiVanDe))
+                if (!isNew)
+                {
+                    TblVanDe currentIssue = TblVanDe.FetchByID(issueDto.IdVanDe);
+                    if (currentIssue == null || currentIssue.IdDuAn != CurrentProjectId)
+                        throw new InvalidOperationException("Vấn đề không còn thuộc dự án hiện tại.");
+                    issueDto.TrangThai = currentIssue.TrangThai;
+                }
+                else if (byte.TryParse(ddlTrangThaiVanDe.SelectedValue, out byte trangThaiVanDe))
                 {
                     issueDto.TrangThai = trangThaiVanDe;
                 }
@@ -208,13 +284,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                     return;
                 }
 
-                if (!isNew)
-                {
-                    savedIssue.TrangThai = issueDto.TrangThai;
-                    savedIssue.NgayCapNhat = DateTime.Now;
-                    savedIssue.Save();
-                }
-
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlIssue1.Rebind();
@@ -224,6 +293,27 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
+        private void OpenSendIssue(object sender, EventArgs e)
+        {
+            if (sender is Guid && (Guid)sender != Guid.Empty)
+                FastCompleteIssueControl.OpenModal((Guid)sender);
+        }
+        private void OpenReviewIssue(object sender, EventArgs e)
+        {
+            if (sender is Guid && (Guid)sender != Guid.Empty)
+                FastReviewIssueControl.OpenModal((Guid)sender);
+        }
+        private void OpenPmIssue(object sender, EventArgs e)
+        {
+            if (sender is Guid && (Guid)sender != Guid.Empty)
+                DuyetGioIssueControl.OpenModal((Guid)sender);
+        }
+        private void IssueWorkflowSaved(object sender, EventArgs e)
+        {
+            CtrlIssue1.Rebind();
+        }
+
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlIssue1.ConfirmRequest(e);

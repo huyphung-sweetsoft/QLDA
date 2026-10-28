@@ -1,4 +1,4 @@
-﻿/* Scope entirely to V2; V1 selectors are unchanged. */
+/* Scope entirely to V2; V1 selectors are unchanged. */
 .kbg20-page{font-family:inherit;color:#263247;display:flex;flex-direction:column;gap:14px;padding:6px 0 24px}
 .kbg20-page *{box-sizing:border-box}
 .kbg20-page h2{margin:0;font-weight:800;font-size:23px;color:#3c2374}
@@ -479,7 +479,7 @@
 .kbg20-v41-workbar .kbg20-search>i{position:absolute;left:10px;color:#998bb0;font-size:10.5px;pointer-events:none}
 .kbg20-v41-workbar .kbg20-search input{min-height:31px;height:31px;font-size:10.7px;padding:6px 8px 6px 27px;width:100%;min-width:0;margin:0}
 .kbg20-v41-table{border:1px solid #e5deec;border-radius:11px;overflow:hidden;background:#fff}
-.kbg20-page .kbg20-v41-taskgrid{display:grid;grid-template-columns:minmax(210px,3fr) minmax(74px,.84fr) minmax(56px,.64fr) minmax(78px,.91fr) minmax(111px,1.15fr) minmax(105px,1.15fr) minmax(105px,1.1fr) minmax(95px,.99fr);gap:10px;align-items:center}
+.kbg20-page .kbg20-v41-taskgrid{display:grid;grid-template-columns:minmax(210px,2.65fr) minmax(74px,.76fr) minmax(56px,.58fr) minmax(78px,.84fr) minmax(108px,1.03fr) minmax(110px,1.12fr) minmax(105px,1.07fr) minmax(105px,1.07fr) minmax(135px,1.35fr);gap:10px;align-items:center}
 .kbg20-v41-table-head{background:#f8f6fa;padding:11px 12px;font-size:10px;font-weight:800;color:#807a8b;letter-spacing:.08px;text-transform:uppercase}
 .kbg20-v41-table-head span{min-width:0}
 .kbg20-v41-table-head i{font-size:10px;color:#8557af;margin-right:3px}
@@ -496,11 +496,11 @@
 .kbg20-v41-date{font-size:11px;color:#566074;font-weight:600;white-space:nowrap}
 .kbg20-v41-duration{font-size:11px;font-weight:750;color:#642e9c;white-space:nowrap}
 .kbg20-v41-status-cell{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-.kbg20-v41-state{padding:4px 7px;border-radius:20px;font-size:10px;font-weight:780;white-space:nowrap;line-height:1.1;background:#f2e9fe;color:#68409e}
-.kbg20-v41-state.is-active{background:#e7f7ec;color:#197850}
-.kbg20-v41-state.is-waiting{background:#fff0d9;color:#945e17}
-.kbg20-v41-state.is-done{background:#eff2f5;color:#65758a}
-.kbg20-v41-state.is-idle{background:#f0edf4;color:#765c96}
+.kbg20-v41-state{padding:4px 7px;border:1px solid #cbd5e1;border-radius:20px;font-size:10px;font-weight:780;white-space:nowrap;line-height:1.1;background:#f1f5f9;color:#475569}
+.kbg20-v41-state.is-active{background:#e0f2fe;color:#0369a1;border-color:#bae6fd}
+.kbg20-v41-state.is-waiting{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.kbg20-v41-state.is-done{background:#dcfce7;color:#15803d;border-color:#bbf7d0}
+.kbg20-v41-state.is-idle{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
 .kbg20-v41-substate{font-size:9.6px;color:#9194a3;line-height:1.25}
 .kbg20-v41-substate.is-running{color:#198350}
 .kbg20-v41-clock-cell{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}
@@ -603,7 +603,7 @@
  .kbg20-page .kbg20-v41-tools .kbg20-task-filters{justify-content:flex-start}
 }
 @media(max-width:1160px){
- .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(195px,2.4fr) minmax(110px,1.1fr) minmax(98px,1.12fr) minmax(96px,1.08fr) minmax(86px,.87fr)}
+ .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(170px,2.3fr) minmax(85px,.95fr) minmax(94px,1.02fr) minmax(103px,1.12fr) minmax(103px,1.12fr) minmax(122px,1.3fr)}
  .kbg20-v41-taskgrid>:nth-child(2),.kbg20-v41-taskgrid>:nth-child(3),.kbg20-v41-taskgrid>:nth-child(4){display:none}
  .kbg20-v41-manual-grid{grid-template-columns:minmax(190px,2fr) minmax(98px,.9fr) minmax(98px,.9fr) minmax(78px,.7fr)}
  .kbg20-v41-manual-grid>:nth-child(2),.kbg20-v41-manual-grid>:nth-child(5){display:none}
@@ -612,9 +612,9 @@
  .kbg20-page .kbg20-v41-table-head,.kbg20-v41-hist-head,.kbg20-v41-manual-head{display:none}
  .kbg20-page .kbg20-v41-task-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:11px 13px;gap:9px}
  .kbg20-v41-task-row>:nth-child(1){grid-column:1/-1}
- .kbg20-v41-task-row>:nth-child(5){grid-column:1/-1}
+ .kbg20-v41-task-row>:nth-child(5){grid-column:auto}
  .kbg20-v41-task-row>:nth-child(6),.kbg20-v41-task-row>:nth-child(7){grid-column:auto}
- .kbg20-v41-task-row>:nth-child(8){grid-column:1/-1;justify-content:flex-start;border-top:1px dashed #ece5f3;padding-top:6px}
+ .kbg20-v41-task-row>:nth-child(9){grid-column:1/-1;justify-content:flex-start;border-top:1px dashed #ece5f3;padding-top:6px}
  .kbg20-v41-mobile-label{display:block!important;font-size:9.5px;color:#9698a8;margin-bottom:4px}
  .kbg20-v41-clock-cell{justify-content:flex-start;gap:10px}
  .kbg20-v41-taskname{flex-wrap:wrap}
@@ -682,9 +682,9 @@
 .kbg20-page .kbg20-v42-reload{flex:0 0 31px;width:31px;min-width:31px;height:31px;min-height:31px;padding:0;display:inline-grid;place-items:center;border-radius:7px}
 /* Header and every data row share EXACTLY the same grid tracks. */
 .kbg20-page .kbg20-v41-taskgrid{
-  grid-template-columns:minmax(220px,2.85fr) minmax(79px,.8fr) minmax(64px,.65fr)
-  minmax(88px,.88fr) minmax(120px,1.12fr) minmax(135px,1.24fr)
-  minmax(135px,1.24fr) minmax(152px,1.5fr);
+  grid-template-columns:minmax(220px,2.75fr) minmax(79px,.77fr) minmax(64px,.62fr)
+  minmax(88px,.83fr) minmax(120px,1.08fr) minmax(115px,1.05fr)
+  minmax(115px,1.1fr) minmax(110px,1.08fr) minmax(136px,1.25fr);
   column-gap:8px;
 }
 .kbg20-v41-table-head>span,.kbg20-v41-task-row>div{min-width:0}
@@ -721,7 +721,7 @@
  .kbg20-v41-workbar .kbg20-search{max-width:none;flex:1 1 145px}
 }
 @media (max-width:1160px) and (min-width:761px){
- .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(195px,2.5fr) minmax(112px,1.2fr) minmax(112px,1.2fr) minmax(112px,1.25fr) minmax(145px,1.45fr)}
+ .kbg20-page .kbg20-v41-taskgrid{grid-template-columns:minmax(170px,2.3fr) minmax(85px,.95fr) minmax(94px,1.02fr) minmax(103px,1.12fr) minmax(103px,1.12fr) minmax(122px,1.3fr)}
  .kbg20-v41-task-row .kbg20-v41-clock-cell{gap:6px}
 }
 @media (max-width:760px){
@@ -732,7 +732,7 @@
  .kbg20-v41-task-row .kbg20-v41-status-cell{align-items:flex-start;text-align:left;justify-content:flex-start}
  .kbg20-v41-task-row .kbg20-v41-clock-cell{justify-content:flex-start;gap:8px}
  .kbg20-v41-task-row .kbg20-v41-actions{justify-content:flex-start}
- .kbg20-page .kbg20-v41-task-row>:nth-child(8){justify-content:flex-start}
+ .kbg20-page .kbg20-v41-task-row>:nth-child(9){justify-content:flex-start}
  .kbg20-v41-workbar .kbg20-search{max-width:none;flex:1 1 100%}
 }
 
@@ -797,8 +797,13 @@
 @media (min-width:1201px) and (max-width:1480px){
  .kbg20-page .kbg20-v41-schedule-title{flex-basis:143px;min-width:143px;max-width:143px}
 }
-/* Nhat ky gon 4 cot ro nghia. Khong hien thi phan tram ty trong. */
-.kbg20-page .kbg20-v41-hist-grid{grid-template-columns:minmax(270px,3fr) repeat(3,minmax(110px,1fr));column-gap:12px}
+/* Tu tong gio cua tung task, them chi so ty trong de nhat ky it trong va de doi chieu. */
+.kbg20-page .kbg20-v41-hist-grid{grid-template-columns:minmax(215px,2.8fr) minmax(90px,1fr) minmax(90px,1fr) minmax(90px,1fr) minmax(104px,1.05fr)}
+.kbg20-v45-hist-share{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;text-align:center}
+.kbg20-v45-hist-share strong{font-size:12px;color:#5c368e;font-variant-numeric:tabular-nums}
+.kbg20-v45-share-track{height:5px;width:min(112px,90%);background:#eee9f5;border-radius:99px;overflow:hidden}
+.kbg20-v45-share-fill{display:block;height:100%;background:#7750b0;border-radius:99px}
+.kbg20-v41-hist-head>:last-child{text-align:center}
 /* Popup SweetSoft:ExtraModal – trai nhap, phai xem lich su. Cuon rieng cot phai. */
 #mdlKbg20Manual .kbg20-reconcile-content{max-height:min(72vh,560px);overflow-y:auto;padding:16px 20px;gap:12px}
 #mdlKbg20Manual .kbg20-reconcile-detail-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(285px,.85fr);gap:16px;align-items:stretch;min-height:0}
@@ -814,6 +819,10 @@
 #mdlKbg20Manual .kbg20-reconcile-group{padding:12px;gap:7px}
 #mdlKbg20Manual .kbg20-reconcile-title{padding-bottom:2px}
 #mdlKbg20Manual .kbg20-reconcile-field textarea{min-height:66px;max-height:110px;resize:vertical}
+#mdlKbg20SaveSuccess .kbg20-save-success{display:flex;align-items:flex-start;gap:13px;padding:20px}
+#mdlKbg20SaveSuccess .kbg20-save-success-icon{font-size:26px;color:#15824c;line-height:1}
+#mdlKbg20SaveSuccess .kbg20-save-success strong{color:#32465b;font-size:15px}
+#mdlKbg20SaveSuccess .kbg20-save-success p{margin:7px 0 0;color:#64748b;font-size:12.5px;line-height:1.55}
 @media(max-width:900px){
  #mdlKbg20Manual .kbg20-reconcile-detail-layout{grid-template-columns:1fr}
  #mdlKbg20Manual .kbg20-reconcile-history-panel{min-height:160px}
@@ -821,397 +830,30 @@
  #mdlKbg20Manual .kbg20-reconcile-content{max-height:68vh}
 }
 @media(max-width:760px){
- .kbg20-page .kbg20-v41-hist-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
- .kbg20-v41-hist-name{grid-column:1/-1}
-}
-
-/* Khung modal do SweetSoft:ExtraModal Size=ExtraLarge so huu.
-   Khong override .modal-dialog, .modal-content, header, footer va nut X. */
-#mdlKbg20Manual .kbg20-reconcile-content{
-  width:100%;min-width:0;max-height:none;
-  padding:20px 24px;gap:14px;
-}
-#mdlKbg20Manual .kbg20-reconcile-detail-layout{
-  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(350px,1fr);
-  gap:20px;align-items:stretch;
-}
-#mdlKbg20Manual .kbg20-reconcile-detail-left{gap:15px;min-width:0}
-#mdlKbg20Manual .kbg20-reconcile-grid{
-  grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
-}
-#mdlKbg20Manual .kbg20-reconcile-group{padding:16px;min-width:0;gap:10px}
-#mdlKbg20Manual .kbg20-reconcile-group h4{font-size:14px;line-height:1.35}
-#mdlKbg20Manual .kbg20-reconcile-group small{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
-#mdlKbg20Manual .kbg20-reconcile-field{font-size:12.5px;line-height:1.4;min-width:0}
-#mdlKbg20Manual .kbg20-reconcile-field input{min-width:0;font-size:17px}
-#mdlKbg20Manual .kbg20-reconcile-title strong{font-size:15px;line-height:1.45;overflow-wrap:anywhere}
-#mdlKbg20Manual .kbg20-reconcile-history-panel{min-width:0;min-height:340px}
-#mdlKbg20Manual .kbg20-reconcile-history{padding:16px}
-#mdlKbg20Manual .kbg20-reconcile-history-help{font-size:11.5px}
-#mdlKbg20Manual .kbg20-reconcile-version{padding:10px 12px;font-size:11.5px;overflow-wrap:anywhere}
-#mdlKbg20Manual .kbg20-reconcile-footer-actions{flex-wrap:wrap}
-@media(max-width:900px){
-  #mdlKbg20Manual .kbg20-reconcile-detail-layout{grid-template-columns:minmax(0,1fr);gap:15px}
-  #mdlKbg20Manual .kbg20-reconcile-history-panel{min-height:220px}
-  #mdlKbg20Manual .kbg20-reconcile-history{position:relative;inset:auto;max-height:260px}
-  #mdlKbg20Manual .kbg20-reconcile-content{max-height:72vh;padding:15px 17px}
-}
-@media(max-width:600px){
-  #mdlKbg20Manual .kbg20-reconcile-grid{grid-template-columns:minmax(0,1fr)}
-  #mdlKbg20Manual .kbg20-reconcile-content{padding:12px;max-height:75vh}
-  #mdlKbg20Manual .kbg20-reconcile-group{padding:13px}
-  #mdlKbg20Manual .kbg20-reconcile-footer-actions{gap:5px;justify-content:flex-start}
-  #mdlKbg20Manual .kbg20-reconcile-footer-actions .kbg20-btn{font-size:11px;padding:6px 8px}
-}
-
-/* DOT 2 — tinh gon, dong bo thiet ke chuong thong bao / lich su bao cao cua partner.
-   CHI style phan NOI DUNG. Tuyet doi khong ghi de .modal, .modal-header, .modal-content,
-   .modal-footer, close button, body scrollbar cua SweetSoft:ExtraModal. */
-#kbg20Page .kbg20-dot2-personal{display:inline-flex;width:max-content;max-width:100%;align-items:center;gap:5px;
-    margin-top:6px;padding:4px 8px;border:1px solid #c6e8d7;border-radius:7px;background:#f1fcf5;color:#23744e;
-    font-size:11px;font-weight:750;line-height:1.3}
-#kbg20Page .kbg20-dot2-personal.is-withdrawn{border-color:#eed8a4;background:#fffbec;color:#91630e}
-#kbg20Page .kbg20-dot2-personal.is-locked{border-color:#d5d9e3;background:#f7f8fb;color:#5c6471}
-#kbg20Page .kbg20-dot2-row-btn{display:inline-flex;align-items:center;justify-content:center;min-height:33px;max-width:100%;
-    border:1px solid #d8c8ec;border-radius:8px;background:#f7f1ff;color:#60298e;padding:6px 9px;font-size:11.5px;font-weight:750;
-    white-space:normal;line-height:1.32;cursor:pointer;transition:background-color .16s,border-color .16s,color .16s}
-#kbg20Page .kbg20-dot2-row-btn:hover{background:#ebdffb;border-color:#c5ade1;color:#4f197d}
-#kbg20Page .kbg20-dot2-row-btn.is-danger{border-color:#efdae0;background:#fff9fa;color:#a33e56}
-#kbg20Page .kbg20-dot2-row-btn.is-danger:hover{background:#fceaf0;border-color:#e5afc0}
-#kbg20Page .kbg20-v41-manual-name strong{font-size:12.7px;line-height:1.45;color:#352848}
-#kbg20Page .kbg20-v41-manual-head{font-size:11px;letter-spacing:.015em;background:#f7f3fc;color:#6d5184}
-#kbg20Page .kbg20-v41-manual-row{transition:background-color .16s ease;}
-#kbg20Page .kbg20-v41-manual-row:hover{background:#fcfaff}
-#kbg20Page .kbg20-v41-manual-badge.is-withdrawn{border:1px solid #eed8a4;background:#fff9e9;color:#906009}
-#kbg20Page .kbg20-dot2-row-actions{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-#kbg20Page .kbg20-dot2-btn{appearance:none;display:inline-flex;min-height:30px;align-items:center;justify-content:center;
-    border:1px solid #ded0ef;background:#f9f5fe;color:#60318c;padding:5px 9px;border-radius:7px;
-    font-size:11.5px;font-weight:750;cursor:pointer;transition:background-color .16s,border-color .16s}
-#kbg20Page .kbg20-dot2-btn:hover{background:#eee5fa;border-color:#c6b1e4}
-#kbg20Page .kbg20-dot2-btn.is-danger{background:#fff8fa;color:#a53f5d;border-color:#f0d4dc}
-#kbg20Page .kbg20-dot2-btn.is-danger:hover{background:#fdebf1;border-color:#e6b6c6}
-/* Modal content is in a separate WebForms subtree, so scope by its unique content ID. */
-#kbg20ReconcileContent{padding:18px 20px 20px;display:flex;flex-direction:column;gap:15px;min-width:0;
-    overflow:visible;max-height:none;font-family:inherit}
-#kbg20ReconcileContent .kbg20-dot2-head{padding-bottom:12px;border-bottom:1px solid #eee5f5}
-#kbg20ReconcileContent .kbg20-dot2-head strong{display:block;color:#512380;font-size:16px;line-height:1.45;font-weight:800;overflow-wrap:anywhere}
-#kbg20ReconcileContent .kbg20-dot2-head p{margin:5px 0 0;color:#797285;font-size:12.5px;line-height:1.55}
-#kbg20ReconcileContent .kbg20-dot2-status{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-#kbg20ReconcileContent .kbg20-dot2-pill{display:inline-flex;align-items:center;min-height:27px;border-radius:7px;
-    border:1px solid #e6d8f0;background:#f8f3fc;color:#6c3c93;font-size:12px;font-weight:750;padding:4px 9px}
-#kbg20ReconcileContent .kbg20-dot2-pill.is-reported{background:#f1fbf5;border-color:#c6e8d7;color:#23734c}
-#kbg20ReconcileContent .kbg20-dot2-pill.is-withdrawn{background:#fff9eb;border-color:#f1d9a8;color:#95620c}
-#kbg20ReconcileContent .kbg20-dot2-pill.is-locked{background:#f6f7fb;border-color:#d7dbe5;color:#596375}
-#kbg20ReconcileContent .kbg20-dot2-hours{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-#kbg20ReconcileContent .kbg20-dot2-hour-card{min-width:0;border:1px solid #e8ddf1;background:#fff;border-radius:12px;padding:15px;display:flex;flex-direction:column;gap:8px}
-#kbg20ReconcileContent .kbg20-dot2-hour-card.is-manual{border-color:#d8c7ec;background:linear-gradient(145deg,#fdfaff,#fff 85%)}
-#kbg20ReconcileContent .kbg20-dot2-hour-card h4{font-size:14px;font-weight:800;color:#522785;margin:0;line-height:1.4}
-#kbg20ReconcileContent .kbg20-dot2-hour-card>small{color:#81788e;font-size:11.8px;line-height:1.45;min-height:33px}
-#kbg20ReconcileContent .kbg20-dot2-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-#kbg20ReconcileContent .kbg20-dot2-pair>div{min-width:0}
-#kbg20ReconcileContent .kbg20-dot2-pair>div>small{display:block;color:#7d7788;font-size:11px;margin-bottom:6px;font-weight:600}
-#kbg20ReconcileContent .kbg20-dot2-pair strong{font-variant-numeric:tabular-nums;color:#322040;font-size:20px;line-height:1.25;letter-spacing:.1px}
-#kbg20ReconcileContent .kbg20-dot2-input{display:flex;flex-direction:column;gap:5px;min-width:0}
-#kbg20ReconcileContent .kbg20-dot2-input>span{font-size:11.5px;font-weight:700;color:#59486e}
-#kbg20ReconcileContent .kbg20-dot2-time{min-width:0;width:100%;height:39px;box-sizing:border-box;border:1px solid #d9c9e7;
-    border-radius:8px;background:#fff;color:#3b2152;padding:8px;font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
-#kbg20ReconcileContent .kbg20-dot2-time:focus{outline:2px solid #cbb0e7;outline-offset:1px}
-#kbg20ReconcileContent .kbg20-dot2-input>small{font-size:10.5px;color:#89818f}
-#kbg20ReconcileContent .kbg20-dot2-reason{display:flex;flex-direction:column;gap:7px;color:#5a426d;font-size:12px;font-weight:750}
-#kbg20ReconcileContent .kbg20-dot2-reason textarea{box-sizing:border-box;resize:vertical;min-height:65px;width:100%;border:1px solid #dfd1e9;border-radius:9px;
-    background:#fff;color:#382a42;font:inherit;font-size:12.7px;font-weight:400;padding:10px;line-height:1.5}
-#kbg20ReconcileContent .kbg20-dot2-reason textarea:focus{outline:2px solid #c9b2e6;outline-offset:1px}
-#kbg20ReconcileContent .kbg20-dot2-history{border-top:1px solid #eee5f4;padding-top:12px;display:flex;flex-direction:column;gap:8px}
-#kbg20ReconcileContent .kbg20-dot2-history h4{font-size:13px;font-weight:800;color:#552b83;margin:0 0 3px}
-#kbg20ReconcileContent .kbg20-dot2-history-item{background:#fcfaff;border:1px solid #eee4f4;border-radius:9px;padding:9px 12px;display:flex;flex-direction:column;gap:4px}
-#kbg20ReconcileContent .kbg20-dot2-history-line{display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;gap:8px}
-#kbg20ReconcileContent .kbg20-dot2-history-item strong{color:#50316c;font-size:12px}
-#kbg20ReconcileContent .kbg20-dot2-history-item time,#kbg20ReconcileContent .kbg20-dot2-history-item small{color:#756f83;font-size:11.5px}
-#kbg20ReconcileContent .kbg20-dot2-history-item p{color:#7a6885;font-size:11.5px;margin:0;line-height:1.4}
-#kbg20ReconcileContent .kbg20-dot2-notice{font-size:12px;color:#60428a;line-height:1.5}
-#kbg20ReconcileContent .kbg20-dot2-notice.is-error{color:#b33b50}
-#kbg20ReconcileContent .kbg20-dot2-locked{padding:10px 12px;border-radius:8px;border:1px solid #e1e2e9;color:#5d6472;background:#f8f9fb;font-size:12.5px}
-#kbg20ReconcileContent .kbg20-dot2-loading{font-size:12.5px;color:#7c7288}
-#kbg20Page button:focus-visible,#kbg20ReconcileContent button:focus-visible{outline:2px solid #8545c1;outline-offset:2px}
-@media(max-width:700px){#kbg20ReconcileContent .kbg20-dot2-hours{grid-template-columns:1fr}#kbg20ReconcileContent{padding:13px}
-    #kbg20ReconcileContent .kbg20-dot2-hour-card>small{min-height:0}}
-@media(prefers-reduced-motion:reduce){#kbg20Page .kbg20-dot2-btn,#kbg20Page .kbg20-dot2-row-btn{transition:none}}
-
-/* =============================================================
-   DOT 2 UI HOTFIX 2026-10-21 – su dung khung SweetSoft:ExtraModal
-   Giu bo cuc ba tab, nang cap font/bang va popup TRAI NHAP - PHAI LICH SU.
-   Khong override .modal-header, .modal-footer, .modal-content, nut X.
-   ============================================================= */
-#kbg20Page .kbg20-v41-manual-heading{align-items:center;gap:16px;margin:11px 0 16px}
-#kbg20Page .kbg20-v41-manual-heading h3{font-size:18px;font-weight:800;color:#3b245a;margin:0}
-#kbg20Page .kbg20-v41-manual-heading h3 small{font-size:12.5px;color:#7c7091;font-weight:550}
-#kbg20Page .kbg20-v41-manual-heading p{font-size:12.7px;color:#726982;line-height:1.55;margin-top:5px}
-#kbg20Page #kbg20ManualFilters{gap:7px}
-#kbg20Page #kbg20ManualFilters button{min-height:37px;font-size:12.5px;font-weight:750;padding:7px 12px;border-radius:8px}
-#kbg20Page .kbg20-v41-manual-table{border:1px solid #e3d9ed;border-radius:12px;overflow:hidden;background:#fff}
-#kbg20Page .kbg20-ui-table-grid{display:grid;grid-template-columns:minmax(280px,2.15fr) minmax(145px,1fr) minmax(145px,1fr) minmax(215px,1.25fr) minmax(160px,.85fr);column-gap:17px;align-items:center;padding:0 17px}
-#kbg20Page .kbg20-ui-table-head{min-height:43px;background:#f6f2fb;color:#71578a;border-bottom:1px solid #e9e0f3;font-weight:800;font-size:11.5px;letter-spacing:.025em;text-transform:uppercase}
-#kbg20Page .kbg20-ui-table-row{min-height:91px;padding-top:12px;padding-bottom:12px;transition:background-color .16s ease;border-bottom:1px solid #f0eaf6}
-#kbg20Page .kbg20-ui-table-row:last-child{border-bottom:0}
-#kbg20Page .kbg20-ui-table-row:hover{background:#fcfaff}
-#kbg20Page .kbg20-ui-cell-task{display:flex;flex-direction:column;gap:7px;min-width:0}
-#kbg20Page .kbg20-ui-cell-task>strong{font-size:14px;line-height:1.45;font-weight:750;color:#382647;overflow-wrap:anywhere}
-#kbg20Page .kbg20-ui-cell-task>span{font-size:12px;color:#81768f}
-#kbg20Page .kbg20-ui-cell-times{display:flex;flex-direction:column;gap:7px;min-width:0}
-#kbg20Page .kbg20-ui-cell-times>div{display:flex;align-items:baseline;gap:10px;min-width:0}
-#kbg20Page .kbg20-ui-cell-times>div>span{font-size:11.5px;color:#7f7690;min-width:57px}
-#kbg20Page .kbg20-ui-cell-times>div>strong{font-size:14.5px;line-height:1.3;letter-spacing:.1px;font-weight:800;color:#50415e;font-variant-numeric:tabular-nums}
-#kbg20Page .kbg20-ui-cell-times .kbg20-ui-cell-self>strong{color:#5b278e}
-#kbg20Page .kbg20-ui-cell-status{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}
-#kbg20Page .kbg20-ui-cell-status small{color:#7b7289;font-size:11.5px;line-height:1.45}
-#kbg20Page .kbg20-ui-cell-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-#kbg20Page .kbg20-ui-action{display:inline-flex;align-items:center;justify-content:center;min-height:35px;border:1px solid #ded1eb;border-radius:8px;background:#fff;color:#542582;padding:7px 11px;font-size:12.5px;font-weight:750;line-height:1.25;white-space:nowrap;cursor:pointer;transition:background-color .16s,border-color .16s,color .16s}
-#kbg20Page .kbg20-ui-action:hover{background:#f1eafa;border-color:#c4abe1;color:#451c77}
-#kbg20Page .kbg20-ui-action.is-primary{background:#f4ebfd;border-color:#d1b7ec;color:#55238c}
-#kbg20Page .kbg20-ui-action.is-secondary{border-color:#ead4d7;color:#9d4359;background:#fff9fa}
-#kbg20Page .kbg20-ui-action.is-secondary:hover{background:#fceef0;border-color:#ddaeba}
-#kbg20Page .kbg20-ui-action:focus-visible{outline:2px solid #8650b4;outline-offset:2px}
-#kbg20Page .kbg20-ui-empty{padding:24px 18px;color:#6b5f7b;font-size:13.5px;line-height:1.6;margin:0}
-#kbg20Page .kbg20-v41-disclaimer{font-size:12px;line-height:1.5;color:#7b7387;margin-top:12px}
-#kbg20Page .kbg20-dot2-personal{font-size:11.5px;max-width:100%;white-space:normal}
-#kbg20Page .kbg20-dot2-row-btn{font-size:12px;min-height:35px;padding:7px 10px}
-
-/* Status pills co y nghia ro rang – khong dung rieng cac tu 'bao'/'rut'. */
-#kbg20Page .kbg20-ui-badge,
-#kbg20ReconcileContent .kbg20-ui-badge{display:inline-flex;align-items:center;gap:7px;max-width:100%;border:1px solid #cce9d7;background:#effaf3;color:#22724b;border-radius:999px;padding:6px 9px;font-size:11.7px;font-weight:750;line-height:1.35;white-space:normal}
-#kbg20Page .kbg20-ui-badge::before,
-#kbg20ReconcileContent .kbg20-ui-badge::before{content:"";width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:currentColor}
-#kbg20Page .kbg20-ui-badge.is-withdrawn,
-#kbg20ReconcileContent .kbg20-ui-badge.is-withdrawn{border-color:#efdcb8;background:#fff8e9;color:#875b15}
-#kbg20Page .kbg20-ui-badge.is-locked,
-#kbg20ReconcileContent .kbg20-ui-badge.is-locked{border-color:#dcdde8;background:#f5f6fa;color:#52576d}
-#kbg20Page .kbg20-ui-badge.is-pending,
-#kbg20ReconcileContent .kbg20-ui-badge.is-pending{border-color:#e3d7ee;background:#f9f5fd;color:#603783}
-
-/* SweetSoft ExtraModal: chi tac dong NOI DUNG – man hinh laptop van vua khung. */
-#mdlKbg20Manual #kbg20ReconcileContent{padding:15px 18px 16px;display:flex;flex-direction:column;gap:13px;max-height:none;overflow:visible;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-top{display:flex;align-items:center;justify-content:space-between;gap:15px;min-width:0;padding:0 0 12px;border-bottom:1px solid #eadff2}
-#kbg20ReconcileContent .kbg20-ui-top-title{flex:1;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-eyebrow{font-size:10.8px;font-weight:850;color:#77519d;letter-spacing:.055em;margin-bottom:5px}
-#kbg20ReconcileContent .kbg20-ui-top h3{font-size:16.5px;font-weight:800;line-height:1.4;color:#422268;margin:0;overflow-wrap:anywhere}
-#kbg20ReconcileContent .kbg20-ui-top .kbg20-ui-badge{flex:0 1 auto;max-width:220px}
-#kbg20ReconcileContent .kbg20-ui-workspace{display:grid;grid-template-columns:minmax(0,1.56fr) minmax(290px,1fr);gap:16px;align-items:stretch;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-main{display:flex;flex-direction:column;gap:10px;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#kbg20ReconcileContent .kbg20-ui-hours-card{display:flex;flex-direction:column;gap:7px;min-width:0;border:1px solid #e4d6ee;background:#fff;border-radius:11px;padding:13px}
-#kbg20ReconcileContent .kbg20-ui-hours-card:nth-child(2){background:#fcf9ff;border-color:#d6c1e9}
-#kbg20ReconcileContent .kbg20-ui-hours-card h4{font-size:14px;font-weight:800;margin:0;color:#512681;line-height:1.35}
-#kbg20ReconcileContent .kbg20-ui-hours-caption{font-size:11.5px;line-height:1.4;color:#796d86;margin:0;min-height:32px}
-#kbg20ReconcileContent .kbg20-ui-hour-pair,#kbg20ReconcileContent .kbg20-ui-input-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:auto}
-#kbg20ReconcileContent .kbg20-ui-hour-pair>div{display:flex;flex-direction:column;gap:6px;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-hour-pair span{font-size:11.7px;color:#70657c;font-weight:650}
-#kbg20ReconcileContent .kbg20-ui-hour-pair strong{font-size:21px;line-height:1.2;color:#3d244f;font-weight:850;font-variant-numeric:tabular-nums}
-#kbg20ReconcileContent .kbg20-ui-time-field{display:flex;flex-direction:column;gap:7px;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-time-field>span{font-size:11.7px;color:#5b4273;font-weight:750}
-#kbg20ReconcileContent .kbg20-ui-time-input{width:100%;min-width:0;height:40px;background:#fff;border:1px solid #d6c1e7;border-radius:7px;color:#3b2053;font-size:17px;font-weight:800;padding:7px 9px;font-variant-numeric:tabular-nums}
-#kbg20ReconcileContent .kbg20-ui-time-input:focus,#kbg20ReconcileContent .kbg20-ui-reason textarea:focus{outline:2px solid #bb9ddd;outline-offset:1px}
-#kbg20ReconcileContent .kbg20-ui-reason{display:flex;flex-direction:column;gap:7px;min-width:0}
-#kbg20ReconcileContent .kbg20-ui-reason>span{color:#56366f;font-weight:750;font-size:12.6px}
-#kbg20ReconcileContent .kbg20-ui-reason textarea{resize:none;width:100%;box-sizing:border-box;height:64px;min-height:64px;padding:10px 11px;font-size:12.8px;line-height:1.4;border:1px solid #e2d7e9;border-radius:8px;color:#3e304a}
-#kbg20ReconcileContent .kbg20-ui-help{background:#f8f4fd;border:1px solid #e5d9f0;border-radius:9px;padding:9px 11px;color:#614775;font-size:12px;line-height:1.45}
-#kbg20ReconcileContent .kbg20-ui-help p{margin:0}
-#kbg20ReconcileContent .kbg20-ui-help strong{display:block;margin-bottom:3px}
-#kbg20ReconcileContent .kbg20-ui-help.is-warning{background:#fffaed;border-color:#eedcba;color:#77520d}
-#kbg20ReconcileContent .kbg20-ui-help.is-locked{background:#f6f7fb;border-color:#e1e2e9;color:#4c5364}
-#kbg20ReconcileContent .kbg20-ui-side{position:relative;min-width:0;min-height:0}
-#kbg20ReconcileContent .kbg20-ui-history-panel{position:absolute;inset:0;min-width:0;min-height:0;border:1px solid #e3d6ed;border-radius:11px;background:#faf7fe;padding:13px;display:flex;flex-direction:column;gap:9px}
-#kbg20ReconcileContent .kbg20-ui-history-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px;border-bottom:1px solid #e6d9ee;padding-bottom:10px;flex:0 0 auto}
-#kbg20ReconcileContent .kbg20-ui-history-head strong{font-size:13.4px;color:#4f267e;font-weight:800}
-#kbg20ReconcileContent .kbg20-ui-history-head span{font-size:11.4px;color:#82718e}
-#kbg20ReconcileContent .kbg20-ui-history-list{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;overscroll-behavior:contain;padding-right:5px}
-#kbg20ReconcileContent .kbg20-ui-history-item{flex:0 0 auto;display:flex;flex-direction:column;gap:5px;padding:10px 11px;background:#fff;border:1px solid #e9dfee;border-radius:8px}
-#kbg20ReconcileContent .kbg20-ui-history-item-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
-#kbg20ReconcileContent .kbg20-ui-history-item-head strong{font-size:12.2px;color:#4a2d67;font-weight:750}
-#kbg20ReconcileContent .kbg20-ui-history-item-head time{font-size:11px;color:#81738e}
-#kbg20ReconcileContent .kbg20-ui-history-version{font-size:11.5px;color:#736483}
-#kbg20ReconcileContent .kbg20-ui-history-hours{font-size:12px;color:#513571;font-weight:700;line-height:1.45}
-#kbg20ReconcileContent .kbg20-ui-history-reason{font-size:11.8px;line-height:1.45;color:#736582;margin:0;overflow-wrap:anywhere}
-#kbg20ReconcileContent .kbg20-ui-history-empty{font-size:12.6px;line-height:1.55;color:#756783;margin:0}
-#kbg20ReconcileContent .kbg20-ui-loading{padding:14px;margin:0;font-size:13px;color:#614973}
-#kbg20ReconcileContent .kbg20-dot2-notice{font-size:12.5px;padding:0 2px;margin:0;color:#643b8a}
-#kbg20ReconcileContent .kbg20-dot2-notice.is-error{color:#b33951}
-#mdlKbg20Manual #kbg20ReconcileFooterActions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-#mdlKbg20Manual #kbg20ReconcileFooterActions[hidden],#mdlKbg20Manual #kbg20ManualBack[hidden]{display:none!important}
-#mdlKbg20Manual #kbg20ManualSave{min-height:36px;font-size:12.8px;font-weight:750;padding:8px 13px}
-@media(max-width:1050px){
- #kbg20Page .kbg20-ui-table-grid{grid-template-columns:minmax(240px,1.9fr) minmax(125px,1fr) minmax(125px,1fr) minmax(172px,1.3fr) minmax(110px,.85fr);gap:10px;padding-left:12px;padding-right:12px}
- #kbg20Page .kbg20-ui-cell-actions{gap:6px}
- #kbg20Page .kbg20-ui-action{padding:6px 8px}
-}
-@media(max-width:850px){
- #kbg20Page .kbg20-ui-table-head{display:none}
- #kbg20Page .kbg20-ui-table-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding:16px}
- #kbg20Page .kbg20-ui-table-row>.kbg20-ui-cell-task{grid-column:1/-1}
- #kbg20Page .kbg20-ui-table-row>.kbg20-ui-cell-status{grid-column:1/-1}
- #kbg20Page .kbg20-ui-table-row>.kbg20-ui-cell-actions{grid-column:1/-1}
- #kbg20Page .kbg20-ui-cell-times>.kbg20-v41-mobile-label{display:block;font-size:12px;font-weight:750;color:#5e3b7d}
- #kbg20ReconcileContent .kbg20-ui-workspace{grid-template-columns:1fr}
- #kbg20ReconcileContent .kbg20-ui-side{min-height:170px}
- #kbg20ReconcileContent .kbg20-ui-history-panel{position:relative;inset:auto;max-height:200px}
- #mdlKbg20Manual #kbg20ReconcileContent{max-height:calc(100dvh - 160px);overflow-y:auto}
-}
-@media(max-width:520px){
- #kbg20Page .kbg20-v41-manual-heading{align-items:flex-start}
- #kbg20Page .kbg20-v41-manual-heading h3{font-size:17px}
- #kbg20Page .kbg20-ui-table-row{grid-template-columns:1fr}
- #kbg20Page .kbg20-ui-table-row>*{grid-column:1/-1}
- #kbg20ReconcileContent .kbg20-ui-top{align-items:flex-start;flex-direction:column}
- #kbg20ReconcileContent .kbg20-ui-cards{grid-template-columns:1fr}
- #mdlKbg20Manual #kbg20ReconcileContent{padding:12px;max-height:calc(100dvh - 145px);overflow-y:auto}
- #kbg20ReconcileContent .kbg20-ui-hours-caption{min-height:0}
-}
-@media(prefers-reduced-motion:reduce){#kbg20Page .kbg20-ui-table-row,#kbg20Page .kbg20-ui-action{transition:none}}
-/* Tab 1: dieu chinh do doc chu nhe, khong thay doi 8 cot/bang dong ho. */
-#kbg20Page .kbg20-v41-tasktext{font-size:12.9px;line-height:1.48;font-weight:760}
-#kbg20Page .kbg20-v41-table-head{font-size:11px;letter-spacing:.02em}
-#kbg20Page .kbg20-v41-state{font-size:11px;padding:5px 9px}
-#kbg20Page .kbg20-v41-workbar .kbg20-search input{font-size:12.2px;min-height:34px;height:34px}
-#kbg20Page .kbg20-v41-workbar .kbg20-search>i{font-size:11.5px}
-
-
-/* ================================================================
-   UX revision: names + clearly separated statuses; modal shell
-   follows CtrlChonNhanVienTask ExtraModal (Type Primary, ExtraLarge).
-   ================================================================ */
-#kbg20Page .kbg20-v41-taskgrid{
-  grid-template-columns:
-    minmax(246px,2.5fr) minmax(78px,.67fr) minmax(65px,.58fr)
-    minmax(91px,.82fr) minmax(110px,.98fr) minmax(134px,1.20fr)
-    minmax(124px,1.10fr) minmax(124px,1.10fr) minmax(134px,1.10fr);
-  column-gap:8px;
-}
-#kbg20Page .kbg20-v41-table-head{
-  font-size:11.2px; font-weight:800; line-height:1.38; color:#644f75;
-  letter-spacing:0; background:#f6f1fb;
-}
-#kbg20Page .kbg20-v41-task-row{min-height:84px;padding-top:13px;padding-bottom:13px}
-#kbg20Page .kbg20-v41-tasktext{font-size:13.5px;line-height:1.45}
-#kbg20Page .kbg20-v41-task-note{font-size:11.4px;color:#776e84}
-#kbg20Page .kbg20-v41-date,#kbg20Page .kbg20-v41-duration{font-size:12.2px}
-#kbg20Page .kbg20-v41-status-cell,#kbg20Page .kbg20-v41-personal-cell{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:5px;min-width:0;text-align:center;
-}
-#kbg20Page .kbg20-v41-personal-cell .kbg20-dot2-personal{margin:0;justify-content:center;text-align:center}
-#kbg20Page .kbg20-v41-personal-cell .kbg20-dot2-personal.is-not-reported{
-  background:#f6f5f8;color:#635d6c;border-color:#e6e2eb;
-}
-#kbg20Page .kbg20-v41-status-cell .kbg20-v41-state{
-  font-size:11.2px;padding:6px 9px;line-height:1.3;white-space:normal;text-align:center;
-}
-#kbg20Page .kbg20-v41-task-row .kbg20-v41-actions{justify-content:center;}
-#kbg20Page .kbg20-dot2-row-btn{font-size:12px;line-height:1.35;min-height:36px;padding:8px 10px}
-#kbg20Page .kbg20-v41-clock-main strong{font-size:13.5px}
-#kbg20Page .kbg20-filter-chip{font-size:11.6px}
-#kbg20Page .kbg20-ui-table-head{font-size:12px;letter-spacing:0}
-#kbg20Page .kbg20-ui-cell-times>div>span{min-width:86px;color:#675a72;font-size:12px}
-#kbg20Page .kbg20-ui-cell-times>div>strong{font-size:15px}
-#kbg20Page .kbg20-ui-cell-task>strong{font-size:14px}
-#kbg20Page .kbg20-ui-action:disabled{cursor:not-allowed;opacity:.58;background:#f4f3f6;
-  color:#74717b;border-color:#dcd8e2;box-shadow:none}
-#kbg20Page .kbg20-ui-action:disabled:hover{background:#f4f3f6;border-color:#dcd8e2;color:#74717b}
-#kbg20ReconcileContent .kbg20-ui-locked-note{font-size:11.5px;font-weight:650;color:#626070}
-#kbg20Page .kbg20-ui-locked-note{font-size:11.5px;font-weight:650;color:#626070}
-/* Keep the history on the RIGHT of the form. No whole-popup scroll on normal laptop. */
-#kbg20ReconcileContent .kbg20-ui-workspace{
-  grid-template-columns:minmax(0,1.65fr) minmax(285px,1fr);
-  gap:14px;
-}
-#kbg20ReconcileContent .kbg20-ui-history-panel{min-height:0}
-#kbg20ReconcileContent .kbg20-ui-history-list{max-height:360px;overflow-y:auto}
-#kbg20ReconcileContent .kbg20-ui-top h3{font-size:16.5px}
-#kbg20ReconcileContent .kbg20-ui-hours-card{padding:12px}
-#kbg20ReconcileContent .kbg20-ui-hours-caption{min-height:0}
-#kbg20ReconcileContent .kbg20-ui-hour-pair strong{font-size:19px}
-#kbg20ReconcileContent .kbg20-ui-reason textarea{height:59px;min-height:59px}
-@media(max-width:1330px) and (min-width:761px){
-  #kbg20Page .kbg20-v41-taskgrid{
-    grid-template-columns:minmax(235px,2.45fr) minmax(112px,1.0fr)
-      minmax(130px,1.20fr) minmax(118px,1.07fr)
-      minmax(118px,1.07fr) minmax(126px,1.12fr);
-  }
-  #kbg20Page .kbg20-v41-taskgrid>:nth-child(2),
-  #kbg20Page .kbg20-v41-taskgrid>:nth-child(3),
-  #kbg20Page .kbg20-v41-taskgrid>:nth-child(4){display:none}
-}
-@media(max-width:760px){
-  #kbg20Page .kbg20-v41-task-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  #kbg20Page .kbg20-v41-task-row>:nth-child(1){grid-column:1/-1}
-  #kbg20Page .kbg20-v41-task-row>:nth-child(2),
-  #kbg20Page .kbg20-v41-task-row>:nth-child(3),
-  #kbg20Page .kbg20-v41-task-row>:nth-child(4){display:none}
-  #kbg20Page .kbg20-v41-task-row>:nth-child(5),
-  #kbg20Page .kbg20-v41-task-row>:nth-child(6){grid-column:auto}
-  #kbg20Page .kbg20-v41-task-row>:nth-child(7),
-  #kbg20Page .kbg20-v41-task-row>:nth-child(8){grid-column:auto}
-  #kbg20Page .kbg20-v41-task-row>:nth-child(9){grid-column:1/-1;justify-content:flex-start;
-    border-top:1px dashed #ece5f3;padding-top:10px}
-  #kbg20Page .kbg20-v41-status-cell,#kbg20Page .kbg20-v41-personal-cell{
-    align-items:flex-start;text-align:left;justify-content:flex-start;
-  }
-}
-@media(max-width:850px){
-  /* Narrow viewports: history remains adjacent whenever enough width exists. */
-  #kbg20ReconcileContent .kbg20-ui-workspace{grid-template-columns:1fr}
-  #kbg20ReconcileContent .kbg20-ui-history-panel{position:relative;inset:auto;max-height:200px}
-}
-@media(min-width:851px){
-  #kbg20ReconcileContent .kbg20-ui-history-panel{position:absolute;inset:0}
-  #mdlKbg20Manual #kbg20ReconcileContent{max-height:none;overflow:visible}
-}
-
-#kbg20Page .kbg20-v41-personal-hint{font-size:11px;line-height:1.4;color:#647082;text-align:center;}
-
-/* Thanh loc: chu dai hon nhung khong duoc ep fontsize qua nho hay tran hang. */
-@media(max-width:1660px){
- #kbg20Page .kbg20-v41-workbar{grid-template-columns:minmax(0,1fr);gap:9px;padding:10px 12px}
- #kbg20Page .kbg20-v41-workbar .kbg20-schedule{border-right:0;border-bottom:1px solid #ebe3f2;padding:0 0 8px;min-width:0}
- #kbg20Page .kbg20-v41-tools{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px;min-width:0}
- #kbg20Page .kbg20-v41-tools .kbg20-task-filters{display:flex;flex:1 1 auto;flex-wrap:wrap;justify-content:flex-start;gap:6px;min-width:0}
- #kbg20Page .kbg20-v41-tools .kbg20-filter-chip{font-size:11.5px;padding:7px 9px;line-height:1.25;min-height:34px}
- #kbg20Page .kbg20-v41-workbar .kbg20-search{flex:1 1 190px;max-width:250px;min-width:150px}
-}
-@media(max-width:800px){
- #kbg20Page .kbg20-v41-workbar .kbg20-search{max-width:none;flex:1 1 100%}
- #kbg20Page .kbg20-v41-tools .kbg20-task-filters{flex-basis:100%}
-}
-
-/* DOT 6: nhan trang thai nhat ky, chi anh huong Tab 2. */
-.kbg20-page .kbg20-v41-hist-name{flex-wrap:wrap;align-items:center;row-gap:5px}
-.kbg20-page .kbg20-dot6-flags{display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap;min-width:0}
-.kbg20-page .kbg20-dot6-flag{font-size:10px;line-height:1.3;font-style:normal;font-weight:700;
-    padding:3px 7px;border-radius:6px;white-space:nowrap}
-.kbg20-page .kbg20-dot6-flag.is-early{color:#5b3696;background:#f3edfd}
-.kbg20-page .kbg20-dot6-flag.is-overdue{color:#a34c19;background:#fff3e6}
-.kbg20-page .kbg20-dot6-flag.is-reported{color:#247552;background:#e9f7ef}
-.kbg20-page .kbg20-dot6-flag.is-zero{color:#536078;background:#f0f2f6}
-
-/* ĐỢT 6B: 5 cột Nhật ký, giữ Tỷ trọng ngày theo V4.5. */
-.kbg20-page .kbg20-v41-hist-grid{grid-template-columns:minmax(215px,2.8fr) repeat(3,minmax(90px,1fr)) minmax(104px,1.05fr)}
-.kbg20-v45-hist-share{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;text-align:center}
-.kbg20-v45-hist-share strong{font-size:12px;color:#5c368e;font-variant-numeric:tabular-nums}
-.kbg20-v45-share-track{height:5px;width:min(112px,90%);background:#eee9f5;border-radius:99px;overflow:hidden}
-.kbg20-v45-share-fill{display:block;height:100%;background:#7750b0;border-radius:99px}
-.kbg20-page .kbg20-v41-hist-head>:last-child{text-align:center}
-@media(max-width:760px){
  .kbg20-page .kbg20-v41-hist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .kbg20-v41-hist-name{grid-column:1/-1}
  .kbg20-v45-hist-share{align-items:flex-start;text-align:left}
 }
 
-/* DOT 6B: Nhan thuc te trong Nhat ky ngay lam viec, giu 5 cot V4.5. */
-.kbg20-page .kbg20-v41-hist-name{flex-wrap:wrap;row-gap:5px}
-.kbg20-page .kbg20-d6-badges{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;max-width:100%;margin-left:0}
-.kbg20-page .kbg20-d6-badge{display:inline-flex;align-items:center;max-width:100%;border:1px solid #e6e1ee;border-radius:6px;background:#f7f6fa;color:#696176;padding:2px 6px;font-size:10.5px;font-weight:700;line-height:1.3;white-space:normal}
-.kbg20-page .kbg20-d6-badge.is-early{background:#f4edfc;border-color:#e4d6f4;color:#6c4397}
-.kbg20-page .kbg20-d6-badge.is-overdue{background:#fff4e5;border-color:#f6dfb8;color:#a56b1e}
-.kbg20-page .kbg20-d6-badge.is-reported{background:#e9f6ed;border-color:#c9e9d1;color:#31784d}
-.kbg20-page .kbg20-d6-badge.is-withdrawn{background:#fff4e5;border-color:#f6dfb8;color:#93692e}
-.kbg20-page .kbg20-d6-badge.is-locked{background:#f0edf6;border-color:#dfd9e9;color:#665577}
-.kbg20-page .kbg20-d6-badge.is-open{background:#f0ecfb;border-color:#ded5f3;color:#653ea5}
-.kbg20-page .kbg20-d6-badge.is-zero{background:#f5f6f8;border-color:#e3e6ea;color:#667085;font-weight:600}
+.kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"] {
+    background: #fff1f2 !important;
+    color: #be123c !important;
+    border: 1px solid #fecdd3 !important;
+    box-shadow: none;
+}
+
+    .kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"]:hover:not(:disabled) {
+        background: #ffe4e6 !important;
+        color: #9f1239 !important;
+        border-color: #fda4af !important;
+    }
+
+    .kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"]:focus-visible {
+        outline: 2px solid #e11d48;
+        outline-offset: 2px;
+    }
+
+    .kbg20-page .kbg20-v41-actions button[data-action="withdrawPersonal"]:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }

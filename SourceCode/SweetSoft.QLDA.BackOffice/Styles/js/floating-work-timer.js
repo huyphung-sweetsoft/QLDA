@@ -64,13 +64,13 @@
         root.classList.toggle('is-offline', offline);
         // Pill chi co icon. Thong tin day du van co qua aria-label, tooltip va panel.
         var compactLabel = timers.length === 1
-            ? ('Đồng hồ ' + (timers[0].code || 'công việc') + ', ' + (timers[0].type === 2 ? 'tăng ca' : 'giờ thường'))
+            ? ('Đồng hồ ' + (timers[0].kind === 'issue' ? 'vấn đề ' : '') + (timers[0].code || 'công việc') + ', ' + (timers[0].type === 2 ? 'tăng ca' : 'giờ thường'))
             : (timers.length + ' phiên giờ, ' + countProjects() + ' dự án');
         pill.setAttribute('aria-label', compactLabel + '. ' + (offline ? 'Chưa đồng bộ.' : activeCount + ' phiên đang cộng giờ.') + ' Nhấn để xem chi tiết.');
         text('kbgFloatTipBody', offline
             ? 'Mất kết nối tạm thời. Thời gian đang được giữ tại lần cập nhật gần nhất.'
             : (timers.length === 1
-                ? ((timers[0].code || 'Công việc') + ' · ' + (timers[0].type === 2 ? 'Tăng ca' : 'Giờ thường') + ' · ' + formatTime(displayedSeconds(timers[0], now)))
+                ? (((timers[0].kind === 'issue' ? 'Vấn đề · ' : '') + (timers[0].code || (timers[0].kind === 'issue' ? 'Vấn đề' : 'Công việc'))) + ' · ' + (timers[0].type === 2 ? 'Tăng ca' : 'Giờ thường') + ' · ' + formatTime(displayedSeconds(timers[0], now)))
                 : (countProjects() + ' dự án · ' + activeCount + ' phiên đang cộng. Bấm để xem chi tiết.')));
     }
     function countProjects() {
@@ -126,8 +126,8 @@
                 var card = el('article', 'kbg-float-task');
                 var top = el('div', 'kbg-float-task-top');
                 var label = el('div', 'kbg-float-task-name');
-                label.appendChild(el('strong', '', t.code || 'Công việc'));
-                label.appendChild(el('span', '', t.name || 'Chưa có tên công việc'));
+                label.appendChild(el('strong', '', (t.kind === 'issue' ? 'Vấn đề · ' : '') + (t.code || (t.kind === 'issue' ? 'Chưa có mã' : 'Công việc'))));
+                label.appendChild(el('span', '', t.name || (t.kind === 'issue' ? 'Chưa có tên vấn đề' : 'Chưa có tên công việc')));
                 top.appendChild(label);
                 var type = el('span', t.type === 2 ? 'kbg-float-type is-overtime' : 'kbg-float-type', t.type === 2 ? 'Tăng ca' : 'Giờ thường');
                 top.appendChild(type);
@@ -149,7 +149,7 @@
     function structureSignature(rows) {
         // Chi metadata thay doi moi can tao lai cards; seconds/counting duoc cap nhat tren node cu.
         return JSON.stringify(rows.map(function (t) {
-            return [t.id, t.projectId, t.taskId, t.projectCode, t.projectName,
+            return [t.id, t.kind, t.issueId, t.projectId, t.taskId, t.projectCode, t.projectName,
                 t.projectUrl, t.code, t.name, t.type, t.source, t.overdue];
         }));
     }
@@ -188,7 +188,8 @@
             if (!t || !t.id || !t.projectId || unique[t.id]) return;
             unique[t.id] = true;
             next.push({
-                id: String(t.id), taskId: String(t.taskId || ''), projectId: String(t.projectId),
+                id: String(t.id), kind: t.kind === 'issue' ? 'issue' : 'task',
+                issueId: String(t.issueId || ''), taskId: String(t.taskId || ''), projectId: String(t.projectId),
                 code: String(t.code || ''), name: String(t.name || ''),
                 projectCode: String(t.projectCode || ''), projectName: String(t.projectName || ''),
                 projectUrl: t.projectUrl, type: Number(t.type) === 2 ? 2 : 1,
@@ -208,7 +209,7 @@
         root.hidden = false;
         text('kbgFloatCount', timers.length + ' phiên · ' + countProjects() + ' dự án');
         text('kbgFloatTipTitle', timers.length + ' phiên giờ đang mở');
-        text('kbgFloatTipBody', countProjects() + ' dự án. Bấm để xem từng công việc và giờ thường/tăng ca.');
+        text('kbgFloatTipBody', countProjects() + ' dự án. Bấm để xem từng công việc/vấn đề và giờ thường/tăng ca.');
         syncRenderedList();
         updateLive();
         if (wasHidden) restorePosition();
