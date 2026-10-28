@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.BackOffice.Common;
+﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -61,7 +61,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         // Chi luu dau hieu tren nut Duyet; KHONG chi phoi Visible/Enabled.
         // Tinh mot lan khi bind, khong query SQL trong RowDataBound.
         private Dictionary<Guid, bool> _qlpmTrangThaiChot = new Dictionary<Guid, bool>();
-        private HashSet<Guid> _qlpmTaskSanSangChot = new HashSet<Guid>();
+        // Dấu ! nghĩa là Task đã hoàn thành nhưng PM vẫn cần xử lý giờ công,
+        // KHÔNG có nghĩa tất cả nhân viên đã báo đủ điều kiện chốt.
+        private HashSet<Guid> _qlpmTaskChoXuLy = new HashSet<Guid>();
+        private Dictionary<Guid, string> _qlpmGoiYChoXuLy = new Dictionary<Guid, string>();
         protected readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         // Them CanhBao trong ExtraModal ma khong can ghi de *.designer.cs cua partner.
@@ -758,11 +761,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 pnlNoTask.Visible = false;
             }
 
-            // Badge la trang thai nghiep vu, doc lap quyen va kha nang nhan nut Duyet.
-            // Bulk la du lieu goi y. Neu bulk bo sot/loi, phai doi chieu voi
-            // LayBanDuyet() - cung nguon dang hien thi popup PM, khong tu suy dien.
+            // Dấu chốt công độc lập quyền nhấn nút. Task hoàn thành nhưng chưa chốt
+            // vẫn cần hiện ! để PM MỞ popup, kiểm tra người chưa báo và GỬI NHẮC.
+            // Kiểm tra đủ điều kiện chỉ thực hiện ở nút Chốt trong popup/Core.
             _qlpmTrangThaiChot = new Dictionary<Guid, bool>();
-            _qlpmTaskSanSangChot = new HashSet<Guid>();
+            _qlpmTaskChoXuLy = new HashSet<Guid>();
+            _qlpmGoiYChoXuLy = new Dictionary<Guid, string>();
             if (ProjectId != Guid.Empty && dtTasks != null && dtTasks.Rows.Count > 0 &&
                 KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
             {
@@ -796,10 +800,20 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                             _qlpmTrangThaiChot[idTask] = true;
                             continue;
                         }
-                        if (ban.NhanVien.Count > 0 && !ban.CoPhienDangMo &&
-                            ban.SoNhanVienChuaXacNhan == 0 &&
-                            !ban.NhanVien.Any(x => x.DaCoSuKienPmChot))
-                            _qlpmTaskSanSangChot.Add(idTask);
+                        // Task đã hoàn thành nhưng còn người chưa báo vẫn phải có !:
+                        // chính popup này cho phép PM gửi nhắc nhở. Không xét điều
+                        // kiện CHỐT ở đây, vì điều kiện đó thuộc nút trong popup.
+                        if (ban.NhanVien.Count > 0)
+                        {
+                            _qlpmTaskChoXuLy.Add(idTask);
+                            _qlpmGoiYChoXuLy[idTask] = ban.SoNhanVienChuaXacNhan > 0
+                                ? "Còn " + ban.SoNhanVienChuaXacNhan + " nhân viên chưa báo hoàn thành. Nhấn để xem và gửi nhắc nhở."
+                                : ban.CoPhienDangMo
+                                    ? "Còn đồng hồ đang chạy. Nhấn để xem tình trạng giờ công."
+                                : ban.NhanVien.Any(x => x.DaCoSuKienPmChot)
+                                    ? "Dữ liệu PM chốt chưa đồng nhất. Nhấn để kiểm tra giờ công."
+                                    : "Chưa chốt giờ công. Nhấn để mở popup PM duyệt giờ.";
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -1153,33 +1167,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowNotify(lyDo, MSGType.Error);
                         return;
                     }
-                    // Kiểm tra lại từ SQL tại lúc nhấn. Chưa đủ điều kiện => notify đỏ;
-                    // đã chốt hoặc đủ điều kiện chốt mới được mở popup hiện hành.
-                    Kbg20PmBanDuyet banHienTai;
-                    try { banHienTai = new Kbg20PmChotCongTaskManager().LayBanDuyet(ProjectId, idTaskPm); }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Trace.TraceError("KBG20: loi kiem tra chot gio cong task " + idTaskPm + ": " + ex);
-                        ShowNotify("Không đọc được dữ liệu đối soát giờ công. Vui lòng thử lại.", MSGType.Error);
-                        return;
-                    }
-                    bool coBanPm = banHienTai.NhanVien.Any(x => x.DaCoSuKienPmChot);
-                    bool duocChotMoi = banHienTai.NhanVien.Count > 0 && !banHienTai.CoPhienDangMo
-                        && !coBanPm && banHienTai.SoNhanVienChuaXacNhan == 0;
-                    if (!banHienTai.DaChotCong && !duocChotMoi)
-                    {
-                        string lyDo = banHienTai.CoPhienDangMo
-                            ? "Công việc vẫn còn đồng hồ đang chạy, chưa thể chốt giờ công."
-                            : banHienTai.SoNhanVienChuaXacNhan > 0
-                                ? "Còn " + banHienTai.SoNhanVienChuaXacNhan + " nhân viên chưa báo hoàn thành phần việc; chưa thể chốt giờ công."
-                            : coBanPm
-                                ? "Đã có kết quả chốt giờ công trước đó nhưng dữ liệu đối soát chưa hợp lệ. Vui lòng kiểm tra."
-                            : banHienTai.NhanVien.Count == 0
-                                ? "Công việc chưa có nhân viên hoặc dữ liệu giờ công để chốt."
-                            : "Công việc chưa đủ điều kiện chốt giờ công.";
-                        ShowNotify(lyDo, MSGType.Error);
-                        return;
-                    }
+                    // CHỈ KIỂM TRA quyền + trạng thái Task khi MỞ popup.
+                    // Task hoàn thành nhưng có người chưa báo PHẢI mở được popup
+                    // để PM xem danh sách và nhấn Gửi nhắc nhở. Nút Xác nhận
+                    // chốt giờ trong CtrlDuyetGioCongTask và Core sẽ kiểm tra
+                    // lại toàn bộ điều kiện (báo giờ/đồng hồ/bản chốt) trước khi ghi.
                     CtrlDuyetGioCongTask1.OpenModal(ProjectId, idTaskPm);
                     break;
 
@@ -1413,13 +1405,16 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         Guid.TryParse(Convert.ToString(rowView["IdCongViec"]), out idTask))
                     {
                         _qlpmTrangThaiChot.TryGetValue(idTask, out daChot);
-                        bool canChot = !daChot && _qlpmTaskSanSangChot.Contains(idTask);
-                        if (daChot || canChot)
+                        bool canXuLy = !daChot && _qlpmTaskChoXuLy.Contains(idTask);
+                        if (daChot || canXuLy)
                         {
                             marker.Visible = true;
                             marker.Text = daChot ? "✓" : "!";
                             marker.CssClass = daChot ? "btn-qlpm-final-mark" : "btn-qlpm-pending";
-                            marker.ToolTip = daChot ? "PM đã chốt giờ công." : "Đủ điều kiện chốt giờ công, đang chờ PM chốt.";
+                            string goiY;
+                            marker.ToolTip = daChot ? "PM đã chốt giờ công."
+                                : _qlpmGoiYChoXuLy.TryGetValue(idTask, out goiY)
+                                    ? goiY : "Chưa chốt giờ công. Nhấn để xem và xử lý.";
                         }
                     }
                 }
