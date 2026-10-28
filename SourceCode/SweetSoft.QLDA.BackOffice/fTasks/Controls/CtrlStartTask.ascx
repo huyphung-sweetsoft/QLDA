@@ -111,7 +111,85 @@
         .st-tooltip::after { transform: translateX(-10%) translateY(-3px); }
         .st-tooltip:hover::after { transform: translateX(-10%) translateY(-8px); }
     }
+
+    /* Loading khi xác nhận bắt đầu: phong cách TaskList, độc lập với modal và UpdatePanel. */
+    #st-start-processing-overlay { position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:rgba(255,255,255,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s ease,visibility .25s ease; }
+    #st-start-processing-overlay.is-active { opacity:1;visibility:visible;pointer-events:auto; }
+    #st-start-processing-overlay .st-start-loading-ring { width:54px;height:54px;margin-bottom:16px;border:4px solid #ede9fe;border-top-color:#7c3aed;border-radius:50%;box-shadow:0 4px 12px rgba(124,58,237,.15);animation:stStartLoadingSpin .85s linear infinite; }
+    #st-start-processing-overlay .st-start-loading-title { color:#5b21b6;font-size:15px;font-weight:800;letter-spacing:.45px;text-transform:uppercase;animation:stStartLoadingText 1.5s ease-in-out infinite; }
+    #st-start-processing-overlay .st-start-loading-subtitle { margin-top:6px;color:#64748b;font-size:12px;font-weight:600; }
+    .st-confirm-btn.st-start-busy { cursor:progress!important; }
+    @keyframes stStartLoadingSpin { to { transform:rotate(360deg); } }
+    @keyframes stStartLoadingText { 0%,100% { opacity:1; } 50% { opacity:.55; } }
+    @media(prefers-reduced-motion:reduce) { #st-start-processing-overlay .st-start-loading-ring,#st-start-processing-overlay .st-start-loading-title { animation:none; } }
 </style>
+
+
+<script type="text/javascript">
+    // Chặn bấm lặp, phản hồi ngay, nhưng KHÔNG chặn postback WebForms của LinkButton.
+    window.SweetStartTaskLoading = window.SweetStartTaskLoading || (function () {
+        var inProgress = false, activeButton = null, oldButtonHtml = '', currentRequestManager = null;
+
+        function getOverlay() {
+            var overlay = document.getElementById('st-start-processing-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'st-start-processing-overlay';
+                overlay.setAttribute('role', 'status');
+                overlay.setAttribute('aria-live', 'polite');
+                overlay.innerHTML = '<span class="st-start-loading-ring" aria-hidden="true"></span>' +
+                    '<strong class="st-start-loading-title">Đang bắt đầu công việc...</strong>' +
+                    '<span class="st-start-loading-subtitle">Hệ thống đang ghi nhận thao tác</span>';
+                document.body.appendChild(overlay);
+            }
+            return overlay;
+        }
+
+        function finish() {
+            inProgress = false;
+            var overlay = document.getElementById('st-start-processing-overlay');
+            if (overlay) overlay.classList.remove('is-active');
+            if (activeButton && document.documentElement.contains(activeButton)) {
+                activeButton.innerHTML = oldButtonHtml;
+                activeButton.classList.remove('st-start-busy');
+                activeButton.removeAttribute('aria-disabled');
+            }
+            activeButton = null;
+            oldButtonHtml = '';
+        }
+
+        function begin(button) {
+            if (inProgress || !button) return false;
+            // Request khác đang chạy: WebForms sẽ không xử lý đồng thời hai async postback.
+            var prm = currentRequestManager;
+            if (prm && typeof prm.get_isInAsyncPostBack === 'function' && prm.get_isInAsyncPostBack()) return false;
+            inProgress = true;
+            activeButton = button;
+            oldButtonHtml = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2" aria-hidden="true"></i> Đang bắt đầu...';
+            button.classList.add('st-start-busy');
+            button.setAttribute('aria-disabled', 'true');
+            getOverlay().classList.add('is-active');
+            // Trả về true để LinkButton tiếp tục __doPostBack / WebForm_DoPostBackWithOptions.
+            return true;
+        }
+
+        function wirePostback() {
+            if (!window.Sys || !Sys.WebForms || !Sys.WebForms.PageRequestManager) return;
+            var prm = Sys.WebForms.PageRequestManager.getInstance();
+            if (!prm || currentRequestManager === prm) return;
+            currentRequestManager = prm;
+            // Dù server thành công hay báo lỗi, khi AJAX kết thúc thì gỡ loading.
+            prm.add_endRequest(function () { if (inProgress) finish(); });
+        }
+
+        wirePostback();
+        if (window.Sys && Sys.Application) Sys.Application.add_load(wirePostback);
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wirePostback);
+        window.addEventListener('pageshow', function (e) { if (e.persisted) finish(); });
+        return { begin: begin, finish: finish };
+    })();
+</script>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlStartTask" Type="Primary" Title="Xác nhận thao tác" Width="800px">
     <ContentTemplate>
@@ -143,7 +221,7 @@
         <asp:UpdatePanel ID="upnlFooterStartTask" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
                 <div class="st-footer-actions">
-                    <asp:LinkButton ID="btnConfirmStart" runat="server" CssClass="btn px-4 st-confirm-btn" OnClick="btnConfirmStart_Click"><i class="fas fa-play me-2" aria-hidden="true"></i> Bắt đầu ngay</asp:LinkButton>
+                    <asp:LinkButton ID="btnConfirmStart" runat="server" CssClass="btn px-4 st-confirm-btn" CausesValidation="false" OnClientClick="if (!SweetStartTaskLoading.begin(this)) return false;" OnClick="btnConfirmStart_Click"><i class="fas fa-play me-2" aria-hidden="true"></i> Bắt đầu ngay</asp:LinkButton>
                 </div>
             </ContentTemplate>
         </asp:UpdatePanel>
