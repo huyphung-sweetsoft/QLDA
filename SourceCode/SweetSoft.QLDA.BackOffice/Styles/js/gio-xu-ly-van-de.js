@@ -1,4 +1,4 @@
-﻿/* KBG20 - Van de: dung chung Soft Table va ExtraModal hien huu cua Task, khong nhay tab khi xem chi tiet. */
+/* KBG20 - Van de: dung chung Soft Table va ExtraModal hien huu cua Task, khong nhay tab khi xem chi tiet. */
 (function (window, document) {
     'use strict';
     function init() {
@@ -464,7 +464,7 @@
             var host=el('gvHistoryIssues');if(!host)return;host.textContent='';var list=state.historyItems;
             if(!list.length){append(host,'p','kbg20-empty','Không có giờ xử lý vấn đề trong ngày được chọn.');return;}
             var hdr=append(host,'div','kbg20-v41-hist-head kbg20-v41-hist-grid');
-            ['Vấn đề','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Chi tiết'].forEach(function(x){append(hdr,'span','',x);});
+            ['Vấn đề','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Hành động'].forEach(function(x){append(hdr,'span','',x);});
             list.forEach(function(x){
                 var line=append(host,'article','kbg20-v41-hist-row kbg20-v41-hist-grid');
                 var name=taskCell(line,'kbg20-v41-hist-name','Vấn đề');
@@ -485,7 +485,7 @@
                     var cell=taskCell(line,'kbg20-v41-hist-value',i===0?'Giờ làm theo lịch':i===1?'Giờ tăng ca':'Tổng giờ công');
                     append(cell,'strong',i===2?'is-total':'',hms(n));
                 });
-                var actions=taskCell(line,'kbg20-ux-history-actions','Chi tiết');
+                var actions=taskCell(line,'kbg20-ux-history-actions','Hành động');
                 var detail=append(actions,'button','kbg20-btn kbg20-outline kbg20-ux-detail-btn','Xem chi tiết');
                 detail.type='button';detail.setAttribute('aria-label','Xem chi tiết phiên giờ của '+(x.code||'vấn đề'));
                 detail.addEventListener('click',function(){openHistoryIssue(x);});
@@ -511,7 +511,7 @@
                 (state.ledgerFilter==='reported'&&x.reported)||(state.ledgerFilter==='withdrawn'&&x.withdrawn);});
             if(!list.length){elem(host,'p','kbg20-ui-empty','Chưa có vấn đề phù hợp với bộ lọc.');return;}
             var head=elem(host,'div','kbg20-ui-table-head kbg20-ui-table-grid');
-            ['Vấn đề','Giờ làm theo lịch','Giờ tăng ca','Báo hoàn thành','Thao tác'].forEach(function(x){elem(head,'span','',x);});
+            ['Vấn đề','Giờ làm theo lịch','Giờ tăng ca','Báo hoàn thành','Hành động'].forEach(function(x){elem(head,'span','',x);});
             list.forEach(function(x){
                 var row=elem(host,'article','kbg20-ui-table-row kbg20-ui-table-grid');
                 var name=elem(row,'div','kbg20-ui-cell-task');

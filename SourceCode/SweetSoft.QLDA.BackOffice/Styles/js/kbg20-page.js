@@ -678,7 +678,7 @@
           row(x,node('small','',c.label));row(x,node('strong','',clock(c.value)));});
         if(!d.tasks||!d.tasks.length){row(historyEl,node('p','kbg20-empty','Không có hoạt động công việc trong ngày được chọn.'));return;}
         var hdr=row(historyEl,node('div','kbg20-v41-hist-head kbg20-v41-hist-grid'));
-        ['Công việc','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Chi tiết'].forEach(function(t){row(hdr,node('span','',t));});
+        ['Công việc','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Hành động'].forEach(function(t){row(hdr,node('span','',t));});
         d.tasks.forEach(function(h){
             var line=row(historyEl,node('article','kbg20-v41-hist-row kbg20-v41-hist-grid'));
             var name=taskCell(line,'kbg20-v41-hist-name','Công việc');
@@ -697,7 +697,7 @@
                 var cell=taskCell(line,'kbg20-v41-hist-value',k==='regular'?'Giờ làm theo lịch':k==='overtime'?'Giờ tăng ca':'Tổng giờ công');
                 row(cell,node('strong',k==='total'?'is-total':'',clock(h[k])));
             });
-            var detail=taskCell(line,'kbg20-ux-history-actions','Chi tiết');
+            var detail=taskCell(line,'kbg20-ux-history-actions','Hành động');
             var see=row(detail,node('button','kbg20-btn kbg20-outline kbg20-ux-detail-btn','Xem chi tiết'));
             see.type='button';see.setAttribute('aria-label','Xem chi tiết các lần Start/Stop của '+(h.code||'công việc'));
             see.addEventListener('click',function(){openHistoryDetail(h);});
