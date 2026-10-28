@@ -278,6 +278,17 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
 .pmc-date-foot .pmc-date-apply:hover { background:#441777;color:#fff; }
 .pmc-date-pop button:focus-visible { outline:2px solid #9564c5;outline-offset:2px; }
 @media(max-width:540px) { .pmc-date-pop { padding:12px;width:360px; } .pmc-date-head { font-size:14px;margin-bottom:10px; } .pmc-date-day { font-size:12px; } }
+/* Hiệu ứng đánh dấu đúng cuộc họp từ badge Giờ công, không đổi màu đang chọn lâu dài. */
+.pmc-popup-modal #pmcPopupRoot .pmc-meeting.pmc-focus-flash { animation:pmcFocusYellow 1.75s ease-in-out 1 both; }
+@keyframes pmcFocusYellow { 0%,100% { box-shadow:inset 0 0 0 0 transparent; } 18%,58% { box-shadow:inset 0 0 0 3px #f4b82b;background:#fff7cf; } 35%,77% { box-shadow:inset 0 0 0 1px #f6d67d;background:#fffbee; } }
+@media(prefers-reduced-motion:reduce) { .pmc-popup-modal #pmcPopupRoot .pmc-meeting.pmc-focus-flash { animation:none;box-shadow:inset 0 0 0 2px #f4b82b; } }
+
+/* Tên cuộc họp mở ViewDetail; phần còn lại của hàng vẫn chọn cuộc họp để chấm công. */
+.pmc-popup-modal #pmcPopupRoot .pmc-meeting-name.pd-view-object-link { cursor:pointer;text-decoration:none; }
+.pmc-popup-modal #pmcPopupRoot .pmc-meeting-name.pd-view-object-link:hover { color:#2563eb!important;text-decoration:none!important; }
+.pmc-popup-modal #pmcPopupRoot .pmc-meeting-name.pd-view-object-link:focus-visible { outline:2px solid #a777d1;outline-offset:2px;border-radius:3px; }
+.pmc-popup-modal #pmcPopupRoot .pmc-view-current-name { cursor:pointer; }
+.pmc-popup-modal #pmcPopupRoot .pmc-view-current-name:hover { color:#2563eb!important;text-decoration:none!important; }
 </style>
 <SweetSoft:ExtraModal ID="mdlMeetingDetail" runat="server" Type="Primary" Title="Chi tiết cuộc họp" Width="92%">
     <ContentTemplate>
@@ -299,15 +310,56 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
                             </div>
                             <asp:UpdatePanel ID="upMeetingResults" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                                 <ContentTemplate>
-                                    <div class="pmc-list" id="pmcList"><asp:Literal ID="litMeetings" runat="server" EnableViewState="false" /></div>
-                                    <div class="pmc-page" id="pmcMeetingPager"><asp:Literal ID="litMeetingPager" runat="server" EnableViewState="false" /></div>
+                                    <div class="pmc-list" id="pmcList">
+                                        <asp:Repeater ID="rptMeetings" runat="server" EnableViewState="false">
+                                            <ItemTemplate>
+                                                <button type="button" class='pmc-meeting<%# Eval("SelectedCss") %>' data-pmc-action="select" data-pmc-id='<%# Eval("Id") %>'>
+                                                    <span class="pmc-meeting-top"><span class="pmc-meeting-name pd-view-object-link" role="link" tabindex="0" data-pd-view-kind="meet" data-pd-view-id='<%# Eval("Id") %>' title="Xem chi tiết cuộc họp"><%#: Eval("Ten") %></span>
+                                                        <span class="pmc-meeting-tags"><asp:PlaceHolder runat="server" Visible='<%# Eval("LaChuTri") %>'><span class="pmc-host-chip" title="Bạn chủ trì"><i class="fas fa-crown"></i></span></asp:PlaceHolder>
+                                                            <span class='pmc-status<%# Eval("StatusCss") %>'><%#: Eval("StatusText") %></span></span></span>
+                                                    <span class="pmc-meeting-meta"><span><i class="far fa-calendar"></i> <%#: Eval("DateText") %></span>
+                                                        <span><i class="far fa-clock"></i> <%#: Eval("TimeText") %></span></span>
+                                                </button>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                        <div id="pmcMeetingsEmpty" runat="server" class="pmc-empty" visible="false">Không có cuộc họp phù hợp bộ lọc.</div>
+                                    </div>
+                                    <div class="pmc-page" id="pmcMeetingPager">
+                                        <button id="pmcMeetingPrev" runat="server" type="button" data-pmc-action="meeting-page" aria-label="Trang trước">&#8249;</button>
+                                        <span><asp:Literal ID="litMeetingPageInfo" runat="server" /></span>
+                                        <button id="pmcMeetingNext" runat="server" type="button" data-pmc-action="meeting-page" aria-label="Trang sau">&#8250;</button>
+                                    </div>
                                 </ContentTemplate>
                             </asp:UpdatePanel>
                         </section>
                         <section class="pmc-pane" aria-label="Nhân viên tham gia và giờ công">
-                            <asp:Literal ID="litRosterHeader" runat="server" EnableViewState="false" />
-                            <div class="pmc-roster" id="pmcRoster"><asp:Literal ID="litRoster" runat="server" EnableViewState="false" /></div>
-                            <div class="pmc-page" id="pmcRosterPager"><asp:Literal ID="litRosterPager" runat="server" EnableViewState="false" /></div>
+                            <div class="pmc-right-head"><div><h5><span class="pd-view-object-link pmc-view-current-name" role="link" tabindex="0" data-pd-view-kind="meet" data-pd-view-current="1" data-pd-view-id="" title="Xem chi tiết cuộc họp"><asp:Literal ID="litMeetingName" runat="server" /></span></h5><p><asp:Literal ID="litMeetingTimes" runat="server" /></p></div><span class="pmc-duration"><i class="far fa-clock"></i> <asp:Literal ID="litMeetingDuration" runat="server" /></span></div>
+                            <div class="pmc-roster" id="pmcRoster">
+                                <table class="pmc-table">
+                                    <thead><tr><th>Tên nhân viên</th><th>Trạng thái tham gia</th><th>Công lý thuyết</th><th>Công thực tế</th></tr></thead>
+                                    <tbody>
+                                        <asp:Repeater ID="rptRoster" runat="server" EnableViewState="false">
+                                            <ItemTemplate>
+                                                <tr><td><div class="pmc-staff">
+                                                    <span class="pmc-avatar" style='<%# "background:" + Eval("AvatarColor") + ";" %>' title='<%# EncodeMeetingAttr(Eval("Ten")) %>'>
+                                                        <asp:Image runat="server" ImageUrl='<%# Eval("AvatarUrl") %>' Visible='<%# !string.IsNullOrEmpty(Convert.ToString(Eval("AvatarUrl"))) %>' AlternateText='<%# Eval("Ten") %>' onerror="this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='flex';}" />
+                                                        <span class="pmc-avatar-fallback" style='<%# "display:" + (string.IsNullOrEmpty(Convert.ToString(Eval("AvatarUrl"))) ? "flex" : "none") + ";background:" + Eval("AvatarColor") + ";" %>'><%#: Eval("Initials") %></span>
+                                                    </span>
+                                                    <div class="pmc-staff-name"><b><%#: Eval("Ten") %> <asp:PlaceHolder runat="server" Visible='<%# Eval("ChuTri") %>'><i class="fas fa-crown pmc-host" title="Chủ trì"></i></asp:PlaceHolder></b>
+                                                        <small><%#: Eval("EmailDisplay") %></small></div>
+                                                </div></td><td><span class='<%# Convert.ToBoolean(Eval("ThamGia")) ? "pmc-yes" : "pmc-no" %>'><%# Convert.ToBoolean(Eval("ThamGia")) ? "Có tham gia" : "Không tham gia" %></span></td>
+                                                    <td class="pmc-hour"><%#: Eval("TheoreticalText") %></td><td class="pmc-hour"><%#: Eval("ActualText") %></td></tr>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                        <asp:PlaceHolder ID="phRosterEmpty" runat="server" Visible="false"><tr><td colspan="4" class="pmc-empty"><asp:Literal ID="litRosterEmptyMessage" runat="server" /></td></tr></asp:PlaceHolder>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pmc-page" id="pmcRosterPager">
+                                <button id="pmcRosterPrev" runat="server" type="button" data-pmc-action="roster-page" aria-label="Trang trước">&#8249;</button>
+                                <span><asp:Literal ID="litRosterPageInfo" runat="server" /></span>
+                                <button id="pmcRosterNext" runat="server" type="button" data-pmc-action="roster-page" aria-label="Trang sau">&#8250;</button>
+                            </div>
                         </section>
                     </div>
                 </ContentTemplate>
@@ -320,6 +372,7 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
         var modalId ='<%= ModalClientId %>';
     var selector = { action: 'hfAction', kind: 'hfKind', member: 'hfMember', search: 'hfSearch', state: 'hfState', from: 'hfDateFrom', to: 'hfDateTo', page: 'hfMeetingPage', rosterPage: 'hfRosterPage', meeting: 'hfMeetingId' };
     var busy = false, debounceHandle = null, openRequest = false;
+    var hourFocusId = '';
     var requestKind = '', liveInFlight = false, liveSent = '', liveCompleted = null, liveDraft = null, liveQueued = false, liveComposing = false;
     var pendingFilter = false, pendingSelection = null, pendingPage = null;
     function el(name) { var m = modal(); return m ? m.querySelector('input[id$="' + selector[name] + '"]') : null; }
@@ -514,7 +567,9 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
             if (title) title.textContent = button.getAttribute('data-pd-detail-title') || 'Chi tiết cuộc họp';
             if (sub) sub.textContent = button.getAttribute('data-pd-detail-sub') || 'Danh sách cuộc họp và giờ công của nhân viên tham gia.';
             hideDatePop(); clearLiveTimer(); liveDraft = null; liveCompleted = null; liveInFlight = false; liveQueued = false; pendingSelection = null; pendingPage = null; pendingFilter = false;
-            val('kind', type); val('member', member); val('search', ''); val('state', type === 'pdTeamDetail-meeting' ? 'ended' : 'all'); val('from', ''); val('to', ''); val('page', '1'); val('rosterPage', '1'); val('meeting', ''); openRequest = true; return submit('open');
+            hourFocusId = (button.getAttribute('data-pd-focus-meeting-id') || '').toLowerCase();
+            if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(hourFocusId)) hourFocusId = '';
+            val('kind', type); val('member', member); val('search', ''); val('state', type === 'pdTeamDetail-meeting' ? 'ended' : 'all'); val('from', ''); val('to', ''); val('page', '1'); val('rosterPage', '1'); val('meeting', hourFocusId); openRequest = true; return submit('open');
         }
         // V21: chieu cao hang theo phan dien tich con lai, khong doi kich thuoc popup.
         var pmcLayoutFrame = 0, pmcHostTip = null, pmcHostActive = null, pmcObserver = null;
@@ -614,6 +669,17 @@ body:has(.pmc-popup-modal.show) { overflow:hidden!important; }
             connect(); syncFilters(); pmcUiEnhance();
             if (isOpen || openRequest) { openRequest = false; show(); var n = modal(), body = n ? n.querySelector('.modal-body') : null; if (body) body.scrollTop = 0; window.setTimeout(pmcScheduleFit, 120); } else pmcScheduleFit();
             if (finished === 'filter' || finished === 'open') previewFilter();
+            if (finished === 'open' && hourFocusId) {
+                var focusedId = hourFocusId; hourFocusId = '';
+                window.setTimeout(function () {
+                    var area = root(), row = area && area.querySelector('.pmc-meeting[data-pmc-id="' + focusedId + '"]');
+                    if (!row) return;
+                    var list = row.closest('.pmc-list');
+                    if (list) list.scrollTop += row.getBoundingClientRect().top - list.getBoundingClientRect().top - 12;
+                    row.classList.remove('pmc-focus-flash'); void row.offsetWidth; row.classList.add('pmc-focus-flash');
+                    window.setTimeout(function () { if (row.isConnected) row.classList.remove('pmc-focus-flash'); }, 2000);
+                }, 350);
+            }
         }
         function failed() { busy = false; requestKind = ''; openRequest = false; liveInFlight = false; liveQueued = false; busyIndicator(false); }
         if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager && !window.__pmcEndRequestBound) { window.__pmcEndRequestBound = true; Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function (sender, args) { if (busy && args.get_error()) failed(); }); }

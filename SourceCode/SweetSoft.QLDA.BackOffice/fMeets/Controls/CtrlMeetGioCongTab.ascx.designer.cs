@@ -195,6 +195,42 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.Literal litMeetTime;
 
         /// <summary>
+        /// litActualTimeRange control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litActualTimeRange;
+
+        /// <summary>
+        /// txtMeetStartActual control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtMeetStartActual;
+
+        /// <summary>
+        /// txtMeetEndActual control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtMeetEndActual;
+
+        /// <summary>
+        /// btnSaveMeetTimes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnSaveMeetTimes;
+
+        /// <summary>
         /// litDuration control.
         /// </summary>
         /// <remarks>
@@ -202,6 +238,24 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litDuration;
+
+        /// <summary>
+        /// divLaborConfirm control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divLaborConfirm;
+
+        /// <summary>
+        /// litLaborConfirm control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litLaborConfirm;
 
         /// <summary>
         /// hfSelectedMeetId control.
@@ -285,6 +339,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.Literal litLaborPager;
 
         /// <summary>
+        /// btnConfirmMeetLabor control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnConfirmMeetLabor;
+
+        /// <summary>
         /// btnSaveLabor control.
         /// </summary>
         /// <remarks>
@@ -301,5 +364,95 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlNoSelected;
+
+        /// <summary>
+        /// mdlEmployeeHours control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlEmployeeHours;
+
+        /// <summary>
+        /// upEmployeeHours control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upEmployeeHours;
+
+        /// <summary>
+        /// hfEmployeeHoursMeetId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfEmployeeHoursMeetId;
+
+        /// <summary>
+        /// hfEmployeeHoursUserId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfEmployeeHoursUserId;
+
+        /// <summary>
+        /// litEmployeeHoursName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litEmployeeHoursName;
+
+        /// <summary>
+        /// litEmployeeHoursMeetingTime control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litEmployeeHoursMeetingTime;
+
+        /// <summary>
+        /// txtEmployeeHoursIn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEmployeeHoursIn;
+
+        /// <summary>
+        /// txtEmployeeHoursOut control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEmployeeHoursOut;
+
+        /// <summary>
+        /// lblEmployeeHoursError control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEmployeeHoursError;
+
+        /// <summary>
+        /// btnSaveEmployeeHours control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnSaveEmployeeHours;
     }
 }

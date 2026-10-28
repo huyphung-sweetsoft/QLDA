@@ -19,6 +19,18 @@
     .meet-view-summary-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px; min-width: 0; margin-top: 8px; }
     .meet-view-location { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: #475569; font-size: 12px; line-height: 1.4; }
     .meet-view-meta-divider { width: 1px; height: 15px; flex: 0 0 1px; background: #e0e6ef; }
+    .meet-view-time-pair { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px; }
+    .meet-view-time-block { display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 10px;border:1px solid #e0e7f1;border-radius:9px;background:#fafbff; }
+    .meet-view-time-block.is-actual { border-color:#e2d5f4;background:#fbf8ff; }
+    .meet-view-time-caption { display:flex;align-items:center;gap:6px;color:#718096;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.02em; }
+    .meet-view-time-block.is-actual .meet-view-time-caption { color:#7246a5; }
+    .meet-view-time-block .meet-view-time-inline { font-size:12px;min-width:0; }
+    .meet-view-time-missing { color:#94a3b8;font-size:12px;font-weight:650; }
+    .meet-view-labor-footnote { justify-content:space-between; }
+    .meet-view-labor-note { display:inline-flex;align-items:center;gap:5px;min-width:0; }
+    .meet-view-labor-detail-btn { display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;padding:6px 10px;border:1px solid #d4c2ea;border-radius:7px;background:#f7f2ff;color:#54218d;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer; }
+    .meet-view-labor-detail-btn:hover { background:#ece2fc;border-color:#bfa1e0; }
+
     .meet-view-time-inline { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 7px; min-width: 0; color: #334155; font-size: 12.5px; font-weight: 750; line-height: 1.4; font-variant-numeric: tabular-nums; }
     .meet-view-time-inline i { color: #64748b; font-size: 13px; }
     .meet-view-time-dot { color: #64748b; padding: 0 2px; font-weight: 700; }
@@ -83,7 +95,7 @@
     @media (max-width: 1240px) { .meet-view-layout { grid-template-columns: 1fr; } .meet-view-content-body { min-height: 160px; } }
     @media (max-width: 900px) { .meet-view-labor-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); } .meet-view-labor-table { min-width: 580px; } }
     @media (max-height: 760px) and (min-width: 1201px) { #<%= mdlMeetView.ClientID %> .modal-body { padding-top: 12px; padding-bottom: 9px; max-height: calc(100dvh - 110px); } .meet-view-summary-card { min-height: 0; } .meet-view-labor-table tbody td { padding-top: 8px; padding-bottom: 8px; height: 54px; } .meet-view-labor-stat { padding-top: 5px; padding-bottom: 5px; } .meet-view-labor-overview { margin-bottom: 7px; } }
-    @media (max-width: 767.98px) { .meet-view-meta-divider { display: none; } #<%= mdlMeetView.ClientID %> .modal-dialog { width: calc(100% - 16px) !important; } #<%= mdlMeetView.ClientID %> .modal-body { padding: 12px 14px 10px; } .meet-view-layout { grid-template-columns: 1fr; } .meet-view-summary-main { flex-direction: column; } .meet-view-labor-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 767.98px) { .meet-view-time-pair { grid-template-columns:1fr; } .meet-view-labor-footnote { align-items:flex-start;flex-wrap:wrap; } .meet-view-meta-divider { display: none; } #<%= mdlMeetView.ClientID %> .modal-dialog { width: calc(100% - 16px) !important; } #<%= mdlMeetView.ClientID %> .modal-body { padding: 12px 14px 10px; } .meet-view-layout { grid-template-columns: 1fr; } .meet-view-summary-main { flex-direction: column; } .meet-view-labor-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 <script type="text/javascript">
     window.SweetMeetViewLaborPager = window.SweetMeetViewLaborPager || {
@@ -91,6 +103,30 @@
         showPage: function (element, page) { var root = this.findRoot(element); if (!root) return false; var total = parseInt(root.getAttribute('data-total-pages') || '1', 10); if (isNaN(total) || total < 1) total = 1; if (page < 1) page = 1; if (page > total) page = total; root.setAttribute('data-current-page', page.toString()); var rows = root.querySelectorAll('tr[data-labor-page]'); for (var i = 0; i < rows.length; i++) rows[i].style.display = rows[i].getAttribute('data-labor-page') === page.toString() ? '' : 'none'; var buttons = root.querySelectorAll('.meet-view-labor-page-btn[data-page]'); for (var j = 0; j < buttons.length; j++) { var active = buttons[j].getAttribute('data-page') === page.toString(); if (active) buttons[j].classList.add('is-active'); else buttons[j].classList.remove('is-active'); } var prev = root.querySelector('.meet-view-labor-page-btn.prev'); var next = root.querySelector('.meet-view-labor-page-btn.next'); if (prev) prev.disabled = page <= 1; if (next) next.disabled = page >= total; var status = root.querySelector('.meet-view-labor-page-status'); if (status) status.innerHTML = page + ' / ' + total; return false; },
         move: function (element, delta) { var root = this.findRoot(element); if (!root) return false; var current = parseInt(root.getAttribute('data-current-page') || '1', 10); if (isNaN(current) || current < 1) current = 1; return this.showPage(root, current + delta); }
     };
+</script>
+<script type="text/javascript">
+    (function () {
+        if (window.SweetMeetViewNavigate) return;
+        window.SweetMeetViewNavigate = {
+            go: function (meetId) {
+                if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(meetId || '')) return false;
+                if (!window.SweetMeetCalendar || !window.QLDAMeetingLaborTab || typeof window.QLDAMeetingLaborTab.focusMeeting !== 'function') return false;
+                var el = document.getElementById('<%= mdlMeetView.ClientID %>');
+            var finished = false;
+            function proceed() { if (finished) return; finished = true; window.QLDAMeetingLaborTab.focusMeeting(meetId); }
+            if (!el) { proceed(); return false; }
+            el.addEventListener('hidden.bs.modal', proceed, { once: true });
+            var hidden = false;
+            try {
+                if (window.bootstrap && bootstrap.Modal) { var instance = bootstrap.Modal.getInstance ? bootstrap.Modal.getInstance(el) : null; if (instance) { instance.hide(); hidden = true; } }
+                if (!hidden && window.jQuery && jQuery.fn && typeof jQuery.fn.modal === 'function') { jQuery(el).modal('hide'); hidden = true; }
+            } catch (ignore) { }
+            if (!hidden) { var close = el.querySelector('[data-bs-dismiss="modal"],[data-dismiss="modal"],.modal-header .btn-close,.modal-header .close'); if (close) { close.click(); hidden = true; } }
+            if (hidden) window.setTimeout(proceed, 420);
+            return false;
+        }
+        };
+    })();
 </script>
 <SweetSoft:ExtraModal runat="server" ID="mdlMeetView" Type="Primary" Title="Thông tin cuộc họp">
     <ContentTemplate>
@@ -109,8 +145,10 @@
                                 </div>
                                 <div class="meet-view-summary-meta">
                                     <div class="meet-view-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><asp:Literal runat="server" ID="lblMeetRoom"></asp:Literal></div>
-                                    <span class="meet-view-meta-divider" aria-hidden="true"></span>
-                                    <div class="meet-view-time-inline"><i class="far fa-clock" aria-hidden="true"></i><asp:Literal runat="server" ID="lblMeetStart"></asp:Literal></div>
+                                </div>
+                                <div class="meet-view-time-pair" aria-label="Thời gian dự kiến và thực tế của cuộc họp">
+                                    <div class="meet-view-time-block"><span class="meet-view-time-caption"><i class="far fa-calendar-alt" aria-hidden="true"></i> Dự kiến</span><div class="meet-view-time-inline"><asp:Literal runat="server" ID="lblMeetStart"></asp:Literal></div></div>
+                                    <div class="meet-view-time-block is-actual"><span class="meet-view-time-caption"><i class="far fa-check-circle" aria-hidden="true"></i> Thực tế</span><div class="meet-view-time-inline"><asp:Literal runat="server" ID="lblMeetActual"></asp:Literal></div></div>
                                 </div>
                             </div>
 

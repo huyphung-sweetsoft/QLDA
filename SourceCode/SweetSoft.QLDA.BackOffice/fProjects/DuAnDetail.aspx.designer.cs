@@ -537,6 +537,33 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChiTietCongCuocHop CtrlChiTietCongCuocHop1;
 
         /// <summary>
+        /// hfPdViewObjectKind control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfPdViewObjectKind;
+
+        /// <summary>
+        /// hfPdViewObjectId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfPdViewObjectId;
+
+        /// <summary>
+        /// btnPdViewObject control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnPdViewObject;
+
+        /// <summary>
         /// mdlStatusChange control.
         /// </summary>
         /// <remarks>

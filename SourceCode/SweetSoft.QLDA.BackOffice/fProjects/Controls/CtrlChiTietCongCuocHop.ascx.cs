@@ -5,9 +5,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -50,16 +51,21 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             return null;
         }
 
-        private sealed class CuocHopRow
+        public sealed class CuocHopRow
         {
             public Guid Id { get; set; }
             public string Ten { get; set; }
             public DateTime BatDau { get; set; }
             public DateTime KetThuc { get; set; }
             public bool LaChuTri { get; set; }
+            public string SelectedCss { get; set; }
+            public string StatusCss { get; set; }
+            public string StatusText { get; set; }
+            public string DateText { get; set; }
+            public string TimeText { get; set; }
         }
 
-        private sealed class NhanVienRow
+        public sealed class NhanVienRow
         {
             public Guid IdNhanVien { get; set; }
             public string Ten { get; set; }
@@ -68,8 +74,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             public bool ChuTri { get; set; }
             public bool ThamGia { get; set; }
             public decimal? GioThucTe { get; set; }
+            public string AvatarUrl { get; set; }
+            public string AvatarColor { get; set; }
+            public string Initials { get; set; }
+            public string EmailDisplay { get; set; }
+            public string TheoreticalText { get; set; }
+            public string ActualText { get; set; }
         }
 
+        protected static string EncodeMeetingAttr(object value) { return HttpUtility.HtmlAttributeEncode(Convert.ToString(value) ?? string.Empty).Replace("'", "&#39;"); }
         private static string Enc(string value) { return HttpUtility.HtmlEncode(value ?? string.Empty); }
         private static string Attr(string value) { return HttpUtility.HtmlAttributeEncode(value ?? string.Empty).Replace("'", "&#39;"); }
         private static string Gio(decimal value) { return value.ToString("0.##", Vi) + " giờ"; }
@@ -142,14 +155,55 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 ? (DateTime?)result.Date : null;
         }
 
+        // Các Repeaters/HTML controls khai báo trong .ascx; không ghép chuỗi HTML ở đây.
+        // Tìm theo ID để không buộc dự án phải tạo lại .designer.cs khi merge.
+        private static T Ui<T>(Control root, string id) where T : Control
+        {
+            if (root == null) return null;
+            if (root.ID == id) return root as T;
+            foreach (Control child in root.Controls)
+            {
+                T found = Ui<T>(child, id);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        private void SetPager(string prefix, int total, int current, int size)
+        {
+            int pages = Math.Max(1, (total + size - 1) / size);
+            var prev = Ui<HtmlButton>(upMeeting, prefix + "Prev");
+            var next = Ui<HtmlButton>(upMeeting, prefix + "Next");
+            var text = Ui<Literal>(upMeeting, "lit" + (prefix == "pmcMeeting" ? "Meeting" : "Roster") + "PageInfo");
+            if (prev != null) { prev.Disabled = total == 0 || current <= 1; prev.Attributes["data-pmc-page"] = Math.Max(1, current - 1).ToString(Vi); }
+            if (next != null) { next.Disabled = total == 0 || current >= pages; next.Attributes["data-pmc-page"] = Math.Min(pages, current + 1).ToString(Vi); }
+            if (text != null) text.Text = total == 0 ? "0 / 0" : ((current - 1) * size + 1).ToString(Vi) + "–" + Math.Min(total, current * size).ToString(Vi) + " / " + total.ToString(Vi);
+        }
+
+        private void SetRosterEmpty(string title, string message)
+        {
+            var name = Ui<Literal>(upMeeting, "litMeetingName");
+            if (name != null) name.Text = Enc(title);
+            var time = Ui<Literal>(upMeeting, "litMeetingTimes");
+            if (time != null) time.Text = string.Empty;
+            var duration = Ui<Literal>(upMeeting, "litMeetingDuration");
+            if (duration != null) duration.Text = string.Empty;
+            var roster = Ui<Repeater>(upMeeting, "rptRoster");
+            if (roster != null) { roster.DataSource = new NhanVienRow[0]; roster.DataBind(); }
+            var empty = Ui<PlaceHolder>(upMeeting, "phRosterEmpty");
+            if (empty != null) empty.Visible = true;
+            var msg = Ui<Literal>(upMeeting, "litRosterEmptyMessage");
+            if (msg != null) msg.Text = Enc(message);
+            SetPager("pmcRoster", 0, 1, SoNhanVienMoiTrang);
+        }
+
         private void SetEmpty(string message)
         {
             litCount.Text = "0";
-            litMeetings.Text = "<div class='pmc-empty'>" + Enc(message) + "</div>";
-            litMeetingPager.Text = string.Empty;
-            litRosterHeader.Text = "<div class='pmc-right-head'><h5>Chi tiết giờ công</h5></div>";
-            litRoster.Text = "<div class='pmc-empty'>Không có dữ liệu hiển thị.</div>";
-            litRosterPager.Text = string.Empty;
+            RenderMeetingList(new List<CuocHopRow>(), 0, 1, Guid.Empty);
+            var empty = Ui<HtmlGenericControl>(upMeeting, "pmcMeetingsEmpty");
+            if (empty != null) empty.InnerText = message;
+            SetRosterEmpty("Chi tiết giờ công", "Không có dữ liệu hiển thị.");
             upMeeting.Update();
         }
 
@@ -184,6 +238,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             DateTime? to = ParseDate(hfDateTo.Value);
             int page = PageNumber(hfMeetingPage.Value);
             int rosterPage = PageNumber(hfRosterPage.Value);
+            Guid requestedMeeting = Guid.Empty;
+            if (action == "open") Guid.TryParse(hfMeetingId.Value, out requestedMeeting);
             if (action == "open" || action == "filter") { page = 1; rosterPage = 1; }
             if (action == "page" || action == "select") rosterPage = 1;
 
@@ -193,6 +249,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 {
                     connection.Open();
                     int total = CountMeetings(connection, member, term, filter, from, to);
+                    if (action == "open" && requestedMeeting != Guid.Empty)
+                        page = FindMeetingPage(connection, member, term, filter, from, to, requestedMeeting);
                     int pages = Math.Max(1, (total + SoCuocHopMoiTrang - 1) / SoCuocHopMoiTrang);
                     page = Math.Min(page, pages);
                     List<CuocHopRow> meetings = LoadMeetingPage(connection, member, term, filter, from, to, page);
@@ -214,7 +272,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
                     Guid selected;
                     bool samePage = Guid.TryParse(hfMeetingId.Value, out selected) && meetings.Any(m => m.Id == selected);
-                    if (!samePage || action == "open" || action == "filter" || action == "page")
+                    if (action == "open" && requestedMeeting != Guid.Empty && meetings.Any(m => m.Id == requestedMeeting))
+                        selected = requestedMeeting;
+                    else if (!samePage || action == "open" || action == "filter" || action == "page")
                         selected = meetings.Count > 0 ? meetings[0].Id : Guid.Empty;
 
                     hfMeetingPage.Value = page.ToString(CultureInfo.InvariantCulture);
@@ -228,9 +288,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     }
                     else
                     {
-                        litRosterHeader.Text = "<div class='pmc-right-head'><h5>Chưa chọn cuộc họp</h5></div>";
-                        litRoster.Text = "<div class='pmc-empty'>Không tìm thấy cuộc họp phù hợp.</div>";
-                        litRosterPager.Text = string.Empty;
+                        SetRosterEmpty("Chưa chọn cuộc họp", "Không tìm thấy cuộc họp phù hợp.");
                     }
                 }
             }
@@ -269,6 +327,23 @@ AND (@DateTo IS NULL OR m.ThoiGianBatDau<DATEADD(day,1,@DateTo))";
             pFrom.Value = (object)from ?? DBNull.Value;
             SqlParameter pTo = cmd.Parameters.Add("@DateTo", SqlDbType.DateTime);
             pTo.Value = (object)to ?? DBNull.Value;
+        }
+
+        // Chỉ tìm trang chứa cuộc họp trong tập đã kiểm tra quyền @ProjectId + @UserId.
+        private int FindMeetingPage(SqlConnection connection, Guid member, string search, string filter, DateTime? from, DateTime? to, Guid meetingId)
+        {
+            if (meetingId == Guid.Empty) return 1;
+            string sql = @"WITH TargetList AS (
+SELECT m.IdLichHop,ROW_NUMBER() OVER (ORDER BY CASE WHEN m.ThoiGianKetThuc>GETDATE() THEN 0 ELSE 1 END ASC,m.ThoiGianBatDau DESC,m.IdLichHop DESC) AS Stt"
+                + MeetingWhere + @") SELECT Stt FROM TargetList WHERE IdLichHop=@TargetMeeting;";
+            using (var command = new SqlCommand(sql, connection))
+            {
+                AddMeetingParameters(command, member, search, filter, from, to);
+                command.Parameters.Add("@TargetMeeting", SqlDbType.UniqueIdentifier).Value = meetingId;
+                object value = command.ExecuteScalar();
+                return value == null || value == DBNull.Value ? 1
+                    : Math.Max(1, (Convert.ToInt32(value, CultureInfo.InvariantCulture) - 1) / SoCuocHopMoiTrang + 1);
+            }
         }
 
         private int CountMeetings(SqlConnection connection, Guid member, string search, string filter, DateTime? from, DateTime? to)
@@ -318,26 +393,22 @@ SELECT IdLichHop,TenCuocHop,ThoiGianBatDau,ThoiGianKetThuc,LaChuTri FROM DuLieu 
         private void RenderMeetingList(List<CuocHopRow> meetings, int count, int page, Guid selected)
         {
             litCount.Text = count.ToString(Vi);
-            var sb = new StringBuilder();
             DateTime now = DateTime.Now;
             foreach (CuocHopRow meeting in meetings)
             {
                 string cls;
-                string state = MeetingState(meeting, now, out cls);
-                decimal duration = Math.Max(0m, (decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes / 60m);
-                sb.Append("<button type='button' class='pmc-meeting").Append(meeting.Id == selected ? " is-selected" : string.Empty)
-                    .Append("' data-pmc-action='select' data-pmc-id='").Append(meeting.Id.ToString("D")).Append("'>")
-                    .Append("<span class='pmc-meeting-top'><span class='pmc-meeting-name'>").Append(Enc(meeting.Ten)).Append("</span><span class='pmc-meeting-tags'>");
-                if (meeting.LaChuTri)
-                    sb.Append("<span class='pmc-host-chip' title='Bạn chủ trì'><i class='fas fa-crown'></i></span>");
-                sb.Append("<span class='pmc-status").Append(cls).Append("'>").Append(state).Append("</span></span></span>")
-                    .Append("<span class='pmc-meeting-meta'><span><i class='far fa-calendar'></i> ")
-                    .Append(meeting.BatDau.ToString("dd/MM/yyyy", Vi)).Append("</span><span><i class='far fa-clock'></i> ")
-                    .Append(meeting.BatDau.ToString("HH:mm", Vi)).Append(" – ").Append(meeting.KetThuc.ToString("HH:mm", Vi))
-                    .Append(" (").Append(Gio(duration)).Append(")</span></span></button>");
+                meeting.StatusText = MeetingState(meeting, now, out cls);
+                meeting.StatusCss = cls;
+                meeting.SelectedCss = meeting.Id == selected ? " is-selected" : string.Empty;
+                meeting.DateText = meeting.BatDau.ToString("dd/MM/yyyy", Vi);
+                decimal hours = Math.Max(0m, (decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes / 60m);
+                meeting.TimeText = meeting.BatDau.ToString("HH:mm", Vi) + " – " + meeting.KetThuc.ToString("HH:mm", Vi) + " (" + Gio(hours) + ")";
             }
-            litMeetings.Text = sb.Length > 0 ? sb.ToString() : "<div class='pmc-empty'>Không có cuộc họp phù hợp bộ lọc.</div>";
-            litMeetingPager.Text = BuildPager(count, page, SoCuocHopMoiTrang, "meeting-page");
+            Repeater list = Ui<Repeater>(upMeeting, "rptMeetings");
+            if (list != null) { list.DataSource = meetings; list.DataBind(); }
+            var empty = Ui<HtmlGenericControl>(upMeeting, "pmcMeetingsEmpty");
+            if (empty != null) { empty.Visible = meetings.Count == 0; empty.InnerText = "Không có cuộc họp phù hợp bộ lọc."; }
+            SetPager("pmcMeeting", count, page, SoCuocHopMoiTrang);
         }
 
         private const string RosterCte = @"WITH DanhSach AS (
@@ -349,7 +420,7 @@ COALESCE(NULLIF(LTRIM(RTRIM(u.DisplayName)),N''),NULLIF(LTRIM(RTRIM(u.UserName))
 COALESCE(NULLIF(LTRIM(RTRIM(mu.Email)),N''),N'') AS Email,
 COALESCE(NULLIF(LTRIM(RTRIM(u.Avatar)),N''),N'') AS Avatar,
 CASE WHEN d.IdNhanVien=m.IdNguoiTao THEN 1 ELSE 0 END AS LaChuTri,
-ISNULL(CAST(g.DaThamGiaOverride AS INT),ISNULL((SELECT MAX(CAST(ISNULL(nv.XacNhanThamGia,0) AS INT)) FROM dbo.TblLichHop_NhanVien nv WHERE nv.IdLichHop=@MeetingId AND nv.IdNhanVien=d.IdNhanVien),0)) AS XacNhanThamGia,
+ISNULL(CAST(g.DaThamGia AS INT),ISNULL((SELECT MAX(CAST(ISNULL(nv.XacNhanThamGia,0) AS INT)) FROM dbo.TblLichHop_NhanVien nv WHERE nv.IdLichHop=@MeetingId AND nv.IdNhanVien=d.IdNhanVien),0)) AS XacNhanThamGia,
 g.SoGioThucTe
 FROM DanhSach d CROSS JOIN dbo.TblLichHop m
 LEFT JOIN dbo.aspnet_Users u ON u.UserId=d.IdNhanVien
@@ -416,25 +487,6 @@ WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
             return colors[index];
         }
 
-        private string BuildStaffAvatarHtml(NhanVienRow row)
-        {
-            string color = GetAvatarColor(row.IdNhanVien, row.Ten);
-            string initials = Enc(GetInitials(row.Ten));
-            string name = Attr(row.Ten);
-            string url = ResolveAvatarUrl(row.Avatar);
-            var sb = new StringBuilder();
-            sb.Append("<span class='pmc-avatar' style='background:").Append(color).Append(";' title='").Append(name).Append("'>");
-            if (!string.IsNullOrWhiteSpace(url))
-            {
-                sb.Append("<img src='").Append(Attr(url)).Append("' alt='").Append(name)
-                    .Append("' loading='lazy' onerror=\"this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='flex';}\" />");
-            }
-            sb.Append("<span class='pmc-avatar-fallback' style='")
-                .Append(!string.IsNullOrWhiteSpace(url) ? "display:none;" : "display:flex;")
-                .Append("background:").Append(color).Append(";'>").Append(initials).Append("</span></span>");
-            return sb.ToString();
-        }
-
         private void RenderRoster(SqlConnection conn, CuocHopRow meeting, int requestedPage)
         {
             int count = CountRoster(conn, meeting.Id);
@@ -442,48 +494,27 @@ WHERE Stt>@Offset AND Stt<=@Limit ORDER BY Stt;";
             hfRosterPage.Value = page.ToString(CultureInfo.InvariantCulture);
             List<NhanVienRow> staff = LoadRoster(conn, meeting.Id, page);
             decimal duration = Math.Max(0m, (decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes / 60m);
-
-            var h = new StringBuilder();
-            h.Append("<div class='pmc-right-head'><div><h5>").Append(Enc(meeting.Ten)).Append("</h5><p>")
-                .Append(meeting.BatDau.ToString("dd/MM/yyyy", Vi)).Append(" · ")
-                .Append(meeting.BatDau.ToString("HH:mm", Vi)).Append(" – ").Append(meeting.KetThuc.ToString("HH:mm", Vi))
-                .Append("</p></div><span class='pmc-duration'><i class='far fa-clock'></i> ")
-                .Append(((decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes).ToString("0.##", Vi))
-                .Append(" phút = ").Append(Gio(duration)).Append("</span></div>");
-            litRosterHeader.Text = h.ToString();
-
-            var sb = new StringBuilder();
-            sb.Append("<table class='pmc-table'><thead><tr><th>Tên nhân viên</th><th>Trạng thái tham gia</th><th>Công lý thuyết</th><th>Công thực tế</th></tr></thead><tbody>");
+            var name = Ui<Literal>(upMeeting, "litMeetingName");
+            if (name != null) name.Text = Enc(meeting.Ten);
+            var times = Ui<Literal>(upMeeting, "litMeetingTimes");
+            if (times != null) times.Text = meeting.BatDau.ToString("dd/MM/yyyy", Vi) + " · " + meeting.BatDau.ToString("HH:mm", Vi) + " – " + meeting.KetThuc.ToString("HH:mm", Vi);
+            var hours = Ui<Literal>(upMeeting, "litMeetingDuration");
+            if (hours != null) hours.Text = ((decimal)(meeting.KetThuc - meeting.BatDau).TotalMinutes).ToString("0.##", Vi) + " phút = " + Gio(duration);
             foreach (NhanVienRow row in staff)
             {
+                row.AvatarColor = GetAvatarColor(row.IdNhanVien, row.Ten);
+                row.AvatarUrl = ResolveAvatarUrl(row.Avatar);
+                row.Initials = GetInitials(row.Ten);
+                row.EmailDisplay = string.IsNullOrWhiteSpace(row.Email) ? "Chưa cập nhật email" : row.Email;
                 decimal theoretical = row.ThamGia ? duration : 0m;
-                string actual = row.GioThucTe.HasValue ? Gio(row.GioThucTe.Value) : Gio(row.ThamGia ? theoretical : 0m);
-                sb.Append("<tr><td><div class='pmc-staff'>")
-                    .Append(BuildStaffAvatarHtml(row))
-                    .Append("<div class='pmc-staff-name'><b>").Append(Enc(row.Ten));
-                if (row.ChuTri) sb.Append(" <i class='fas fa-crown pmc-host' title='Chủ trì'></i>");
-                sb.Append("</b><small>").Append(Enc(string.IsNullOrWhiteSpace(row.Email) ? "Chưa cập nhật email" : row.Email))
-                    .Append("</small></div></div></td><td><span class='").Append(row.ThamGia ? "pmc-yes'>Có tham gia" : "pmc-no'>Không tham gia")
-                    .Append("</span></td><td class='pmc-hour'>").Append(Gio(theoretical))
-                    .Append("</td><td class='pmc-hour'>").Append(Enc(actual)).Append("</td></tr>");
+                row.TheoreticalText = Gio(theoretical);
+                row.ActualText = row.GioThucTe.HasValue ? Gio(row.GioThucTe.Value) : Gio(theoretical);
             }
-            if (staff.Count == 0) sb.Append("<tr><td colspan='4' class='pmc-empty'>Chưa có nhân viên trong cuộc họp này.</td></tr>");
-            sb.Append("</tbody></table>");
-            litRoster.Text = sb.ToString();
-            litRosterPager.Text = BuildPager(count, page, SoNhanVienMoiTrang, "roster-page");
-        }
-
-        private static string BuildPager(int total, int current, int size, string action)
-        {
-            if (total <= 0) return "<span>0 / 0</span>";
-            int pages = Math.Max(1, (total + size - 1) / size);
-            var sb = new StringBuilder();
-            sb.Append("<button type='button' data-pmc-action='").Append(action).Append("' data-pmc-page='").Append(Math.Max(1, current - 1))
-                .Append("' aria-label='Trang trước' ").Append(current <= 1 ? "disabled" : string.Empty).Append(">&#8249;</button>")
-                .Append("<span>").Append((current - 1) * size + 1).Append("–").Append(Math.Min(total, current * size)).Append(" / ").Append(total).Append("</span>")
-                .Append("<button type='button' data-pmc-action='").Append(action).Append("' data-pmc-page='").Append(Math.Min(pages, current + 1))
-                .Append("' aria-label='Trang sau' ").Append(current >= pages ? "disabled" : string.Empty).Append(">&#8250;</button>");
-            return sb.ToString();
+            var roster = Ui<Repeater>(upMeeting, "rptRoster");
+            if (roster != null) { roster.DataSource = staff; roster.DataBind(); }
+            var empty = Ui<PlaceHolder>(upMeeting, "phRosterEmpty");
+            if (empty != null) empty.Visible = staff.Count == 0;
+            SetPager("pmcRoster", count, page, SoNhanVienMoiTrang);
         }
     }
 }

@@ -41,11 +41,41 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             lblMeetName.Text = HtmlEncodeValue(meet.TenCuocHop);
             lblMeetRoom.Text = HtmlEncodeValue(meet.DiaDiemHop);
             lblMeetStart.Text = FormatMeetInterval(meet.ThoiGianBatDau, meet.ThoiGianKetThuc);
+            try { SetLiteralText("lblMeetActual", ReadActualMeetInterval(meet.IdLichHop)); }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("CtrlViewMeetDetail.ReadActualMeetInterval: " + ex); SetLiteralText("lblMeetActual", "<span class='meet-view-time-missing'>Chưa thể đọc giờ thực tế</span>"); }
             lblMeetStatus.Text = GetStatusHtml(meet.TrangThai);
             ltrMeetContent.Text = ToDisplayHtml(meet.NoiDungCuocHop);
 
             BindParticipants(meet.IdLichHop);
             BindMeetingLabor(meet);
+        }
+
+        private static string ReadActualMeetInterval(Guid meetId)
+        {
+            ConnectionStringSettings settings = ConfigurationManager.ConnectionStrings["SweetSoft.QLDA.BackOffice"];
+            if (settings == null || string.IsNullOrWhiteSpace(settings.ConnectionString))
+            {
+                foreach (ConnectionStringSettings candidate in ConfigurationManager.ConnectionStrings)
+                    if (candidate != null && !string.IsNullOrWhiteSpace(candidate.ConnectionString) && candidate.ConnectionString.IndexOf("SweetSoft_QLDA", StringComparison.OrdinalIgnoreCase) >= 0)
+                    { settings = candidate; break; }
+            }
+            if (settings == null || string.IsNullOrWhiteSpace(settings.ConnectionString))
+                return "<span class='meet-view-time-missing'>Chưa ghi nhận</span>";
+            using (SqlConnection sql = new SqlConnection(settings.ConnectionString))
+            using (SqlCommand command = new SqlCommand(@"SELECT ThoiGianBatDauThucTe,ThoiGianKetThucThucTe FROM dbo.TblLichHop WHERE IdLichHop=@IdLichHop AND ISNULL(DaXoa,0)=0", sql))
+            {
+                command.Parameters.Add("@IdLichHop", SqlDbType.UniqueIdentifier).Value = meetId;
+                sql.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read() && !reader.IsDBNull(0) && !reader.IsDBNull(1))
+                    {
+                        DateTime start = reader.GetDateTime(0), end = reader.GetDateTime(1);
+                        if (end > start) return FormatMeetInterval(start, end);
+                    }
+                }
+            }
+            return "<span class='meet-view-time-missing'>Chưa ghi nhận</span>";
         }
 
         private void BindParticipants(Guid meetId)
@@ -127,9 +157,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             try
             {
                 List<MeetLaborRow> roster = GetMeetingLaborRows(meet.IdLichHop);
-                decimal duration = Math.Round((decimal)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes / 60m,
-                    2, MidpointRounding.AwayFromZero);
-                output.Text = BuildMeetLaborHtml(roster, duration);
+                decimal duration = GetEffectiveMeetingDuration(meet);
+                output.Text = BuildMeetLaborHtml(roster, duration, meet.IdLichHop);
             }
             catch (Exception exception)
             {
@@ -179,8 +208,33 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             public decimal? SoGioThucTe { get; set; }
         }
 
+        // Thu tu uu tien: gio ca nhan vao/ra > so gio PM nhap tay > gio hop thuc te > gio du kien.
+        private static decimal GetEffectiveMeetingDuration(TblLichHop meet)
+        {
+            ConnectionStringSettings settings = ConfigurationManager.ConnectionStrings["SweetSoft.QLDA.BackOffice"];
+            if (settings == null || string.IsNullOrWhiteSpace(settings.ConnectionString))
+                return Math.Round((decimal)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes / 60m, 2);
+            using (SqlConnection connection = new SqlConnection(settings.ConnectionString))
+            using (SqlCommand command = new SqlCommand(@"
+SELECT ThoiGianBatDauThucTe, ThoiGianKetThucThucTe
+FROM dbo.TblLichHop WHERE IdLichHop=@IdLichHop", connection))
+            {
+                command.Parameters.Add("@IdLichHop", SqlDbType.UniqueIdentifier).Value = meet.IdLichHop;
+                connection.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read() && !reader.IsDBNull(0) && !reader.IsDBNull(1))
+                    {
+                        DateTime start = reader.GetDateTime(0), end = reader.GetDateTime(1);
+                        if (end > start) return Math.Round((decimal)(end - start).TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero);
+                    }
+                }
+            }
+            return Math.Round((decimal)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero);
+        }
+
         // Cùng nguồn dữ liệu và thứ tự ưu tiên với CtrlMeetGioCongTab / CtrlChiTietCongCuocHop:
-        // DaThamGiaOverride của PM > XacNhanThamGia gốc. Chủ trì không bị bỏ sót.
+        // DaThamGia của PM > XacNhanThamGia gốc. Chủ trì không bị bỏ sót.
         private static List<MeetLaborRow> GetMeetingLaborRows(Guid meetId)
         {
             const string query = @"
@@ -196,11 +250,20 @@ SELECT d.IdNhanVien,
              NULLIF(LTRIM(RTRIM(u.UserName)),N''),CONVERT(NVARCHAR(36),d.IdNhanVien)) AS TenNhanVien,
     COALESCE(NULLIF(LTRIM(RTRIM(mu.Email)),N''),N'') AS Email,
     CASE WHEN d.IdNhanVien=m.IdNguoiTao THEN 1 ELSE 0 END AS LaChuTri,
-    ISNULL(CAST(g.DaThamGiaOverride AS INT),
+    ISNULL(CAST(g.DaThamGia AS INT),
            ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia,0) AS INT))
                    FROM dbo.TblLichHop_NhanVien p
                    WHERE p.IdLichHop=@IdLichHop AND p.IdNhanVien=d.IdNhanVien),0)) AS DaThamGia,
-    g.SoGioThucTe
+    CAST(CASE
+        WHEN g.GioVaoThucTe IS NOT NULL AND g.GioRaThucTe > g.GioVaoThucTe
+          THEN ROUND(DATEDIFF(MINUTE,g.GioVaoThucTe,g.GioRaThucTe)/60.0,2)
+        WHEN g.SoGioThucTe IS NOT NULL THEN g.SoGioThucTe
+        ELSE ROUND(DATEDIFF(MINUTE,
+          CASE WHEN m.ThoiGianBatDauThucTe IS NOT NULL AND m.ThoiGianKetThucThucTe>m.ThoiGianBatDauThucTe
+               THEN m.ThoiGianBatDauThucTe ELSE m.ThoiGianBatDau END,
+          CASE WHEN m.ThoiGianBatDauThucTe IS NOT NULL AND m.ThoiGianKetThucThucTe>m.ThoiGianBatDauThucTe
+               THEN m.ThoiGianKetThucThucTe ELSE m.ThoiGianKetThuc END)/60.0,2)
+    END AS DECIMAL(10,2)) AS SoGioThucTe
 FROM DanhSach d
 CROSS JOIN dbo.TblLichHop m
 LEFT JOIN dbo.aspnet_Users u ON u.UserId=d.IdNhanVien
@@ -251,7 +314,7 @@ ORDER BY TenNhanVien, d.IdNhanVien;";
             }
             return rows;
         }
-        private string BuildMeetLaborHtml(List<MeetLaborRow> rows, decimal duration)
+        private string BuildMeetLaborHtml(List<MeetLaborRow> rows, decimal duration, Guid meetId)
         {
             const int pageSize = 5;
             int joined = 0, missing = 0;
@@ -333,10 +396,11 @@ ORDER BY TenNhanVien, d.IdNhanVien;";
                 html.Append(" aria-label='Trang sau'><i class='fas fa-chevron-right'></i></button>")
                     .Append("<span class='meet-view-labor-page-status'>1 / ").Append(totalPages.ToString(CultureInfo.InvariantCulture)).Append("</span></div>");
             }
-            html.Append("<div class='meet-view-labor-footnote'><i class='fas fa-info-circle'></i><span>");
+            html.Append("<div class='meet-view-labor-footnote'><span class='meet-view-labor-note'><i class='fas fa-info-circle'></i><span>");
             if (missing > 0) html.Append("Còn ").Append(missing.ToString(CultureInfo.InvariantCulture)).Append(" người chưa nhập công thực tế; tổng hiện tại chỉ tính phần đã nhập.");
             else html.Append("Dữ liệu đồng bộ với phần Giờ công; chỉnh sửa được thực hiện tại tab Giờ công.");
-            html.Append("</span></div></div>");
+            html.Append("</span></span><button type='button' class='meet-view-labor-detail-btn' onclick=\"return SweetMeetViewNavigate.go('")
+                .Append(meetId.ToString("D")).Append("');\"><i class='fas fa-external-link-alt' aria-hidden='true'></i>Xem chi tiết</button></div></div>");
             return html.ToString();
         }
 

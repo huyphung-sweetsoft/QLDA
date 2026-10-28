@@ -4,9 +4,9 @@
     <ContentTemplate>
         <div class="pd-detail-modal-wrap">
             <div class="pd-detail-modal-heading">
-                <h4 id="pdPersonalDetailTitle" class="pd-detail-modal-title">Chi tiết</h4>
-                <div id="pdPersonalDetailEquation" class="pd-labor-heading-equation" hidden></div>
-                <p id="pdPersonalDetailSub" class="pd-detail-modal-sub">Xem thêm thông tin trong phạm vi dự án hiện tại.</p>
+                <h4 id="<%= EmbeddedInTaskView ? "tvdLaborPersonalDetailTitle" : "pdPersonalDetailTitle" %>" class="pd-detail-modal-title">Chi tiết</h4>
+                <div id="<%= EmbeddedInTaskView ? "tvdLaborPersonalDetailEquation" : "pdPersonalDetailEquation" %>" class="pd-labor-heading-equation" hidden></div>
+                <p id="<%= EmbeddedInTaskView ? "tvdLaborPersonalDetailSub" : "pdPersonalDetailSub" %>" class="pd-detail-modal-sub">Xem thêm thông tin trong phạm vi dự án hiện tại.</p>
             </div>
             <asp:UpdatePanel ID="upDetail" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="true">
                 <ContentTemplate>
@@ -14,7 +14,85 @@
                     <asp:HiddenField ID="hfDetailStaff" runat="server" />
                     <asp:LinkButton ID="btnLoadDetail" runat="server" CausesValidation="false"
                         OnClick="btnLoadDetail_Click" Style="display:none" aria-hidden="true" />
-                    <div id="pdPersonalDetailModalBody"><asp:Literal ID="litDetailHtml" runat="server" EnableViewState="false" /></div>
+                    <div id="<%= EmbeddedInTaskView ? "tvdLaborPersonalDetailModalBody" : "pdPersonalDetailModalBody" %>">
+                        <asp:Panel ID="pnlPdMessage" runat="server" Visible="false" CssClass="pd-personal-empty"><asp:Literal ID="litDetailHtml" runat="server" EnableViewState="false" /></asp:Panel>
+                        <asp:Panel ID="pnlPdOverview" runat="server" CssClass="pd-ds-overview" Visible="false">
+                            <strong>Tổng hợp giờ công: <asp:Literal ID="litPdTeamName" runat="server" /></strong>
+                            <nav class="pd-ds-equation" aria-label="Đi đến bảng giờ công">
+                                <button type="button" class="pd-ds-jump" data-pd-ds-jump="task">Công việc (<asp:Literal ID="litPdJumpTask" runat="server" />)</button>
+                                <span class="pd-ds-equation-sign">+</span>
+                                <button type="button" class="pd-ds-jump" data-pd-ds-jump="meeting">Công họp (<asp:Literal ID="litPdJumpMeeting" runat="server" />)</button>
+                                <span class="pd-ds-equation-sign">+</span>
+                                <button type="button" class="pd-ds-jump" data-pd-ds-jump="issue">Công vấn đề (<asp:Literal ID="litPdJumpIssue" runat="server" />)</button>
+                                <span class="pd-ds-equation-sign">=</span><strong class="pd-ds-equation-total"><asp:Literal ID="litPdJumpTotal" runat="server" /></strong>
+                            </nav>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlPdSummary" runat="server" Visible="false" CssClass="pd-detail-grid">
+                            <asp:Repeater ID="rptPdSummaries" runat="server" EnableViewState="false"><ItemTemplate>
+                                <div class='<%# Convert.ToBoolean(Eval("IsTotal")) ? "pd-summary-row is-total" : "pd-summary-row" %>'><strong><%#: Eval("Name") %></strong><span><%#: Eval("Hours") %></span></div>
+                            </ItemTemplate></asp:Repeater>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlPdIssueCards" runat="server" Visible="false" CssClass="pd-detail-list">
+                            <asp:Repeater ID="rptPdIssueCards" runat="server" EnableViewState="false"><ItemTemplate>
+                                <div class="pd-detail-item"><div class="pd-detail-row"><div class="pd-personal-item-title"><%#: Eval("Name") %></div>
+                                    <div class="pd-personal-meeting-flags"><span class='pd-personal-tag <%# Eval("StatusCss") %>'><%#: Eval("Status") %></span>
+                                        <span class="pd-personal-hours"><i class="far fa-clock"></i><%#: Eval("Hours") %></span></div></div>
+                                    <div class="pd-detail-subrow"><span><i class="far fa-calendar-alt me-1"></i><%#: Eval("Created") %></span></div>
+                                </div>
+                            </ItemTemplate></asp:Repeater>
+                        </asp:Panel>
+                        <asp:Repeater ID="rptPdSections" runat="server" EnableViewState="false">
+                            <ItemTemplate>
+                                <asp:PlaceHolder runat="server" Visible='<%# Eval("ShowTitle") %>'>
+                                    <h5 class='<%# Convert.ToBoolean(Eval("IsTeamSection")) ? "pd-ds-subtitle pd-ds-section-title" : "pd-ds-subtitle" %>' data-pd-detail-section='<%# Eval("Kind") %>'><%#: Eval("Title") %></h5>
+                                </asp:PlaceHolder>
+                                <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsMeeting")) %>'>
+                                    <div class="pd-ds-table-scroller"><table class="pd-ds-table">
+                                        <thead><tr><th>Công việc / Vấn đề</th><th>Tự khai thường (phút)</th><th>Tự khai tăng ca (phút)</th>
+                                            <th>PM chốt thường (phút)</th><th>PM chốt tăng ca (phút)</th><th>Kết quả cuối cùng</th><th>Đối soát</th></tr></thead>
+                                        <tbody>
+                                            <asp:Repeater runat="server" DataSource='<%# Eval("LaborRows") %>' EnableViewState="false"><ItemTemplate>
+                                                <tr data-pd-task-id='<%# Eval("TaskId") %>' data-pd-issue-id='<%# Eval("IssueId") %>'>
+                                                    <td class="pd-ds-name">
+                                                        <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsIssue")) %>'>
+                                                            <button type="button" class="pd-ds-hover-trigger pd-view-object-link" data-pd-view-kind="task" data-pd-view-id='<%# Eval("TaskId") %>' title="Xem chi tiết công việc" aria-label='<%# EncodePdAttr("Xem chi tiết công việc: " + Convert.ToString(Eval("Name"))) %>'>
+                                                                <asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrWhiteSpace(Convert.ToString(Eval("Code"))) %>'><span class="pd-team-record-code"><%#: Convert.ToString(Eval("Code")).Trim().TrimEnd('.') %>.</span> </asp:PlaceHolder><%#: Eval("Name") %>
+                                                            </button>
+                                                            <div class="pd-ds-hover-template" hidden><div class="pd-detail-item">
+                                                                <div class="pd-detail-row"><div class="pd-personal-item-title"><asp:PlaceHolder runat="server" Visible='<%# !string.IsNullOrWhiteSpace(Convert.ToString(Eval("Code"))) %>'><span class="pd-personal-task-code"><%#: Convert.ToString(Eval("Code")).Trim().TrimEnd('.') %>.</span> </asp:PlaceHolder><%#: Eval("Name") %></div>
+                                                                    <div class="pd-personal-meeting-flags"><span class='pd-personal-tag <%# Eval("StatusCss") %>'><%#: Eval("Status") %></span>
+                                                                        <asp:PlaceHolder runat="server" Visible='<%# Eval("LateFinished") %>'><span class="pd-task-late-note">(trễ hạn)</span></asp:PlaceHolder>
+                                                                        <span class="pd-personal-hours"><i class="far fa-clock"></i><%#: Eval("HoursCompact") %></span></div></div>
+                                                                <div class="pd-detail-subrow"><span><i class="far fa-calendar-alt me-1"></i><%#: Eval("DueText") %></span>
+                                                                    <span class="pd-task-percent" data-pd-progress-tooltip='<%# EncodePdAttr(Eval("ProgressTooltip")) %>' data-pd-progress-tone='<%# Eval("BarCss") %>' tabindex="0" aria-label='<%# EncodePdAttr(Eval("ProgressTooltip")) %>'>Tiến độ <%#: Eval("Percent") %>%</span></div>
+                                                                <div class='pd-personal-progress <%# Eval("BarCss") %>' data-pd-progress-tooltip='<%# EncodePdAttr(Eval("ProgressTooltip")) %>' data-pd-progress-tone='<%# Eval("BarCss") %>' tabindex="0" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow='<%# Eval("Percent") %>' aria-label='<%# EncodePdAttr(Eval("ProgressTooltip")) %>'>
+                                                                    <span style='<%# "width:" + Eval("Percent") + "%" %>'></span></div>
+                                                            </div></div>
+                                                        </asp:PlaceHolder>
+                                                        <asp:PlaceHolder runat="server" Visible='<%# Eval("IsIssue") %>'>
+                                                            <%#: Eval("Name") %><small class="pd-ds-link-note">Liên kết công việc bị ảnh hưởng; không phải phiên giờ vấn đề độc lập</small>
+                                                        </asp:PlaceHolder>
+                                                    </td>
+                                                    <td><%#: Eval("SelfRegular") %></td><td><%#: Eval("SelfOvertime") %></td>
+                                                    <td><%#: Eval("ApprovedRegular") %></td><td><%#: Eval("ApprovedOvertime") %></td>
+                                                    <td><strong><%#: Eval("Result") %></strong></td><td><span class="pd-ds-status"><%#: Eval("Approval") %></span></td>
+                                                </tr>
+                                            </ItemTemplate></asp:Repeater>
+                                        </tbody>
+                                    </table></div>
+                                </asp:PlaceHolder>
+                                <asp:PlaceHolder runat="server" Visible='<%# Eval("IsMeeting") %>'>
+                                    <div class="pd-ds-table-scroller"><table class="pd-ds-table"><thead><tr><th>Cuộc họp</th><th>Thời gian</th><th>Thời lượng</th><th>Xác nhận</th><th>Kết quả</th></tr></thead><tbody>
+                                        <asp:Repeater runat="server" DataSource='<%# Eval("MeetingRows") %>' EnableViewState="false"><ItemTemplate>
+                                            <tr><td><button type="button" class="pd-view-object-link" data-pd-view-kind="meet" data-pd-view-id='<%# Eval("MeetId") %>' title="Xem chi tiết cuộc họp"><%#: Eval("Name") %></button></td><td><%#: Eval("Start") %></td><td><%#: Eval("Duration") %></td>
+                                                <td><%#: Eval("Joined") %></td><td><strong><%#: Eval("Result") %></strong></td></tr>
+                                        </ItemTemplate></asp:Repeater>
+                                    </tbody></table></div>
+                                </asp:PlaceHolder>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                        <asp:Panel ID="pnlPdFootnote" runat="server" Visible="false" CssClass="pd-ds-footnote"><asp:Literal ID="litPdFootnote" runat="server" /></asp:Panel>
+                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
         </div>
@@ -51,15 +129,24 @@
 #<%= mdlPersonalDetail.ClientID %>.pd-team-full-popup .pd-ds-table tbody td strong { color:#54218d; }
 #<%= mdlPersonalDetail.ClientID %>.pd-team-full-popup .pd-ds-footnote { margin:13px 3px 4px;padding:10px 13px;border-left:3px solid #b8cae3;border-radius:5px;background:#f8fafc;color:#64748b;font-size:11.5px;line-height:1.6; }
 @media(max-width:767.98px) { #<%= mdlPersonalDetail.ClientID %>.pd-team-full-popup .pd-detail-modal-heading { padding:14px 12px!important;margin:-12px -14px 13px!important; } #<%= mdlPersonalDetail.ClientID %>.pd-team-full-popup .pd-detail-modal-title { font-size:17px; } #<%= mdlPersonalDetail.ClientID %>.pd-team-full-popup .pd-labor-heading-equation .pd-ds-jump { min-height:33px;font-size:11.5px;padding:7px 8px; } }
+
+/* Tên đối tượng trong bảng giờ công: không thay đổi row/tooltip hiện hữu. */
+#<%= mdlPersonalDetail.ClientID %> .pd-ds-table .pd-view-object-link { appearance:none;border:0;padding:0;margin:0;background:transparent;color:#34445b;font:inherit;font-weight:750;text-align:left;cursor:pointer; }
+#<%= mdlPersonalDetail.ClientID %> .pd-ds-table .pd-view-object-link:hover { color:#2563eb;text-decoration:none;border-bottom:0; }
+#<%= mdlPersonalDetail.ClientID %> .pd-ds-table .pd-view-object-link:focus-visible { text-decoration:none; }
+#<%= mdlPersonalDetail.ClientID %> .pd-ds-table .pd-team-record-code,#<%= mdlPersonalDetail.ClientID %> .pd-ds-hover-template .pd-personal-task-code { display:inline;margin:0 4px 0 0;padding:0;border:0;border-radius:0;background:none;color:inherit;font:inherit;line-height:inherit;vertical-align:baseline; }
+#<%= mdlPersonalDetail.ClientID %> .pd-ds-table .pd-ds-hover-trigger.pd-view-object-link:hover { border-bottom:0;color:#2563eb;text-decoration:none; }
+#<%= mdlPersonalDetail.ClientID %> .pd-ds-table .pd-view-object-link:focus-visible { outline:2px solid #ad88d4;outline-offset:2px;border-radius:4px; }
 </style>
 
 <script type="text/javascript">
     (function () {
+        if (<%= EmbeddedInTaskView ? "true" : "false" %>) return;
         if (window.QLDAProjectDetailPopup && window.QLDAProjectDetailPopup.version === 17) return;
         var clientId = '<%= ModalClientId %>';
-    var typeId = '<%= RequestTypeId %>';
-    var staffId = '<%= RequestStaffId %>';
-    var triggerId = '<%= LoadButtonId %>';
+        var typeId = '<%= RequestTypeId %>';
+        var staffId = '<%= RequestStaffId %>';
+        var triggerId = '<%= LoadButtonId %>';
         var pending = false;
         var preview = null, activeTrigger = null;
         function modalNode() {

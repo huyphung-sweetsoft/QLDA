@@ -368,6 +368,46 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarLaHopOnline.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarLaHopOnline);
 				
+				TableSchema.TableColumn colvarThoiGianBatDauThucTe = new TableSchema.TableColumn(schema);
+				colvarThoiGianBatDauThucTe.ColumnName = "ThoiGianBatDauThucTe";
+				colvarThoiGianBatDauThucTe.DataType = DbType.DateTime;
+				colvarThoiGianBatDauThucTe.MaxLength = 0;
+				colvarThoiGianBatDauThucTe.AutoIncrement = false;
+				colvarThoiGianBatDauThucTe.IsNullable = true;
+				colvarThoiGianBatDauThucTe.IsPrimaryKey = false;
+				colvarThoiGianBatDauThucTe.IsForeignKey = false;
+				colvarThoiGianBatDauThucTe.IsReadOnly = false;
+				colvarThoiGianBatDauThucTe.DefaultSetting = @"";
+				colvarThoiGianBatDauThucTe.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarThoiGianBatDauThucTe);
+				
+				TableSchema.TableColumn colvarThoiGianKetThucThucTe = new TableSchema.TableColumn(schema);
+				colvarThoiGianKetThucThucTe.ColumnName = "ThoiGianKetThucThucTe";
+				colvarThoiGianKetThucThucTe.DataType = DbType.DateTime;
+				colvarThoiGianKetThucThucTe.MaxLength = 0;
+				colvarThoiGianKetThucThucTe.AutoIncrement = false;
+				colvarThoiGianKetThucThucTe.IsNullable = true;
+				colvarThoiGianKetThucThucTe.IsPrimaryKey = false;
+				colvarThoiGianKetThucThucTe.IsForeignKey = false;
+				colvarThoiGianKetThucThucTe.IsReadOnly = false;
+				colvarThoiGianKetThucThucTe.DefaultSetting = @"";
+				colvarThoiGianKetThucThucTe.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarThoiGianKetThucThucTe);
+				
+				TableSchema.TableColumn colvarDaXacNhanChamCong = new TableSchema.TableColumn(schema);
+				colvarDaXacNhanChamCong.ColumnName = "DaXacNhanChamCong";
+				colvarDaXacNhanChamCong.DataType = DbType.Boolean;
+				colvarDaXacNhanChamCong.MaxLength = 0;
+				colvarDaXacNhanChamCong.AutoIncrement = false;
+				colvarDaXacNhanChamCong.IsNullable = false;
+				colvarDaXacNhanChamCong.IsPrimaryKey = false;
+				colvarDaXacNhanChamCong.IsForeignKey = false;
+				colvarDaXacNhanChamCong.IsReadOnly = false;
+				
+						colvarDaXacNhanChamCong.DefaultSetting = @"((0))";
+				colvarDaXacNhanChamCong.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDaXacNhanChamCong);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -521,6 +561,30 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<bool>(Columns.LaHopOnline); }
 			set { SetColumnValue(Columns.LaHopOnline, value); }
 		}
+		  
+		[XmlAttribute("ThoiGianBatDauThucTe")]
+		[Bindable(true)]
+		public DateTime? ThoiGianBatDauThucTe 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.ThoiGianBatDauThucTe); }
+			set { SetColumnValue(Columns.ThoiGianBatDauThucTe, value); }
+		}
+		  
+		[XmlAttribute("ThoiGianKetThucThucTe")]
+		[Bindable(true)]
+		public DateTime? ThoiGianKetThucThucTe 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.ThoiGianKetThucThucTe); }
+			set { SetColumnValue(Columns.ThoiGianKetThucThucTe, value); }
+		}
+		  
+		[XmlAttribute("DaXacNhanChamCong")]
+		[Bindable(true)]
+		public bool DaXacNhanChamCong 
+		{
+			get { return GetColumnValue<bool>(Columns.DaXacNhanChamCong); }
+			set { SetColumnValue(Columns.DaXacNhanChamCong, value); }
+		}
 		
 		#endregion
 		
@@ -565,7 +629,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile,bool? varDaGuiNhacNho,bool varLaHopOnline)
+		public static void Insert(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile,bool? varDaGuiNhacNho,bool varLaHopOnline,DateTime? varThoiGianBatDauThucTe,DateTime? varThoiGianKetThucThucTe,bool varDaXacNhanChamCong)
 		{
 			TblLichHop item = new TblLichHop();
 			
@@ -605,6 +669,12 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.LaHopOnline = varLaHopOnline;
 			
+			item.ThoiGianBatDauThucTe = varThoiGianBatDauThucTe;
+			
+			item.ThoiGianKetThucThucTe = varThoiGianKetThucThucTe;
+			
+			item.DaXacNhanChamCong = varDaXacNhanChamCong;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -615,7 +685,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile,bool? varDaGuiNhacNho,bool varLaHopOnline)
+		public static void Update(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile,bool? varDaGuiNhacNho,bool varLaHopOnline,DateTime? varThoiGianBatDauThucTe,DateTime? varThoiGianKetThucThucTe,bool varDaXacNhanChamCong)
 		{
 			TblLichHop item = new TblLichHop();
 			
@@ -654,6 +724,12 @@ namespace SweetSoft.QLDA.DataAccess
 				item.DaGuiNhacNho = varDaGuiNhacNho;
 			
 				item.LaHopOnline = varLaHopOnline;
+			
+				item.ThoiGianBatDauThucTe = varThoiGianBatDauThucTe;
+			
+				item.ThoiGianKetThucThucTe = varThoiGianKetThucThucTe;
+			
+				item.DaXacNhanChamCong = varDaXacNhanChamCong;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -794,6 +870,27 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn ThoiGianBatDauThucTeColumn
+        {
+            get { return Schema.Columns[18]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn ThoiGianKetThucThucTeColumn
+        {
+            get { return Schema.Columns[19]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn DaXacNhanChamCongColumn
+        {
+            get { return Schema.Columns[20]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -816,6 +913,9 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string IdUploadFile = @"IdUploadFile";
 			 public static string DaGuiNhacNho = @"DaGuiNhacNho";
 			 public static string LaHopOnline = @"LaHopOnline";
+			 public static string ThoiGianBatDauThucTe = @"ThoiGianBatDauThucTe";
+			 public static string ThoiGianKetThucThucTe = @"ThoiGianKetThucThucTe";
+			 public static string DaXacNhanChamCong = @"DaXacNhanChamCong";
 						
 		}
 		#endregion

@@ -92,7 +92,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdLichHop,Guid IdNhanVien,decimal? SoGioThucTe,Guid? NguoiCapNhat,DateTime NgayCapNhat)
+	    public void Insert(Guid IdLichHop,Guid IdNhanVien,decimal? SoGioThucTe,Guid? NguoiCapNhat,DateTime NgayCapNhat,bool? DaThamGia,DateTime? GioVaoThucTe,DateTime? GioRaThucTe)
 	    {
 		    TblLichHopGioCong item = new TblLichHopGioCong();
 		    
@@ -106,6 +106,12 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.NgayCapNhat = NgayCapNhat;
             
+            item.DaThamGia = DaThamGia;
+            
+            item.GioVaoThucTe = GioVaoThucTe;
+            
+            item.GioRaThucTe = GioRaThucTe;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -114,7 +120,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdLichHop,Guid IdNhanVien,decimal? SoGioThucTe,Guid? NguoiCapNhat,DateTime NgayCapNhat)
+	    public void Update(Guid IdLichHop,Guid IdNhanVien,decimal? SoGioThucTe,Guid? NguoiCapNhat,DateTime NgayCapNhat,bool? DaThamGia,DateTime? GioVaoThucTe,DateTime? GioRaThucTe)
 	    {
 		    TblLichHopGioCong item = new TblLichHopGioCong();
 	        item.MarkOld();
@@ -129,6 +135,12 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NguoiCapNhat = NguoiCapNhat;
 				
 			item.NgayCapNhat = NgayCapNhat;
+				
+			item.DaThamGia = DaThamGia;
+				
+			item.GioVaoThucTe = GioVaoThucTe;
+				
+			item.GioRaThucTe = GioRaThucTe;
 				
 	        item.Save(UserName);
 	    }

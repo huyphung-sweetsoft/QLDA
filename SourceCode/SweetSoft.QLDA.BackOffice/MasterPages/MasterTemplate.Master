@@ -566,22 +566,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         @keyframes qlda-modal-opening-spin { to { transform:rotate(360deg); } }
         @media(prefers-reduced-motion:reduce) { #qldaModalOpenFeedback,#qldaModalOpenFeedback .qlda-modal-load-spinner { animation:none!important;transition:none!important; } }
 
-        /* Chuyen trang: chi hien khi browser thuc su dang dieu huong/tai lai trang, KHONG bat AJAX nen hay popup. */
-        #qldaPageNavigateFeedback[hidden] { display:none!important; }
-        #qldaPageNavigateFeedback { position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:rgba(37,25,56,.28);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease; }
-        #qldaPageNavigateFeedback.is-visible { opacity:1;visibility:visible;pointer-events:auto; }
-        #qldaPageNavigateFeedback .qlda-page-nav-card { position:relative;display:flex;flex-direction:column;align-items:center;gap:13px;width:min(380px,calc(100vw - 32px));padding:27px 27px 24px;border:1px solid #dec9f2;border-radius:19px;background:linear-gradient(145deg,#fff,#fcf8ff);box-shadow:0 24px 65px rgba(39,18,72,.24);color:#4d2a75;text-align:center;animation:qlda-page-nav-in .25s cubic-bezier(.2,.7,.3,1) both; }
-        #qldaPageNavigateFeedback .qlda-page-nav-spinner { display:grid;place-items:center;width:64px;height:64px;border:3px solid #e9daf9;border-top-color:#6d2fac;border-right-color:#a875da;border-radius:50%;animation:qlda-page-nav-spin .9s linear infinite; }
-        #qldaPageNavigateFeedback .qlda-page-nav-spinner i { display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#f4ebfe;color:#692ba7;font-size:19px;animation:qlda-page-nav-spin-reverse .9s linear infinite; }
-        #qldaPageNavigateFeedback .qlda-page-nav-title { display:block;color:#54218d;font-size:17px;font-weight:850;line-height:1.35; }
-        #qldaPageNavigateFeedback .qlda-page-nav-description { display:block;color:#8b7a9c;font-size:12.5px;line-height:1.55; }
-        #qldaPageNavigateFeedback .qlda-page-nav-progress { width:100%;height:4px;margin-top:2px;border-radius:99px;overflow:hidden;background:#f0e5fa; }
-        #qldaPageNavigateFeedback .qlda-page-nav-progress span { display:block;width:34%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#a571dc,#5b2499);animation:qlda-page-nav-progress 1.35s ease-in-out infinite; }
-        @keyframes qlda-page-nav-spin { to { transform:rotate(360deg); } }
-        @keyframes qlda-page-nav-spin-reverse { to { transform:rotate(-360deg); } }
-        @keyframes qlda-page-nav-progress { 0% { transform:translateX(-110%); } 100% { transform:translateX(305%); } }
-        @keyframes qlda-page-nav-in { from { opacity:0;transform:translateY(9px) scale(.98); } to { opacity:1;transform:translateY(0) scale(1); } }
-        @media(prefers-reduced-motion:reduce) { #qldaPageNavigateFeedback,#qldaPageNavigateFeedback .qlda-page-nav-card,#qldaPageNavigateFeedback .qlda-page-nav-spinner,#qldaPageNavigateFeedback .qlda-page-nav-spinner i,#qldaPageNavigateFeedback .qlda-page-nav-progress span { animation:none!important;transition:none!important; } }
     </style>
     <asp:ContentPlaceHolder ID="cpHeadVendor" runat="server"></asp:ContentPlaceHolder>
     <asp:ContentPlaceHolder ID="cpHead" runat="server"></asp:ContentPlaceHolder>
@@ -914,15 +898,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <span>.</span>
                     <span>.</span>
                 </div>
-            </div>
-        </div>
-        <%-- Master navigation feedback: chi dung cho chuyen trang/toan trang, khong phai UpdatePanel hay ExtraModal. --%>
-        <div id="qldaPageNavigateFeedback" hidden role="status" aria-live="polite" aria-atomic="true">
-            <div class="qlda-page-nav-card">
-                <span class="qlda-page-nav-spinner" aria-hidden="true"><i class="bx bx-layer"></i></span>
-                <strong class="qlda-page-nav-title">Đang chuyển trang...</strong>
-                <span class="qlda-page-nav-description">Hệ thống đang tải nội dung trang tiếp theo.</span>
-                <span class="qlda-page-nav-progress" aria-hidden="true"><span></span></span>
             </div>
         </div>
         <!-- Right bar overlay-->
@@ -1605,7 +1580,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     var link = safeLink(rawLink || (n && n.duongDanLienKet));
                     hidePreview();
                     function navigate() {
-                        if (link !== '#') { if (window.QLDAPageNavigation) window.QLDAPageNavigation.start(false); window.location.assign(link); }
+                        if (link !== '#') { window.location.assign(link); }
                         else if (openBellWhenNoLink && window.NotificationBell && window.NotificationBell.openPanel)
                             window.NotificationBell.openPanel();
                     }
@@ -2676,6 +2651,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     if (!el || !el.getAttribute || !el.closest) return false;
                     if (el.closest('#bellDropdownWrapper, .qna-widget, #qldaModalOpenFeedback, [data-qlda-modal-ignore]')) return false;
                     if (el.hasAttribute('data-qlda-modal-open')) return el.getAttribute('data-qlda-modal-open') !== 'false';
+                    // DuAnDetail sử dụng data-pd-detail-source rồi gọi link ẩn btnLoadDetail bằng JavaScript.
+                    if (el.hasAttribute('data-pd-detail-source')) return true;
                     if (el.getAttribute('data-bs-toggle') === 'modal' || el.getAttribute('data-toggle') === 'modal') return true;
                     // Nut da nam trong modal khac: chi nhan neu chu dich duoc danh dau ro rang.
                     if (el.closest('.modal')) return false;
@@ -2722,7 +2699,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         var source = args && args.get_postBackElement ? args.get_postBackElement() : null;
                         if (!state.active && isModalOpenTrigger(source)) arm(source);
                         // AJAX nen cua chuong/dong ho khong duoc nham voi yeu cau dang mo popup.
-                        if (state.active && (!state.opener || source === state.opener || (source && state.opener && state.opener.contains && state.opener.contains(source)))) markRequest();
+                        var matchingOpener = !state.opener || source === state.opener ||
+                            (source && state.opener && state.opener.contains && state.opener.contains(source));
+                        // CtrlChiTietCong: nút người dùng bấm và nút LinkButton chạy AJAX không cùng phần tử.
+                        var pdHiddenLoader = source && /(?:^|[_$:])btnLoadDetail$/i.test(source.id || '') &&
+                            state.opener && state.opener.hasAttribute && state.opener.hasAttribute('data-pd-detail-source');
+                        if (state.active && (matchingOpener || pdHiddenLoader)) markRequest();
                     });
                     prm.add_endRequest(function (sender, args) {
                         if (!state.active || !state.requestStarted) return;
@@ -2749,151 +2731,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 };
             })();
         </script>
-        <%-- QLDA: navigation feedback. Noi bo cung trang, AJAX, popup, downloads khong duoc kich hoat. --%>
+        <%-- Giữ API tương thích cho các trang còn gọi QLDAPageNavigation; không hiển thị màn chuyển trang. --%>
         <script type="text/javascript">
-            (function () {
-                'use strict';
-                if (window.QLDAPageNavigation) return;
-                var overlay = document.getElementById('qldaPageNavigateFeedback');
-                if (!overlay) return;
-                var state = { active: false, unloading: false, pageLeaving: false, confirmationPending: false, reason: '', showTimer: null, guardTimer: null, cancelGuardTimer: null, focusGuardTimer: null, downloadIgnoreUntil: 0 };
-                var SHOW_DELAY = 180;
-
-                function clearTimer(name) { if (state[name]) window.clearTimeout(state[name]); state[name] = null; }
-                function show() {
-                    if (!state.active || !document.body) return;
-                    overlay.hidden = false;
-                    // Forced layout makes the CSS fade transition deterministic across browsers.
-                    void overlay.offsetWidth;
-                    overlay.classList.add('is-visible');
-                }
-                function stop() {
-                    state.active = false;
-                    state.unloading = false;
-                    state.pageLeaving = false;
-                    state.confirmationPending = false;
-                    state.reason = '';
-                    clearTimer('showTimer');
-                    clearTimer('guardTimer');
-                    clearTimer('cancelGuardTimer');
-                    clearTimer('focusGuardTimer');
-                    overlay.classList.remove('is-visible');
-                    overlay.hidden = true;
-                }
-                function start(immediate, reason) {
-                    if (state.active) { if (immediate) { clearTimer('showTimer'); show(); } return; }
-                    state.active = true;
-                    state.reason = reason || 'manual';
-                    clearTimer('showTimer');
-                    if (immediate) { show(); }
-                    else { state.showTimer = window.setTimeout(function () { state.showTimer = null; show(); }, SHOW_DELAY); }
-                    // Aborted navigation / prevented form submit must never leave an uncloseable overlay.
-                    state.guardTimer = window.setTimeout(stop, 45000);
-                }
-                // PDF/export postbacks send a file response: the current page does not navigate.
-                // Exclude just the marked download action; normal page transitions remain unchanged.
-                function isDownloadPostback() { return state.downloadIgnoreUntil > Date.now(); }
-                function markDownloadPostback() { state.downloadIgnoreUntil = Date.now() + 300000; stop(); }
-                function clearDownloadPostback() { state.downloadIgnoreUntil = 0; }
-                document.addEventListener('keydown', function (event) {
-                    // A manual browser refresh must continue to display the regular navigation feedback.
-                    if (event.key === 'F5' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'r')) clearDownloadPostback();
-                }, true);
-                function isActualPageLink(link) {
-                    if (!link || link.closest('[data-qlda-page-nav-ignore], [data-qlda-modal-open], #qldaModalOpenFeedback')) return false;
-                    if (link.hasAttribute('download') || (link.target && link.target.toLowerCase() !== '_self')) return false;
-                    if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-toggle') || link.hasAttribute('data-bs-dismiss') || link.hasAttribute('data-dismiss')) return false;
-                    var href = (link.getAttribute('href') || '').trim();
-                    if (!href || href.charAt(0) === '#' || /^(javascript:|mailto:|tel:|data:|blob:)/i.test(href)) return false;
-                    var uri;
-                    try { uri = new URL(href, window.location.href); } catch (error) { return false; }
-                    if (!/^https?:$/.test(uri.protocol) || uri.origin !== window.location.origin) return false;
-                    if (/\.(pdf|zip|rar|7z|xlsx?|docx?|pptx?|csv|jpe?g|png|gif|webp|mp4|mp3)$/i.test(uri.pathname)) return false;
-                    var current = new URL(window.location.href);
-                    return uri.pathname !== current.pathname || uri.search !== current.search;
-                }
-                document.addEventListener('click', function (event) {
-                    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-                    var trigger = event.target && event.target.closest ? event.target.closest('a,button,input[type="submit"],input[type="button"]') : null;
-                    if (trigger && trigger.closest('[data-qlda-download-postback="true"]')) { markDownloadPostback(); return; }
-                    // Any subsequent click on a different control ends the download exception.
-                    if (trigger) clearDownloadPostback();
-                    var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
-                    if (!isActualPageLink(link)) return;
-                    start(false, 'link');
-                    // Bubbling handlers can prevent navigation (tabs, confirmation, menus).
-                    window.setTimeout(function () { if (event.defaultPrevented && !state.unloading) stop(); }, 0);
-                }, true);
-
-                document.addEventListener('submit', function (event) {
-                    if (event.defaultPrevented || isDownloadPostback() || (event.submitter && event.submitter.closest('[data-qlda-download-postback="true"]'))) return;
-                    var form = event.target;
-                    if (!form || !form.tagName || form.tagName.toLowerCase() !== 'form') return;
-                    start(false, 'submit');
-                    window.setTimeout(function () { if (event.defaultPrevented && !state.unloading) stop(); }, 0);
-                }, true);
-
-                function attachAjaxManager() {
-                    if (!window.Sys || !Sys.WebForms || !Sys.WebForms.PageRequestManager) return;
-                    var prm = Sys.WebForms.PageRequestManager.getInstance();
-                    if (!prm || prm.__qldaPageNavigationHooked) return;
-                    prm.__qldaPageNavigationHooked = true;
-                    // Partial postbacks are NOT page changes; also covers buttons that submit via WebForms.
-                    prm.add_initializeRequest(function () { if (state.reason === 'submit' && !state.unloading) stop(); });
-                    prm.add_beginRequest(function () { if (state.reason === 'submit' && !state.unloading) stop(); });
-                }
-                attachAjaxManager();
-                if (window.Sys && Sys.Application) Sys.Application.add_load(attachAjaxManager);
-
-                function hasNativeLeaveConfirmation(event) {
-                    // Các trang có dữ liệu chưa lưu có thể yêu cầu trình duyệt hiển thị hộp xác nhận.
-                    // returnValue mặc định là true; chuỗi (kể cả chuỗi rỗng) hoặc false biểu thị đã yêu cầu hỏi.
-                    return !!(event && (event.defaultPrevented || typeof event.returnValue === 'string' || event.returnValue === false));
-                }
-                window.addEventListener('beforeunload', function (event) {
-                    // Tải PDF/tệp không phải là chuyển trang.
-                    if (isDownloadPostback()) { stop(); return; }
-                    state.unloading = true;
-                    state.pageLeaving = false;
-                    state.confirmationPending = hasNativeLeaveConfirmation(event);
-                    if (state.confirmationPending) {
-                        // Người dùng chưa đồng ý rời trang: không che trang bằng animation.
-                        clearTimer('showTimer');
-                        overlay.classList.remove('is-visible');
-                        overlay.hidden = true;
-                    } else {
-                        // Không có hộp hỏi: giữ nguyên animation cho điều hướng thực tế.
-                        start(true);
-                    }
-                    // Khi chọn Hủy, trình duyệt KHÔNG phát pagehide/pageshow.
-                    // Timer tiếp tục chạy sau khi hộp xác nhận đóng; thu hồi overlay nếu vẫn ở trang cũ.
-                    clearTimer('cancelGuardTimer');
-                    state.cancelGuardTimer = window.setTimeout(function () {
-                        state.cancelGuardTimer = null;
-                        if (!state.pageLeaving) stop();
-                    }, state.confirmationPending ? 400 : 1000);
-                });
-                // Trên Chrome, focus thường trở lại cửa sổ sau khi bấm Hủy.
-                // Giữ thêm nhịp ngắn để pagehide có thể đánh dấu lượt rời trang đã được chấp thuận.
-                window.addEventListener('focus', function () {
-                    if (!state.unloading || state.pageLeaving) return;
-                    clearTimer('focusGuardTimer');
-                    state.focusGuardTimer = window.setTimeout(function () {
-                        state.focusGuardTimer = null;
-                        if (!state.pageLeaving) stop();
-                    }, 100);
-                });
-                window.addEventListener('pageshow', function () { clearDownloadPostback(); stop(); });
-                window.addEventListener('pagehide', function () {
-                    state.pageLeaving = true;
-                    state.unloading = true;
-                    clearTimer('cancelGuardTimer');
-                    clearTimer('focusGuardTimer');
-                    // Chỉ hiển thị animation sau khi người dùng đã đồng ý rời trang.
-                    if (state.confirmationPending) { state.confirmationPending = false; start(true, 'confirmed'); }
-                });
-                window.QLDAPageNavigation = { start: start, stop: stop, isActive: function () { return state.active; } };
-            })();
+            window.QLDAPageNavigation = { start: function () { }, stop: function () { }, isActive: function () { return false; } };
         </script>
     </form>
 </body>
