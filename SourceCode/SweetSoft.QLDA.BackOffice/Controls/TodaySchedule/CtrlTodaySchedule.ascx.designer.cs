@@ -33,6 +33,15 @@ namespace SweetSoft.QLDA.BackOffice.Controls.TodaySchedule
         protected global::System.Web.UI.UpdatePanel upTodaySchedule;
 
         /// <summary>
+        /// hfScheduleSelectedDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfScheduleSelectedDate;
+
+        /// <summary>
         /// btnTodayReload control.
         /// </summary>
         /// <remarks>
@@ -49,5 +58,50 @@ namespace SweetSoft.QLDA.BackOffice.Controls.TodaySchedule
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTodaySchedule;
+
+        /// <summary>
+        /// hfTodayOpenKind control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfTodayOpenKind;
+
+        /// <summary>
+        /// hfTodayOpenId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfTodayOpenId;
+
+        /// <summary>
+        /// btnTodayOpenDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnTodayOpenDetail;
+
+        /// <summary>
+        /// CtrlTodayTaskDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlViewTaskDetail CtrlTodayTaskDetail;
+
+        /// <summary>
+        /// CtrlTodayMeetDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlViewMeetDetail CtrlTodayMeetDetail;
     }
 }

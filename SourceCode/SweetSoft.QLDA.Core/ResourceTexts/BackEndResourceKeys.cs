@@ -329,6 +329,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string GENERATE = "GENERATE";
         public const string GUEST = "GUEST";
         public const string EMPLOYEE_DETAIL = "EMPLOYEE_DETAIL";
+        public const string EMPLOYEE_DASHBOARD = "EMPLOYEE_DASHBOARD";
         public const string WORKING_WEEK_CONFIG = "WORKING_WEEK_CONFIG";
         public const string HOLIDAY_AND_MAKEUP_WORK = "HOLIDAY_AND_MAKEUP_WORK";
         public const string STANDARD_WORKING_HOURS = "STANDARD_WORKING_HOURS";

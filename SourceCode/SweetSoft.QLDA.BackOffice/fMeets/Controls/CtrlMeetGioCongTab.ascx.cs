@@ -1,4 +1,5 @@
 ﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
@@ -82,6 +83,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             el.Attributes["data-staff-mode"] = StaffAttendance.ToString(CultureInfo.InvariantCulture);
             el.Attributes["data-date-from"] = DateFrom.HasValue ? DateFrom.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : string.Empty;
             el.Attributes["data-date-to"] = DateTo.HasValue ? DateTo.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : string.Empty;
+            el.Attributes["data-focus-id"] = FocusedMeetingId == Guid.Empty ? string.Empty : FocusedMeetingId.ToString("D");
+            el.Attributes["data-focus-pulse"] = Convert.ToString(ViewState["GioCongFocusPulse"], CultureInfo.InvariantCulture) ?? string.Empty;
         }
 
         private const int MeetingsPerPage = 5;
@@ -97,6 +100,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             get { return ViewState["GioCongLaborPage"] is int && (int)ViewState["GioCongLaborPage"] > 0 ? (int)ViewState["GioCongLaborPage"] : 1; }
             set { ViewState["GioCongLaborPage"] = Math.Max(1, value); }
+        }
+
+        // Khi di tu chi tiet cuoc hop sang tab Gio cong, loc theo ID de chon dung
+        // ngay ca khi co nhieu cuoc hop trung ten.
+        private Guid FocusedMeetingId
+        {
+            get { return ViewState["GioCongFocusedMeetId"] is Guid ? (Guid)ViewState["GioCongFocusedMeetId"] : Guid.Empty; }
+            set { ViewState["GioCongFocusedMeetId"] = value; }
         }
 
         private Guid SelectedMeetingId
@@ -214,6 +225,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             public DateTime ThoiGianBatDau { get; set; }
             public DateTime ThoiGianKetThuc { get; set; }
             public bool LaChuTri { get; set; }
+            public bool DaXacNhanChamCong { get; set; }
         }
 
         public sealed class GioCongNhanVienRow
@@ -226,6 +238,16 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             public bool XacNhanThamGia { get; set; }
             public decimal SoGioLyThuyet { get; set; }
             public decimal? SoGioThucTe { get; set; }
+            public DateTime? GioVaoThucTe { get; set; }
+            public DateTime? GioRaThucTe { get; set; }
+        }
+
+        private sealed class GioCongInput
+        {
+            public bool ThamGia;
+            public decimal? SoGio;
+            public DateTime? GioVao;
+            public DateTime? GioRa;
         }
 
         private static string GetConnectionString()
@@ -284,16 +306,58 @@ SELECT CASE WHEN EXISTS (
             }
         }
 
+        // Lay gio cuoc hop thuc te bang ADO.NET vi model SubSonic chua regenerate.
+        private static void ReadMeetActual(SqlConnection connection, Guid meetId,
+            out DateTime? startActual, out DateTime? endActual, out bool confirmed)
+        {
+            const string sql = @"SELECT ThoiGianBatDauThucTe, ThoiGianKetThucThucTe,
+ISNULL(DaXacNhanChamCong,0) AS DaXacNhanChamCong
+FROM dbo.TblLichHop WHERE IdLichHop=@IdLichHop";
+            using (SqlCommand cmd = new SqlCommand(sql, connection))
+            {
+                cmd.Parameters.Add(GuidParameter("@IdLichHop", meetId));
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (!reader.Read()) throw new DataException("Khong tim thay cuoc hop.");
+                    startActual = reader.IsDBNull(0) ? (DateTime?)null : reader.GetDateTime(0);
+                    endActual = reader.IsDBNull(1) ? (DateTime?)null : reader.GetDateTime(1);
+                    confirmed = reader.GetBoolean(2);
+                }
+            }
+        }
+        private static void EffectiveMeetTimes(TblLichHop meeting, DateTime? startActual, DateTime? endActual,
+            out DateTime start, out DateTime end)
+        {
+            // Chi dung thuc te khi DU CA HAI dau moc hop le.
+            start = startActual.HasValue && endActual.HasValue && endActual > startActual
+                ? startActual.Value : meeting.ThoiGianBatDau;
+            end = startActual.HasValue && endActual.HasValue && endActual > startActual
+                ? endActual.Value : meeting.ThoiGianKetThuc;
+        }
+        private static decimal DurationHours(DateTime start, DateTime end)
+        {
+            double minutes = (end - start).TotalMinutes;
+            return minutes <= 0 ? 0m : Math.Round((decimal)minutes / 60m, 2, MidpointRounding.AwayFromZero);
+        }
+        private static int DurationMinutes(DateTime start, DateTime end)
+        {
+            double minutes = (end - start).TotalMinutes;
+            return minutes <= 0 ? 0 : (int)Math.Round(minutes, MidpointRounding.AwayFromZero);
+        }
         private static decimal DurationHours(TblLichHop meeting)
         {
-            TimeSpan span = meeting.ThoiGianKetThuc - meeting.ThoiGianBatDau;
-            return span.TotalMinutes <= 0 ? 0m : Math.Round((decimal)span.TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero);
+            using (SqlConnection connection = new SqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                DateTime? actualStart, actualEnd; bool confirmed;
+                ReadMeetActual(connection, meeting.IdLichHop, out actualStart, out actualEnd, out confirmed);
+                DateTime start, end; EffectiveMeetTimes(meeting, actualStart, actualEnd, out start, out end);
+                return DurationHours(start, end);
+            }
         }
-
         private static int DurationMinutes(TblLichHop meeting)
         {
-            TimeSpan span = meeting.ThoiGianKetThuc - meeting.ThoiGianBatDau;
-            return span.TotalMinutes <= 0 ? 0 : (int)Math.Round(span.TotalMinutes, MidpointRounding.AwayFromZero);
+            return (int)Math.Round((decimal)(meeting.ThoiGianKetThuc - meeting.ThoiGianBatDau).TotalMinutes, 0);
         }
 
         // Danh sách nhân viên hợp lệ, gồm người được phân công và người chủ trì.
@@ -315,11 +379,11 @@ WITH DanhSach AS (
            COALESCE(NULLIF(LTRIM(RTRIM(mu.Email)), N''), N'') AS Email,
            COALESCE(NULLIF(LTRIM(RTRIM(u.Avatar)), N''), N'') AS Avatar,
            CASE WHEN d.IdNhanVien = m.IdNguoiTao THEN 1 ELSE 0 END AS LaChuTri,
-           ISNULL(CAST(g.DaThamGiaOverride AS INT),
+           ISNULL(CAST(g.DaThamGia AS INT),
                  ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia, 0) AS INT))
                          FROM dbo.TblLichHop_NhanVien p
                          WHERE p.IdLichHop = @IdLichHop AND p.IdNhanVien = d.IdNhanVien), 0)) AS XacNhanThamGia,
-           g.SoGioThucTe
+           g.SoGioThucTe, g.GioVaoThucTe, g.GioRaThucTe
     FROM DanhSach d
     CROSS JOIN dbo.TblLichHop m
     LEFT JOIN dbo.aspnet_Users u ON u.UserId = d.IdNhanVien
@@ -379,7 +443,8 @@ PhanTrang AS (
     SELECT TatCa.*, ROW_NUMBER() OVER (ORDER BY TenNhanVien ASC, IdNhanVien ASC) AS SoThuTu
     FROM TatCa" + RosterFilterSql + @"
 )
-SELECT IdNhanVien, TenNhanVien, Email, Avatar, LaChuTri, XacNhanThamGia, SoGioThucTe
+SELECT IdNhanVien, TenNhanVien, Email, Avatar, LaChuTri, XacNhanThamGia,
+       SoGioThucTe, GioVaoThucTe, GioRaThucTe
 FROM PhanTrang
 WHERE SoThuTu > @Start AND SoThuTu <= @End
 ORDER BY SoThuTu ASC;";
@@ -397,6 +462,10 @@ ORDER BY SoThuTu ASC;";
                         bool joined = Convert.ToInt32(reader["XacNhanThamGia"], CultureInfo.InvariantCulture) == 1;
                         decimal? actual = reader["SoGioThucTe"] == DBNull.Value
                             ? (decimal?)null : Convert.ToDecimal(reader["SoGioThucTe"], CultureInfo.InvariantCulture);
+                        DateTime? checkIn = reader["GioVaoThucTe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["GioVaoThucTe"], CultureInfo.InvariantCulture);
+                        DateTime? checkOut = reader["GioRaThucTe"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["GioRaThucTe"], CultureInfo.InvariantCulture);
+                        if (joined && checkIn.HasValue && checkOut.HasValue && checkOut > checkIn)
+                            actual = Math.Round((decimal)(checkOut.Value - checkIn.Value).TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero);
                         if (!joined) actual = 0m;
                         results.Add(new GioCongNhanVienRow
                         {
@@ -407,7 +476,9 @@ ORDER BY SoThuTu ASC;";
                             LaChuTri = Convert.ToInt32(reader["LaChuTri"], CultureInfo.InvariantCulture) == 1,
                             XacNhanThamGia = joined,
                             SoGioLyThuyet = joined ? duration : 0m,
-                            SoGioThucTe = actual
+                            SoGioThucTe = actual,
+                            GioVaoThucTe = checkIn,
+                            GioRaThucTe = checkOut
                         });
                     }
                 }
@@ -419,7 +490,7 @@ ORDER BY SoThuTu ASC;";
         // ROW_NUMBER tương thích các phiên bản SQL Server cũ hơn OFFSET/FETCH.
         // COUNT + ROW_NUMBER tại SQL; mỗi trang CHỈ nạp 5 cuộc họp, có lọc theo quyền.
         private static List<MeetingRow> LoadMeetingPage(SqlConnection connection, Guid projectId,
-            string mode, Guid userId, bool canManage, int requestedPage, string searchName,
+            string mode, Guid userId, bool canManage, int requestedPage, string searchName, Guid focusedId,
              DateTime? dateFrom, DateTime? dateTo, out int total, out int actualPage)
         {
             const string where = @" FROM dbo.TblLichHop m
@@ -432,12 +503,14 @@ WHERE m.IdDuAn=@IdDuAn AND (m.DaXoa=0 OR m.DaXoa IS NULL)
         OR (@Filter=3 AND m.IdNguoiTao=@UserId))
    AND (@NameSearch=N'' OR m.TenCuocHop LIKE @NamePattern)
    AND (@FromDate IS NULL OR m.ThoiGianBatDau >= @FromDate)
-   AND (@ToExclusive IS NULL OR m.ThoiGianBatDau < @ToExclusive)";
+   AND (@ToExclusive IS NULL OR m.ThoiGianBatDau < @ToExclusive)
+   AND (@FocusId IS NULL OR m.IdLichHop=@FocusId)";
             int code = mode == "all" ? 0 : mode == "active" ? 1 : mode == "hosted" ? 3 : 2;
             Action<SqlCommand> addFilters = command =>
             {
                 command.Parameters.Add("@NameSearch", SqlDbType.NVarChar, 120).Value = searchName ?? "";
                 command.Parameters.Add("@NamePattern", SqlDbType.NVarChar, 260).Value = LikePattern(searchName);
+                command.Parameters.Add("@FocusId", SqlDbType.UniqueIdentifier).Value = focusedId == Guid.Empty ? (object)DBNull.Value : focusedId;
                 command.Parameters.Add("@FromDate", SqlDbType.DateTime).Value = dateFrom.HasValue ? (object)dateFrom.Value.Date : DBNull.Value;
                 command.Parameters.Add("@ToExclusive", SqlDbType.DateTime).Value = dateTo.HasValue ? (object)dateTo.Value.Date.AddDays(1) : DBNull.Value;
             };
@@ -456,11 +529,11 @@ WHERE m.IdDuAn=@IdDuAn AND (m.DaXoa=0 OR m.DaXoa IS NULL)
             if (total == 0) return result;
             string sql = @"
 WITH DanhSachCoThuTu AS (
- SELECT m.IdLichHop, m.TenCuocHop, m.ThoiGianBatDau, m.ThoiGianKetThuc,
+ SELECT m.IdLichHop, m.TenCuocHop, m.ThoiGianBatDau, m.ThoiGianKetThuc, m.DaXacNhanChamCong,
         CASE WHEN m.IdNguoiTao=@UserId THEN 1 ELSE 0 END AS LaChuTri,
         ROW_NUMBER() OVER (ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC) AS SoThuTu" + where + @"
 )
-SELECT IdLichHop, TenCuocHop, ThoiGianBatDau, ThoiGianKetThuc, LaChuTri
+SELECT IdLichHop, TenCuocHop, ThoiGianBatDau, ThoiGianKetThuc, LaChuTri, DaXacNhanChamCong
 FROM DanhSachCoThuTu
 WHERE SoThuTu > @Offset AND SoThuTu <= @Last
 ORDER BY SoThuTu ASC;";
@@ -484,7 +557,8 @@ ORDER BY SoThuTu ASC;";
                             TenCuocHop = Convert.ToString(reader["TenCuocHop"], CultureInfo.InvariantCulture),
                             ThoiGianBatDau = Convert.ToDateTime(reader["ThoiGianBatDau"], CultureInfo.InvariantCulture),
                             ThoiGianKetThuc = Convert.ToDateTime(reader["ThoiGianKetThuc"], CultureInfo.InvariantCulture),
-                            LaChuTri = Convert.ToInt32(reader["LaChuTri"], CultureInfo.InvariantCulture) == 1
+                            LaChuTri = Convert.ToInt32(reader["LaChuTri"], CultureInfo.InvariantCulture) == 1,
+                            DaXacNhanChamCong = Convert.ToInt32(reader["DaXacNhanChamCong"], CultureInfo.InvariantCulture) == 1
                         });
                     }
                 }
@@ -597,6 +671,15 @@ ORDER BY SoThuTu ASC;";
             return begin.ToString("dd/MM/yyyy HH:mm", ViCulture) + " – " + finish.ToString("HH:mm", ViCulture);
         }
 
+        protected string MeetingLaborConfirmBadge(object end, object confirmed)
+        {
+            DateTime finish = Convert.ToDateTime(end, CultureInfo.InvariantCulture);
+            if (finish > DateTime.Now) return string.Empty;
+            return Convert.ToBoolean(confirmed, CultureInfo.InvariantCulture)
+                ? "<span class=\"mlt-accounted-ok\">Đã chấm công</span>"
+                : "<span class=\"mlt-accounted-pending\"><i class=\"fas fa-exclamation-circle\"></i> Chưa chấm công</span>";
+        }
+
         protected string MeetingEndedBadge(object end)
         {
             DateTime finish = Convert.ToDateTime(end, CultureInfo.InvariantCulture);
@@ -618,6 +701,17 @@ ORDER BY SoThuTu ASC;";
             LinkButton hostedFilter = FindChildControl(this, "btnFilterHosted") as LinkButton;
             if (hostedFilter != null) manager.RegisterAsyncPostBackControl(hostedFilter);
             manager.RegisterAsyncPostBackControl(btnSaveLabor);
+            LinkButton saveTimes = FindChildControl(this, "btnSaveMeetTimes") as LinkButton;
+            LinkButton confirm = FindChildControl(this, "btnConfirmMeetLabor") as LinkButton;
+            if (saveTimes != null) manager.RegisterAsyncPostBackControl(saveTimes);
+            if (confirm != null) manager.RegisterAsyncPostBackControl(confirm);
+            LinkButton saveEmployeeHours = FindChildControl(this, "btnSaveEmployeeHours") as LinkButton;
+            if (saveEmployeeHours != null) manager.RegisterAsyncPostBackControl(saveEmployeeHours);
+            foreach (RepeaterItem item in rptLabor.Items)
+            {
+                LinkButton openEmployeeHours = item.FindControl("btnOpenEmployeeHours") as LinkButton;
+                if (openEmployeeHours != null) manager.RegisterAsyncPostBackControl(openEmployeeHours);
+            }
         }
 
         // Được nút ẩn bên CtrlMeet.ascx gọi khi mở tab Giờ công.
@@ -629,11 +723,38 @@ ORDER BY SoThuTu ASC;";
                 ShowNotify("Bạn không có quyền xem giờ công cuộc họp của dự án.", MSGType.Error);
                 return;
             }
+            // Di chuyen tu ViewMeetDetail: uu tien xu ly theo IdLichHop
+            // trong mot async postback, khong phu thuoc trang hien tai cua bang trai.
+            Guid focusId;
+            string focusRaw = Request.Form["QLDA_MeetLabor_FocusId"];
+            if (Guid.TryParse(focusRaw, out focusId) && focusId != Guid.Empty)
+            {
+                TblLichHop focusMeet;
+                if (!IsValidMeeting(focusId, ProjectId, out focusMeet))
+                { ShowNotify("Không tìm thấy cuộc họp cần xem giờ công.", MSGType.Warning); return; }
+                using (SqlConnection db = new SqlConnection(GetConnectionString()))
+                {
+                    db.Open();
+                    if (!CanAccessMeeting(db, ProjectId, focusId, SweetContext.Current.UserId, CanManageProject))
+                    { ShowNotify("Bạn không có quyền xem giờ công của cuộc họp này.", MSGType.Warning); return; }
+                }
+                MeetingFilter = "all";
+                MeetingSearch = SafeSearch(focusMeet.TenCuocHop);
+                DateFrom = null; DateTo = null;
+                MeetingPage = 1; LaborPage = 1;
+                FocusedMeetingId = focusId;
+                SelectedMeetingId = focusId;
+                ViewState["GioCongFocusPulse"] = Guid.NewGuid().ToString("N");
+                BindTab();
+                return;
+            }
             // Filter action goes through this same stable async control to keep the unsaved-change guard.
             string filterAction = Request.Form["QLDA_MeetLabor_FilterAction"];
             string filterValue = Request.Form["QLDA_MeetLabor_FilterValue"];
             if (!string.IsNullOrWhiteSpace(filterAction))
             {
+                if (filterAction == "meetingMode" || filterAction == "meetingSearch" || filterAction == "range" || filterAction == "clearRange")
+                    FocusedMeetingId = Guid.Empty;
                 if (filterAction == "meetingMode")
                 {
                     if (filterValue != "all" && filterValue != "active" && filterValue != "ended" && filterValue != "hosted") return;
@@ -723,6 +844,7 @@ ORDER BY SoThuTu ASC;";
             if (mode != "all" && mode != "active" && mode != "ended" && mode != "hosted") return;
             if (MeetingFilter == mode && LaborLoaded) return;
             MeetingFilter = mode;
+            FocusedMeetingId = Guid.Empty;
             MeetingPage = 1;
             LaborPage = 1;
             SelectedMeetingId = Guid.Empty;
@@ -757,7 +879,7 @@ ORDER BY SoThuTu ASC;";
                     connection.Open();
                     meetings = LoadMeetingPage(connection, ProjectId, MeetingFilter,
                         SweetContext.Current.UserId, CanManageProject, MeetingPage,
-                        MeetingSearch, DateFrom, DateTo, out total, out actualPage);
+                        MeetingSearch, FocusedMeetingId, DateFrom, DateTo, out total, out actualPage);
                 }
                 MeetingPage = actualPage;
 
@@ -863,12 +985,17 @@ ORDER BY SoThuTu ASC;";
                 return;
             }
 
-            decimal duration = DurationHours(meeting);
+            decimal duration;
+            DateTime effectiveStart, effectiveEnd;
+            DateTime? savedStart, savedEnd; bool isConfirmed;
             List<GioCongNhanVienRow> rows;
             int totalPeople, joinedPeople, matchingPeople;
             using (SqlConnection connection = new SqlConnection(GetConnectionString()))
             {
                 connection.Open();
+                ReadMeetActual(connection, meetingId, out savedStart, out savedEnd, out isConfirmed);
+                EffectiveMeetTimes(meeting, savedStart, savedEnd, out effectiveStart, out effectiveEnd);
+                duration = DurationHours(effectiveStart, effectiveEnd);
                 LoadRosterSummary(connection, meetingId, out totalPeople, out joinedPeople);
                 matchingPeople = CountFilteredRoster(connection, meetingId, StaffSearch, StaffAttendance);
                 int pageCount = Math.Max(1, (matchingPeople + LaborPerPage - 1) / LaborPerPage);
@@ -888,7 +1015,29 @@ ORDER BY SoThuTu ASC;";
             litMeetName.Text = HttpUtility.HtmlEncode(meeting.TenCuocHop);
             litMeetDate.Text = meeting.ThoiGianBatDau.ToString("dd/MM/yyyy", ViCulture);
             litMeetTime.Text = meeting.ThoiGianBatDau.ToString("HH:mm", ViCulture) + " – " + meeting.ThoiGianKetThuc.ToString("HH:mm", ViCulture);
-            litDuration.Text = DurationMinutes(meeting).ToString(CultureInfo.InvariantCulture) + " phút = " + duration.ToString("0.##", ViCulture) + " giờ công";
+            litDuration.Text = DurationMinutes(effectiveStart, effectiveEnd).ToString(CultureInfo.InvariantCulture) + " phút = " + duration.ToString("0.##", ViCulture) + " giờ công";
+            TextBox timeStart = FindChildControl(this, "txtMeetStartActual") as TextBox;
+            TextBox timeEnd = FindChildControl(this, "txtMeetEndActual") as TextBox;
+            LinkButton saveTime = FindChildControl(this, "btnSaveMeetTimes") as LinkButton;
+            LinkButton confirmButton = FindChildControl(this, "btnConfirmMeetLabor") as LinkButton;
+            Literal confirmedInfo = FindChildControl(this, "litLaborConfirm") as Literal;
+            HtmlGenericControl confirmStrip = FindChildControl(this, "divLaborConfirm") as HtmlGenericControl;
+            Literal actualTimeSummary = FindChildControl(this, "litActualTimeRange") as Literal;
+            DateTime displayStart = savedStart ?? meeting.ThoiGianBatDau;
+            DateTime displayEnd = savedEnd ?? meeting.ThoiGianKetThuc;
+            ViewState["GioCongEffectiveStartHm"] = effectiveStart.ToString("HH:mm", CultureInfo.InvariantCulture);
+            ViewState["GioCongEffectiveEndHm"] = effectiveEnd.ToString("HH:mm", CultureInfo.InvariantCulture);
+            if (timeStart != null) { timeStart.Text = displayStart.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture); timeStart.Enabled = CanEditMeeting(meeting); }
+            if (timeEnd != null) { timeEnd.Text = displayEnd.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture); timeEnd.Enabled = CanEditMeeting(meeting); }
+            if (saveTime != null) saveTime.Visible = CanEditMeeting(meeting);
+            if (confirmedInfo != null) confirmedInfo.Text = isConfirmed ? "Đã xác nhận chấm công cuộc họp." : "Cuộc họp đã kết thúc nhưng CHƯA xác nhận chấm công.";
+            if (confirmStrip != null) confirmStrip.Style["display"] = "none";
+            if (actualTimeSummary != null) actualTimeSummary.Text = HttpUtility.HtmlEncode(displayStart.ToString("HH:mm", ViCulture) + " – " + displayEnd.ToString("HH:mm", ViCulture));
+            if (confirmButton != null) { confirmButton.Visible = CanEditMeeting(meeting) && !isConfirmed; }
+            pnlSelectedMeeting.Attributes["data-meeting-start"] = effectiveStart.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+            pnlSelectedMeeting.Attributes["data-meeting-end"] = effectiveEnd.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+            pnlSelectedMeeting.Attributes["data-effective-start-hm"] = effectiveStart.ToString("HH:mm", CultureInfo.InvariantCulture);
+            pnlSelectedMeeting.Attributes["data-effective-end-hm"] = effectiveEnd.ToString("HH:mm", CultureInfo.InvariantCulture);
             litJoinedCount.Text = joinedPeople.ToString(CultureInfo.InvariantCulture);
             litTheoryTotal.Text = (joinedPeople * duration).ToString("0.##", ViCulture) + " giờ";
             _canEditLabor = CanEditMeeting(meeting);
@@ -970,7 +1119,7 @@ ORDER BY SoThuTu ASC;";
 
             TextBox actual = (TextBox)e.Item.FindControl("txtActual");
             actual.Text = row.XacNhanThamGia
-                ? (row.SoGioThucTe.HasValue ? row.SoGioThucTe.Value.ToString("0.##", ViCulture) : string.Empty)
+                ? (row.SoGioThucTe.HasValue ? row.SoGioThucTe.Value.ToString("0.##", ViCulture) : CurrentDurationInvariant.Replace('.', ','))
                 : "0";
             // PM phải có ReadOnly=false trên server để không đánh mất giá trị POST.
             // Chỉ khóa ở HTML khi nhân viên đang được đánh dấu Không tham gia.
@@ -981,6 +1130,191 @@ ORDER BY SoThuTu ASC;";
                 actual.Attributes.Remove("readonly");
             actual.Attributes["inputmode"] = "decimal";
             actual.Attributes["autocomplete"] = "off";
+            TextBox timeIn = e.Item.FindControl("txtTimeIn") as TextBox;
+            TextBox timeOut = e.Item.FindControl("txtTimeOut") as TextBox;
+            LinkButton openEmployeeHours = e.Item.FindControl("btnOpenEmployeeHours") as LinkButton;
+            if (openEmployeeHours != null) openEmployeeHours.Enabled = _canEditLabor && row.XacNhanThamGia;
+            HiddenField mode = e.Item.FindControl("hfTimeMode") as HiddenField;
+            string defaultStartHm = Convert.ToString(ViewState["GioCongEffectiveStartHm"], CultureInfo.InvariantCulture) ?? string.Empty;
+            string defaultEndHm = Convert.ToString(ViewState["GioCongEffectiveEndHm"], CultureInfo.InvariantCulture) ?? string.Empty;
+            if (timeIn != null) timeIn.Text = row.GioVaoThucTe.HasValue ? row.GioVaoThucTe.Value.ToString("HH:mm", CultureInfo.InvariantCulture) : defaultStartHm;
+            if (timeOut != null) timeOut.Text = row.GioRaThucTe.HasValue ? row.GioRaThucTe.Value.ToString("HH:mm", CultureInfo.InvariantCulture) : defaultEndHm;
+            if (mode != null) mode.Value = !row.XacNhanThamGia ? "default"
+                : row.GioVaoThucTe.HasValue && row.GioRaThucTe.HasValue ? "time"
+                : row.SoGioThucTe.HasValue ? "manual" : "default";
+        }
+
+        // ===== Nhập giờ vào/ra bằng ExtraModal, ghi trực tiếp đúng một nhân viên =====
+        private static T EmployeeHoursControl<T>(Control root, string id) where T : Control
+        {
+            return FindChildControl(root, id) as T;
+        }
+
+        private bool ValidateEmployeeHoursAccess(Guid meetingId, Guid userId,
+            out TblLichHop meeting, out DateTime effectiveStart, out DateTime effectiveEnd,
+            out GioCongNhanVienRow member)
+        {
+            meeting = null; member = null;
+            effectiveStart = DateTime.MinValue; effectiveEnd = DateTime.MinValue;
+            if (!CanViewLabor || ProjectId == Guid.Empty || meetingId == Guid.Empty || userId == Guid.Empty ||
+                SelectedMeetingId != meetingId ||
+                !string.Equals(hfSelectedMeetId.Value, meetingId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+                !IsValidMeeting(meetingId, ProjectId, out meeting) || !CanEditMeeting(meeting)) return false;
+            using (SqlConnection db = new SqlConnection(GetConnectionString()))
+            {
+                db.Open();
+                if (!CanAccessMeeting(db, ProjectId, meetingId, SweetContext.Current.UserId, CanManageProject)) return false;
+                DateTime? savedStart, savedEnd; bool isConfirmed;
+                ReadMeetActual(db, meetingId, out savedStart, out savedEnd, out isConfirmed);
+                EffectiveMeetTimes(meeting, savedStart, savedEnd, out effectiveStart, out effectiveEnd);
+                var memberRows = LoadRosterPage(db, meetingId, DurationHours(effectiveStart, effectiveEnd),
+                    LaborPage, StaffSearch, StaffAttendance);
+                member = memberRows.FirstOrDefault(x => x.IdNhanVien == userId && x.XacNhanThamGia);
+                return member != null;
+            }
+        }
+
+        private void OpenEmployeeHoursExtraModal()
+        {
+            // Dùng đúng API của SweetSoft:ExtraModal như CtrlViewMeetDetail/CtrlTodaySchedule.
+            // Không dùng Reflection: GetMethod("OpenModal", typeof(bool)) không đáng tin cậy
+            // khi ExtraModal có các overload hoặc chữ ký khác với kiểu runtime.
+            ExtraModal modal = FindChildControl(this, "mdlEmployeeHours") as ExtraModal;
+            if (modal == null)
+                throw new InvalidOperationException("Không tìm thấy ExtraModal mdlEmployeeHours. Kiểm tra khai báo control trong ASCX.");
+
+            modal.OpenModal(true);
+        }
+
+        protected void btnOpenEmployeeHours_Click(object sender, EventArgs e)
+        {
+            LinkButton trigger = sender as LinkButton;
+            Guid userId;
+            TblLichHop meeting; DateTime start, end; GioCongNhanVienRow member;
+            if (trigger == null || !Guid.TryParse(trigger.CommandArgument, out userId) ||
+                !ValidateEmployeeHoursAccess(SelectedMeetingId, userId, out meeting, out start, out end, out member))
+            {
+                ShowNotify("Không thể chỉnh giờ. Nhân viên chưa được lưu trạng thái tham gia hoặc bạn không có quyền.", MSGType.Error);
+                return;
+            }
+            try
+            {
+                var meetingField = EmployeeHoursControl<HiddenField>(this, "hfEmployeeHoursMeetId");
+                var userField = EmployeeHoursControl<HiddenField>(this, "hfEmployeeHoursUserId");
+                var memberName = EmployeeHoursControl<Literal>(this, "litEmployeeHoursName");
+                var meetRange = EmployeeHoursControl<Literal>(this, "litEmployeeHoursMeetingTime");
+                var timeIn = EmployeeHoursControl<TextBox>(this, "txtEmployeeHoursIn");
+                var timeOut = EmployeeHoursControl<TextBox>(this, "txtEmployeeHoursOut");
+                var error = EmployeeHoursControl<Label>(this, "lblEmployeeHoursError");
+                if (meetingField == null || userField == null || memberName == null || meetRange == null || timeIn == null || timeOut == null)
+                    throw new InvalidOperationException("Thiếu control nhập giờ nhân viên trong ExtraModal.");
+                meetingField.Value = meeting.IdLichHop.ToString("D");
+                userField.Value = userId.ToString("D");
+                memberName.Text = HttpUtility.HtmlEncode(member.TenNhanVien);
+                meetRange.Text = "Giờ họp: " + HttpUtility.HtmlEncode(start.ToString("dd/MM/yyyy HH:mm", ViCulture) + " – " +
+                    end.ToString("dd/MM/yyyy HH:mm", ViCulture));
+                timeIn.Text = (member.GioVaoThucTe ?? start).ToString("HH:mm", CultureInfo.InvariantCulture);
+                timeOut.Text = (member.GioRaThucTe ?? end).ToString("HH:mm", CultureInfo.InvariantCulture);
+                if (error != null) error.Text = string.Empty;
+                UpdatePanel up = EmployeeHoursControl<UpdatePanel>(this, "upEmployeeHours");
+                if (up != null) up.Update();
+                OpenEmployeeHoursExtraModal();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("CtrlMeetGioCongTab.OpenEmployeeHours: Meet=" +
+                    SelectedMeetingId.ToString("D") + "; Employee=" + userId.ToString("D") + "; " + ex);
+                ShowNotify("Không mở được popup giờ vào/ra. Kiểm tra log CtrlMeetGioCongTab.OpenEmployeeHours trên máy chủ.", MSGType.Error);
+            }
+        }
+
+        protected void btnSaveEmployeeHours_Click(object sender, EventArgs e)
+        {
+            HiddenField meetField = EmployeeHoursControl<HiddenField>(this, "hfEmployeeHoursMeetId");
+            HiddenField userField = EmployeeHoursControl<HiddenField>(this, "hfEmployeeHoursUserId");
+            TextBox timeIn = EmployeeHoursControl<TextBox>(this, "txtEmployeeHoursIn");
+            TextBox timeOut = EmployeeHoursControl<TextBox>(this, "txtEmployeeHoursOut");
+            Label error = EmployeeHoursControl<Label>(this, "lblEmployeeHoursError");
+            Guid meetId, userId;
+            if (meetField == null || userField == null || timeIn == null || timeOut == null ||
+                !Guid.TryParse(meetField.Value, out meetId) || !Guid.TryParse(userField.Value, out userId))
+            {
+                ShowNotify("Dữ liệu nhân viên không hợp lệ. Hãy mở lại popup.", MSGType.Error); return;
+            }
+            TblLichHop meeting; DateTime start, end; GioCongNhanVienRow member;
+            if (!ValidateEmployeeHoursAccess(meetId, userId, out meeting, out start, out end, out member))
+            {
+                ShowNotify("Nhân viên không còn hợp lệ hoặc không có quyền chỉnh giờ.", MSGType.Error); return;
+            }
+            // Chỉ nhận HH:mm (24 giờ), không chấp nhận văn bản hay giây.
+            DateTime checkedIn, checkedOut;
+            string rawIn = Request.Form[timeIn.UniqueID] ?? timeIn.Text;
+            string rawOut = Request.Form[timeOut.UniqueID] ?? timeOut.Text;
+            if (!TryEmployeeInterval(start, end, rawIn, rawOut, out checkedIn, out checkedOut))
+            {
+                if (error != null) error.Text = "Giờ vào/ra phải nằm trong thời gian họp và giờ ra phải sau giờ vào (HH:mm).";
+                UpdatePanel update = EmployeeHoursControl<UpdatePanel>(this, "upEmployeeHours");
+                if (update != null) update.Update();
+                ShowNotify("Giờ vào/ra không hợp lệ hoặc nằm ngoài thời gian họp.", MSGType.Error);
+                return;
+            }
+            decimal hours = Math.Round((decimal)(checkedOut - checkedIn).TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero);
+            try
+            {
+                using (SqlConnection db = new SqlConnection(GetConnectionString()))
+                {
+                    db.Open();
+                    using (SqlTransaction tran = db.BeginTransaction(IsolationLevel.Serializable))
+                    {
+                        // UPDATE/INSERT một nhân viên; không sửa những người còn lại hay cờ xác nhận của cuộc họp.
+                        const string sql = @"
+UPDATE dbo.TblLichHopGioCong WITH (UPDLOCK, SERIALIZABLE)
+   SET SoGioThucTe=@Hours, GioVaoThucTe=@CheckIn, GioRaThucTe=@CheckOut,
+       DaThamGia=1, NguoiCapNhat=@UserId, NgayCapNhat=GETDATE()
+ WHERE IdLichHop=@MeetId AND IdNhanVien=@EmployeeId;
+IF @@ROWCOUNT=0
+   INSERT INTO dbo.TblLichHopGioCong
+       (IdLichHop, IdNhanVien, SoGioThucTe, DaThamGia, GioVaoThucTe, GioRaThucTe, NguoiCapNhat, NgayCapNhat)
+   VALUES (@MeetId, @EmployeeId, @Hours, 1, @CheckIn, @CheckOut, @UserId, GETDATE());";
+                        using (SqlCommand cmd = new SqlCommand(sql, db, tran))
+                        {
+                            cmd.Parameters.Add(GuidParameter("@MeetId", meetId));
+                            cmd.Parameters.Add(GuidParameter("@EmployeeId", userId));
+                            cmd.Parameters.Add(GuidParameter("@UserId", SweetContext.Current.UserId));
+                            SqlParameter h = cmd.Parameters.Add("@Hours", SqlDbType.Decimal); h.Precision = 10; h.Scale = 2; h.Value = hours;
+                            cmd.Parameters.Add("@CheckIn", SqlDbType.DateTime2).Value = checkedIn;
+                            cmd.Parameters.Add("@CheckOut", SqlDbType.DateTime2).Value = checkedOut;
+                            cmd.ExecuteNonQuery();
+                        }
+                        tran.Commit();
+                    }
+                }
+                BindSelectedMeeting(meetId);
+                if (SaveResultField != null) SaveResultField.Value = "success";
+                upLaborTab.Update();
+                if (error != null) error.Text = string.Empty;
+                UpdatePanel updateEmployee = EmployeeHoursControl<UpdatePanel>(this, "upEmployeeHours");
+                if (updateEmployee != null) updateEmployee.Update();
+                Control modal = FindChildControl(this, "mdlEmployeeHours");
+                if (modal != null)
+                {
+                    string id = HttpUtility.JavaScriptStringEncode(modal.ClientID);
+                    string script = "(function(){var el=document.getElementById('" + id + "');if(!el)return;" +
+                        "try{if(window.bootstrap&&bootstrap.Modal){var m=bootstrap.Modal.getInstance(el);if(m){m.hide();return;}}" +
+                        "if(window.jQuery&&jQuery.fn.modal){jQuery(el).modal('hide');return;}}catch(e){}" +
+                        "el.classList.remove('show','in');el.style.display='none';})();";
+                    ScriptManager.RegisterStartupScript(upLaborTab, upLaborTab.GetType(), "LaborEmployeeHoursClose", script, true);
+                }
+                ShowNotify("Đã lưu giờ vào/ra và cập nhật công thực tế: " + hours.ToString("0.##", ViCulture) + " giờ.", MSGType.Success);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("CtrlMeetGioCongTab.SaveEmployeeHours: " + ex);
+                if (error != null) error.Text = "Không lưu được giờ công. Hãy thử lại hoặc kiểm tra log server.";
+                UpdatePanel up = EmployeeHoursControl<UpdatePanel>(this, "upEmployeeHours");
+                if (up != null) up.Update();
+                ShowNotify("Lưu giờ vào/ra thất bại. Kiểm tra log server.", MSGType.Error);
+            }
         }
 
         private static bool TryHours(string value, out decimal? hours)
@@ -993,6 +1327,176 @@ ORDER BY SoThuTu ASC;";
             if (parsed < 0m || parsed > 9999.99m || decimal.Round(parsed, 2) != parsed) return false;
             hours = parsed;
             return true;
+        }
+
+        private static bool TryEmployeeInterval(DateTime meetStart, DateTime meetEnd,
+            string startValue, string endValue, out DateTime checkIn, out DateTime checkOut)
+        {
+            checkIn = DateTime.MinValue; checkOut = DateTime.MinValue;
+            DateTime inClock, outClock;
+            if (!DateTime.TryParseExact(startValue, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out inClock) ||
+                !DateTime.TryParseExact(endValue, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out outClock)) return false;
+            checkIn = meetStart.Date.Add(inClock.TimeOfDay);
+            while (checkIn < meetStart) checkIn = checkIn.AddDays(1);
+            checkOut = checkIn.Date.Add(outClock.TimeOfDay);
+            if (checkOut <= checkIn) checkOut = checkOut.AddDays(1);
+            return checkIn >= meetStart && checkOut <= meetEnd && checkOut > checkIn;
+        }
+        private static bool TryMeetingDateTime(string raw, out DateTime value)
+        {
+            return DateTime.TryParseExact((raw ?? "").Trim(), "yyyy-MM-ddTHH:mm",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+        }
+
+        // Sau khi luu chinh sua, cap nhat huy hieu o danh sach trai ngay ca khi
+        // Repeater cu khong DataBind lai (tranh lam mat bo loc/vi tri cuon).
+        private void MarkActiveMeetingPending()
+        {
+            ScriptManager.RegisterStartupScript(upLaborTab, upLaborTab.GetType(),
+                "MeetLaborPending" + Guid.NewGuid().ToString("N"),
+                @"setTimeout(function(){
+                    var card=document.querySelector('.meet-panel-labor .mlt-meeting-link.is-active');
+                    if(!card)return;
+                    var ok=card.querySelector('.mlt-accounted-ok');
+                    if(ok){ok.outerHTML='<span class=""mlt-accounted-pending"" title=""Cần xác nhận lại sau khi chỉnh sửa"">Chưa chấm công</span>';}
+                },70);", true);
+        }
+
+        // Luu gio bat dau/ket thuc thuc te, khong tu danh dau da cham cong.
+        protected void btnSaveMeetTimes_Click(object sender, EventArgs e)
+        {
+            Guid meetId = SelectedMeetingId; TblLichHop meet;
+            if (!CanViewLabor || !IsValidMeeting(meetId, ProjectId, out meet) ||
+                !CanEditMeeting(meet) || hfSelectedMeetId.Value != meetId.ToString("D"))
+            { ShowSaveError("Bạn không có quyền sửa thời gian cuộc họp."); return; }
+            TextBox from = FindChildControl(this, "txtMeetStartActual") as TextBox;
+            TextBox to = FindChildControl(this, "txtMeetEndActual") as TextBox;
+            DateTime start, end;
+            string fromRaw = from == null ? "" : Request.Form[from.UniqueID] ?? from.Text;
+            string toRaw = to == null ? "" : Request.Form[to.UniqueID] ?? to.Text;
+            if (!TryMeetingDateTime(fromRaw, out start) || !TryMeetingDateTime(toRaw, out end) ||
+                end <= start || (end - start).TotalDays > 7 || end > DateTime.Now.AddMinutes(1))
+            { ShowSaveError("Giờ thực tế không hợp lệ: kết thúc phải sau bắt đầu, không quá 7 ngày và không nằm trong tương lai."); return; }
+            bool timesChanged = false;
+            try
+            {
+                using (SqlConnection db = new SqlConnection(GetConnectionString()))
+                {
+                    db.Open();
+                    if (!CanAccessMeeting(db, ProjectId, meetId, SweetContext.Current.UserId, CanManageProject))
+                    { ShowSaveError("Không có quyền lưu cuộc họp này."); return; }
+                    // Gio cong mac dinh duoc luu bang NULL de tu ke thua thoi luong hop thuc te.
+                    // Du lieu cu co the da luu so gio bang gio ly thuyet: chuyen nhung dong khop
+                    // dung gio ly thuyet CU sang NULL; khong cham vao dong co gio vao/ra rieng,
+                    // hoac so gio thu cong KHAC gio ly thuyet cu.
+                    DateTime? oldSavedStart, oldSavedEnd; bool oldConfirmed;
+                    ReadMeetActual(db, meetId, out oldSavedStart, out oldSavedEnd, out oldConfirmed);
+                    DateTime oldStart, oldEnd;
+                    EffectiveMeetTimes(meet, oldSavedStart, oldSavedEnd, out oldStart, out oldEnd);
+                    decimal previousHours = DurationHours(oldStart, oldEnd);
+                    decimal plannedHours = DurationHours(meet.ThoiGianBatDau, meet.ThoiGianKetThuc);
+                    timesChanged = oldStart != start || oldEnd != end;
+                    using (SqlTransaction tx = db.BeginTransaction(IsolationLevel.Serializable))
+                    {
+                        const string sql = @"UPDATE dbo.TblLichHop
+SET ThoiGianBatDauThucTe=@Start, ThoiGianKetThucThucTe=@End,
+    DaXacNhanChamCong=CASE WHEN @Changed=1 THEN 0 ELSE DaXacNhanChamCong END,
+    IdNguoiCapNhat=@UserId, NgayCapNhat=GETDATE()
+WHERE IdLichHop=@MeetId AND IdDuAn=@ProjectId AND ISNULL(DaXoa,0)=0";
+                        using (SqlCommand command = new SqlCommand(sql, db, tx))
+                        {
+                            command.Parameters.Add(GuidParameter("@MeetId", meetId));
+                            command.Parameters.Add(GuidParameter("@ProjectId", ProjectId));
+                            command.Parameters.Add(GuidParameter("@UserId", SweetContext.Current.UserId));
+                            command.Parameters.Add("@Start", SqlDbType.DateTime2).Value = start;
+                            command.Parameters.Add("@End", SqlDbType.DateTime2).Value = end;
+                            command.Parameters.Add("@Changed", SqlDbType.Bit).Value = timesChanged;
+                            if (command.ExecuteNonQuery() != 1) throw new DataException("Cuoc hop khong ton tai.");
+                        }
+                        // Cho phep dong bo lai nhung cuoc hop da sua gio truoc khi cai ban fix,
+                        // nhung khong cham vao du lieu da xac nhan neu gio khong thay doi.
+                        if (timesChanged || (!oldConfirmed && previousHours != plannedHours))
+                        {
+                            const string setDefaults = @"
+UPDATE dbo.TblLichHopGioCong
+SET SoGioThucTe=NULL
+WHERE IdLichHop=@MeetId
+  AND (DaThamGia=1 OR (DaThamGia IS NULL AND EXISTS (
+       SELECT 1 FROM dbo.TblLichHop_NhanVien nv
+       WHERE nv.IdLichHop=@MeetId AND nv.IdNhanVien=TblLichHopGioCong.IdNhanVien
+         AND nv.XacNhanThamGia=1)))
+  AND GioVaoThucTe IS NULL AND GioRaThucTe IS NULL
+  AND (SoGioThucTe=@PreviousHours OR SoGioThucTe=@PlannedHours);";
+                            using (SqlCommand cmd = new SqlCommand(setDefaults, db, tx))
+                            {
+                                cmd.Parameters.Add(GuidParameter("@MeetId", meetId));
+                                SqlParameter pOld = cmd.Parameters.Add("@PreviousHours", SqlDbType.Decimal);
+                                pOld.Precision = 10; pOld.Scale = 2; pOld.Value = previousHours;
+                                SqlParameter pPlanned = cmd.Parameters.Add("@PlannedHours", SqlDbType.Decimal);
+                                pPlanned.Precision = 10; pPlanned.Scale = 2; pPlanned.Value = plannedHours;
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        tx.Commit();
+                    }
+                }
+                BindSelectedMeeting(meetId);
+                if (SaveResultField != null) SaveResultField.Value = "success";
+                if (timesChanged) MarkActiveMeetingPending();
+                ShowNotify(timesChanged ? "Đã cập nhật giờ họp thực tế và đồng bộ công mặc định. Hãy kiểm tra trước khi xác nhận lại." : "Đã lưu giờ họp thực tế.", MSGType.Success);
+                upLaborTab.Update();
+            }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("SaveMeetTimes: " + ex); ShowSaveError("Không thể lưu thời gian họp thực tế."); }
+        }
+
+        protected void btnConfirmMeetLabor_Click(object sender, EventArgs e)
+        {
+            Guid meetId = SelectedMeetingId; TblLichHop meet;
+            if (!CanViewLabor || !IsValidMeeting(meetId, ProjectId, out meet) ||
+                !CanEditMeeting(meet) || hfSelectedMeetId.Value != meetId.ToString("D"))
+            { ShowSaveError("Bạn không có quyền xác nhận chấm công."); return; }
+            try
+            {
+                using (SqlConnection db = new SqlConnection(GetConnectionString()))
+                {
+                    db.Open();
+                    if (!CanAccessMeeting(db, ProjectId, meetId, SweetContext.Current.UserId, CanManageProject))
+                    { ShowSaveError("Không có quyền truy cập cuộc họp này."); return; }
+                    DateTime? start, end; bool alreadyConfirmed;
+                    ReadMeetActual(db, meetId, out start, out end, out alreadyConfirmed);
+                    if (!start.HasValue || !end.HasValue || end <= start)
+                    { ShowSaveError("Hãy lưu giờ bắt đầu và kết thúc thực tế trước khi xác nhận chấm công."); return; }
+                    // Khong cho xac nhan neu van con nhan vien chua luu trang thai tham gia.
+                    const string pendingSql = @"WITH DanhSach AS (
+ SELECT IdNhanVien FROM dbo.TblLichHop_NhanVien WHERE IdLichHop=@IdLichHop AND IdNhanVien IS NOT NULL
+ UNION SELECT IdNguoiTao FROM dbo.TblLichHop WHERE IdLichHop=@IdLichHop AND IdNguoiTao IS NOT NULL)
+ SELECT COUNT(1) FROM DanhSach d LEFT JOIN dbo.TblLichHopGioCong g
+ ON g.IdLichHop=@IdLichHop AND g.IdNhanVien=d.IdNhanVien WHERE g.DaThamGia IS NULL";
+                    using (SqlCommand pending = new SqlCommand(pendingSql, db))
+                    {
+                        pending.Parameters.Add(GuidParameter("@IdLichHop", meetId));
+                        int count = Convert.ToInt32(pending.ExecuteScalar(), CultureInfo.InvariantCulture);
+                        if (count > 0) { ShowSaveError("Còn " + count + " nhân viên chưa lưu Có/Không tham gia. Vui lòng chấm đủ trước khi xác nhận."); return; }
+                    }
+                    const string sql = @"UPDATE dbo.TblLichHop SET DaXacNhanChamCong=1,
+ IdNguoiCapNhat=@UserId, NgayCapNhat=GETDATE()
+ WHERE IdLichHop=@MeetId AND IdDuAn=@ProjectId AND ISNULL(DaXoa,0)=0";
+                    using (SqlCommand cmd = new SqlCommand(sql, db))
+                    {
+                        cmd.Parameters.Add(GuidParameter("@MeetId", meetId));
+                        cmd.Parameters.Add(GuidParameter("@ProjectId", ProjectId));
+                        cmd.Parameters.Add(GuidParameter("@UserId", SweetContext.Current.UserId));
+                        if (cmd.ExecuteNonQuery() != 1) throw new DataException("Cuoc hop khong ton tai.");
+                    }
+                }
+                BindSelectedMeeting(meetId);
+                if (SaveResultField != null) SaveResultField.Value = "success";
+                ShowNotify("Đã xác nhận chấm công cuộc họp.", MSGType.Success);
+                // Cap nhat nhan da cham cong tai danh sach cuoc hop ben trai.
+                BindTab();
+                upLaborTab.Update();
+            }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("ConfirmMeetLabor: " + ex); ShowSaveError("Không thể xác nhận chấm công."); }
         }
 
         private void ShowSaveError(string text)
@@ -1025,39 +1529,56 @@ ORDER BY SoThuTu ASC;";
                 return;
             }
 
-            Dictionary<Guid, Tuple<bool, decimal?>> posted = new Dictionary<Guid, Tuple<bool, decimal?>>();
+            Dictionary<Guid, GioCongInput> posted = new Dictionary<Guid, GioCongInput>();
+            DateTime effStart, effEnd;
+            using (SqlConnection tdb = new SqlConnection(GetConnectionString()))
+            {
+                tdb.Open(); DateTime? aa, bb; bool confirmed;
+                ReadMeetActual(tdb, meetingId, out aa, out bb, out confirmed);
+                EffectiveMeetTimes(meeting, aa, bb, out effStart, out effEnd);
+            }
             foreach (RepeaterItem item in rptLabor.Items)
             {
+                if (item.ItemType != ListItemType.Item && item.ItemType != ListItemType.AlternatingItem) continue;
                 Guid userId;
-                HiddenField idField = (HiddenField)item.FindControl("hfUserId");
-                RadioButtonList attendance = (RadioButtonList)item.FindControl("rblAttendance");
-                TextBox actual = (TextBox)item.FindControl("txtActual");
-                if (idField == null || attendance == null || actual == null ||
-                    !Guid.TryParse(idField.Value, out userId) || userId == Guid.Empty || posted.ContainsKey(userId))
-                {
-                    ShowSaveError("Danh sách nhân viên không hợp lệ. Vui lòng mở lại tab.");
-                    return;
-                }
-
-                // Đọc giá trị mới trực tiếp từ form thay vì hidden field của phiên bản popup cũ.
+                HiddenField idField = item.FindControl("hfUserId") as HiddenField;
+                RadioButtonList attendance = item.FindControl("rblAttendance") as RadioButtonList;
+                TextBox actual = item.FindControl("txtActual") as TextBox;
+                HiddenField mode = item.FindControl("hfTimeMode") as HiddenField;
+                TextBox timeIn = item.FindControl("txtTimeIn") as TextBox;
+                TextBox timeOut = item.FindControl("txtTimeOut") as TextBox;
+                if (idField == null || attendance == null || actual == null || mode == null ||
+                    timeIn == null || timeOut == null || !Guid.TryParse(idField.Value, out userId) ||
+                    userId == Guid.Empty || posted.ContainsKey(userId))
+                { ShowSaveError("Danh sách nhân viên không hợp lệ. Vui lòng mở lại tab."); return; }
                 string selected = Request.Form[attendance.UniqueID];
                 if (selected != "1" && selected != "0")
+                { ShowSaveError("Vui lòng chọn Có hoặc Không tham gia cho từng nhân viên."); return; }
+                GioCongInput entry = new GioCongInput { ThamGia = selected == "1", SoGio = 0m };
+                if (entry.ThamGia)
                 {
-                    ShowSaveError("Vui lòng chọn Có hoặc Không tham gia cho từng nhân viên.");
-                    return;
-                }
-                bool joined = selected == "1";
-                decimal? hours = 0m;
-                if (joined)
-                {
-                    string raw = Request.Form[actual.UniqueID] ?? actual.Text;
-                    if (!TryHours(raw, out hours))
+                    string selectedMode = Request.Form[mode.UniqueID] ?? mode.Value;
+                    if (selectedMode == "time")
                     {
-                        ShowSaveError("Giờ công thực tế phải từ 0 đến 9999,99 và tối đa 2 chữ số thập phân.");
-                        return;
+                        string startText = Request.Form[timeIn.UniqueID] ?? timeIn.Text;
+                        string endText = Request.Form[timeOut.UniqueID] ?? timeOut.Text;
+                        DateTime checkIn, checkOut;
+                        if (!TryEmployeeInterval(effStart, effEnd, startText, endText, out checkIn, out checkOut))
+                        { ShowSaveError("Giờ vào/ra của nhân viên phải nằm trong khoảng giờ họp thực tế và ra sau khi vào (HH:mm)."); return; }
+                        entry.GioVao = checkIn; entry.GioRa = checkOut;
+                        entry.SoGio = Math.Round((decimal)(checkOut - checkIn).TotalMinutes / 60m, 2, MidpointRounding.AwayFromZero);
                     }
+                    else if (selectedMode == "manual")
+                    {
+                        decimal? hours; string raw = Request.Form[actual.UniqueID] ?? actual.Text;
+                        if (!TryHours(raw, out hours))
+                        { ShowSaveError("Giờ công phải từ 0 đến 9999,99, tối đa 2 chữ số thập phân."); return; }
+                        entry.SoGio = hours; // Chinh tay; gio vao/ra la NULL
+                    }
+                    else if (selectedMode == "default") entry.SoGio = null; // Fallback dong theo gio hop thuc te
+                    else { ShowSaveError("Chế độ giờ công không hợp lệ."); return; }
                 }
-                posted.Add(userId, Tuple.Create(joined, hours));
+                posted.Add(userId, entry);
             }
 
             try
@@ -1090,18 +1611,19 @@ ORDER BY SoThuTu ASC;";
 
                     using (SqlTransaction transaction = connection.BeginTransaction(IsolationLevel.Serializable))
                     {
-                        foreach (KeyValuePair<Guid, Tuple<bool, decimal?>> input in posted)
+                        foreach (KeyValuePair<Guid, GioCongInput> input in posted)
                         {
                             const string sql = @"
 UPDATE dbo.TblLichHopGioCong WITH (UPDLOCK, SERIALIZABLE)
-SET SoGioThucTe=@SoGioThucTe, DaThamGiaOverride=@DaThamGiaOverride,
+SET SoGioThucTe=@SoGioThucTe, DaThamGia=@DaThamGia,
+    GioVaoThucTe=@GioVaoThucTe, GioRaThucTe=@GioRaThucTe,
     NguoiCapNhat=@NguoiCapNhat, NgayCapNhat=GETDATE()
 WHERE IdLichHop=@IdLichHop AND IdNhanVien=@IdNhanVien;
 IF @@ROWCOUNT = 0
     INSERT INTO dbo.TblLichHopGioCong
-      (IdLichHop, IdNhanVien, SoGioThucTe, DaThamGiaOverride, NguoiCapNhat, NgayCapNhat)
+      (IdLichHop, IdNhanVien, SoGioThucTe, DaThamGia, GioVaoThucTe, GioRaThucTe, NguoiCapNhat, NgayCapNhat)
     VALUES
-      (@IdLichHop, @IdNhanVien, @SoGioThucTe, @DaThamGiaOverride, @NguoiCapNhat, GETDATE());";
+      (@IdLichHop, @IdNhanVien, @SoGioThucTe, @DaThamGia, @GioVaoThucTe, @GioRaThucTe, @NguoiCapNhat, GETDATE());";
                             using (SqlCommand command = new SqlCommand(sql, connection, transaction))
                             {
                                 command.Parameters.Add(GuidParameter("@IdLichHop", meetingId));
@@ -1110,9 +1632,11 @@ IF @@ROWCOUNT = 0
                                 SqlParameter hoursParameter = command.Parameters.Add("@SoGioThucTe", SqlDbType.Decimal);
                                 hoursParameter.Precision = 10;
                                 hoursParameter.Scale = 2;
-                                hoursParameter.Value = input.Value.Item2.HasValue
-                                    ? (object)input.Value.Item2.Value : DBNull.Value;
-                                command.Parameters.Add("@DaThamGiaOverride", SqlDbType.Bit).Value = input.Value.Item1;
+                                hoursParameter.Value = input.Value.SoGio.HasValue
+                                    ? (object)input.Value.SoGio.Value : DBNull.Value;
+                                command.Parameters.Add("@DaThamGia", SqlDbType.Bit).Value = input.Value.ThamGia;
+                                command.Parameters.Add("@GioVaoThucTe", SqlDbType.DateTime2).Value = input.Value.GioVao.HasValue ? (object)input.Value.GioVao.Value : DBNull.Value;
+                                command.Parameters.Add("@GioRaThucTe", SqlDbType.DateTime2).Value = input.Value.GioRa.HasValue ? (object)input.Value.GioRa.Value : DBNull.Value;
                                 command.ExecuteNonQuery();
                             }
                         }

@@ -276,42 +276,6 @@ namespace SweetSoft.QLDA.BackOffice.fEmployeeDashboard
         protected global::System.Web.UI.WebControls.Repeater rptProjectStatusRows;
 
         /// <summary>
-        /// hfEdDailyKey control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfEdDailyKey;
-
-        /// <summary>
-        /// mdlTimeProjects control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlTimeProjects;
-
-        /// <summary>
-        /// rptTodayTimeProjects control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptTodayTimeProjects;
-
-        /// <summary>
-        /// pnlNoTodayTimeProjects control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoTodayTimeProjects;
-
-        /// <summary>
         /// mdlProjects control.
         /// </summary>
         /// <remarks>

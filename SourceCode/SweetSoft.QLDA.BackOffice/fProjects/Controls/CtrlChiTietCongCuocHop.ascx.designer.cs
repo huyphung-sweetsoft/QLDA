@@ -150,48 +150,129 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.UpdatePanel upMeetingResults;
 
         /// <summary>
-        /// litMeetings control.
+        /// rptMeetings control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litMeetings;
+        protected global::System.Web.UI.WebControls.Repeater rptMeetings;
 
         /// <summary>
-        /// litMeetingPager control.
+        /// pmcMeetingsEmpty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litMeetingPager;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl pmcMeetingsEmpty;
 
         /// <summary>
-        /// litRosterHeader control.
+        /// pmcMeetingPrev control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litRosterHeader;
+        protected global::System.Web.UI.HtmlControls.HtmlButton pmcMeetingPrev;
 
         /// <summary>
-        /// litRoster control.
+        /// litMeetingPageInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litRoster;
+        protected global::System.Web.UI.WebControls.Literal litMeetingPageInfo;
 
         /// <summary>
-        /// litRosterPager control.
+        /// pmcMeetingNext control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litRosterPager;
+        protected global::System.Web.UI.HtmlControls.HtmlButton pmcMeetingNext;
+
+        /// <summary>
+        /// litMeetingName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetingName;
+
+        /// <summary>
+        /// litMeetingTimes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetingTimes;
+
+        /// <summary>
+        /// litMeetingDuration control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetingDuration;
+
+        /// <summary>
+        /// rptRoster control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptRoster;
+
+        /// <summary>
+        /// phRosterEmpty control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phRosterEmpty;
+
+        /// <summary>
+        /// litRosterEmptyMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRosterEmptyMessage;
+
+        /// <summary>
+        /// pmcRosterPrev control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlButton pmcRosterPrev;
+
+        /// <summary>
+        /// litRosterPageInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRosterPageInfo;
+
+        /// <summary>
+        /// pmcRosterNext control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlButton pmcRosterNext;
     }
 }

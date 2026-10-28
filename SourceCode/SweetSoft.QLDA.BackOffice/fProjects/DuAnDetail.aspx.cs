@@ -1,6 +1,8 @@
 ﻿using SweetCMS.Controls.Helpers;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fProjects.Controls;
+using SweetSoft.QLDA.BackOffice.fTasks.Controls;
+using SweetSoft.QLDA.BackOffice.fMeets.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
@@ -100,6 +102,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             if (chiTiet != null) chiTiet.ProjectId = QueryId;
             var chiTietHop = FindProjectDetailControl(this, "CtrlChiTietCongCuocHop1") as CtrlChiTietCongCuocHop;
             if (chiTietHop != null) chiTietHop.ProjectId = QueryId;
+            // Đăng ký trigger async tương tự CtrlTodaySchedule, ngoài UpdatePanel bốn bảng.
+            ScriptManager managerPd = ScriptManager.GetCurrent(Page);
+            Control openView = FindProjectDetailControl(this, "btnPdViewObject");
+            if (managerPd != null && openView != null) managerPd.RegisterAsyncPostBackControl(openView);
             CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
             CtrlLichSuDuAn1.IdDuAn = QueryId;
             pnlContract.Visible = this.IsContractView;
@@ -172,11 +178,86 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
         }
 
+        // Từ tên công việc/cuộc họp sang popup ViewDetail: chỉ nhận loại và GUID, kiểm tra quyền tại server.
+        // PM/Admin có thể xem tất cả đối tượng trong dự án; thành viên chỉ xem task được giao / họp có tham gia hoặc chủ trì.
+        private bool CanOpenProjectViewObject(string kind, Guid id, Guid projectId, Guid actor)
+        {
+            if (id == Guid.Empty || projectId == Guid.Empty || actor == Guid.Empty) return false;
+            bool isManager = CanViewProjectTeamHours();
+            string sql;
+            if (kind == "task")
+                sql = @"SELECT CASE WHEN EXISTS(SELECT 1 FROM dbo.TblCongViec t
+                  WHERE t.IdCongViec=@Id AND t.IdDuAn=@ProjectId AND ISNULL(t.DaXoa,0)=0
+                  AND (@IsManager=1 OR EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien n
+                       WHERE n.IdCongViec=t.IdCongViec AND n.IdNhanVien=@UserId))) THEN 1 ELSE 0 END";
+            else if (kind == "meet")
+                sql = @"SELECT CASE WHEN EXISTS(SELECT 1 FROM dbo.TblLichHop m
+                  WHERE m.IdLichHop=@Id AND m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0
+                  AND (@IsManager=1 OR m.IdNguoiTao=@UserId OR EXISTS(SELECT 1 FROM dbo.TblLichHop_NhanVien n
+                       WHERE n.IdLichHop=m.IdLichHop AND n.IdNhanVien=@UserId))) THEN 1 ELSE 0 END";
+            else return false;
+            using (var conn = new SqlConnection(PersonalConnectionString()))
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.CommandTimeout = 20;
+                cmd.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+                cmd.Parameters.Add("@ProjectId", SqlDbType.UniqueIdentifier).Value = projectId;
+                cmd.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = actor;
+                cmd.Parameters.Add("@IsManager", SqlDbType.Bit).Value = isManager;
+                conn.Open();
+                return Convert.ToInt32(cmd.ExecuteScalar()) == 1;
+            }
+        }
+
+        protected void btnPdViewObject_Click(object sender, EventArgs e)
+        {
+            var kindField = FindProjectDetailControl(this, "hfPdViewObjectKind") as HiddenField;
+            var idField = FindProjectDetailControl(this, "hfPdViewObjectId") as HiddenField;
+            string kind = kindField == null ? "" : (kindField.Value ?? "").Trim().ToLowerInvariant();
+            Guid objectId;
+            if ((kind != "task" && kind != "meet") || idField == null ||
+                !Guid.TryParse(idField.Value, out objectId) || objectId == Guid.Empty) return;
+            try
+            {
+                Guid actor = SweetContext.Current.UserId;
+                if (!CanOpenProjectViewObject(kind, objectId, QueryId, actor))
+                {
+                    ShowNotify("Bạn không có quyền xem chi tiết này trong dự án.", MSGType.Error);
+                    return;
+                }
+                if (kind == "task")
+                {
+                    CtrlViewTaskDetail detail = FindProjectDetailControl(Page, "CtrlTodayTaskDetail") as CtrlViewTaskDetail;
+                    if (detail != null) detail.OpenModal(objectId);
+                    else ShowNotify("Không tìm thấy cửa sổ chi tiết công việc trên trang.", MSGType.Error);
+                }
+                else
+                {
+                    CtrlViewMeetDetail detail = FindProjectDetailControl(Page, "CtrlTodayMeetDetail") as CtrlViewMeetDetail;
+                    if (detail != null) detail.OpenModal(objectId);
+                    else ShowNotify("Không tìm thấy cửa sổ chi tiết cuộc họp trên trang.", MSGType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                SysLogger.LogError(ex, "DuAnDetail: lỗi mở popup ViewDetail từ tên công việc/cuộc họp");
+                ShowNotify("Không mở được chi tiết. Vui lòng thử lại.", MSGType.Error);
+            }
+        }
+
         // =========================================================================================
         // PHẦN VIỆC CỦA TÔI - chỉ đọc thông tin, giới hạn cả @ProjectId và @UserId.
         // Giờ công chính thức từ bảng đối soát KBG20; Task/Issue tách khóa và chỉ cộng PM chốt.
         // =========================================================================================
-        private static Control FindProjectDetailControl(Control root, string id)
+        // Phòng trường hợp code-behind mới được triển khai trước ASPX: không tạo nút chết.
+        private bool HasProjectViewBridge()
+        {
+            return FindProjectDetailControl(this, "btnPdViewObject") != null
+                && FindProjectDetailControl(this, "hfPdViewObjectKind") != null
+                && FindProjectDetailControl(this, "hfPdViewObjectId") != null;
+        }
+
+        protected static Control FindProjectDetailControl(Control root, string id)
         {
             if (root == null) return null;
             if (root.ID == id) return root;
@@ -396,7 +477,7 @@ ORDER BY CASE COLUMN_NAME
         // Override của PM có độ ưu tiên cao nhất, cùng hợp đồng với Công thành viên / CtrlMeet.
         private static readonly string PersonalMeetingsSql = @"
 SELECT DISTINCT m.IdLichHop,m.TenCuocHop,m.ThoiGianBatDau,m.ThoiGianKetThuc,
-       ISNULL((SELECT MAX(CAST(g.DaThamGiaOverride AS INT))
+       ISNULL((SELECT MAX(CAST(g.DaThamGia AS INT))
                FROM dbo.TblLichHopGioCong g
                WHERE g.IdLichHop=m.IdLichHop AND g.IdNhanVien=@UserId),
               ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia,0) AS INT))
@@ -685,6 +766,111 @@ WHERE ISNULL(DaXoa, 0) = 0 AND LaNgayLamViec = 0
             return timeRange;
         }
 
+        // Hover giờ công: chỉ dữ liệu của chính nhân viên đang đăng nhập, bản đối soát hiện tại.
+        private sealed class PersonalMeetingLabor
+        {
+            public bool ThamGia;
+            public decimal? GioThucTe;
+            // Co loi truy van la mot trang thai rieng; khong duoc ghi nhan nham thanh 0 gio.
+            public bool LoiTaiDuLieu;
+        }
+
+        private static Dictionary<Guid, PersonalMeetingLabor> LoadPersonalMeetingLabor(SqlConnection connection, Guid projectId, Guid userId)
+        {
+            const string sql = @"SELECT m.IdLichHop,
+ISNULL((SELECT MAX(CAST(g.DaThamGia AS INT)) FROM dbo.TblLichHopGioCong g
+        WHERE g.IdLichHop=m.IdLichHop AND g.IdNhanVien=@UserId),
+       ISNULL((SELECT MAX(CAST(ISNULL(nv.XacNhanThamGia,0) AS INT)) FROM dbo.TblLichHop_NhanVien nv
+        WHERE nv.IdLichHop=m.IdLichHop AND nv.IdNhanVien=@UserId),0)) AS ThamGia,
+(SELECT MAX(g.SoGioThucTe) FROM dbo.TblLichHopGioCong g
+ WHERE g.IdLichHop=m.IdLichHop AND g.IdNhanVien=@UserId) AS GioThucTe
+FROM dbo.TblLichHop m WHERE m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0
+AND (m.IdNguoiTao=@UserId OR EXISTS
+ (SELECT 1 FROM dbo.TblLichHop_NhanVien nv WHERE nv.IdLichHop=m.IdLichHop AND nv.IdNhanVien=@UserId));";
+            // Truy van phu cho tooltip: gioi han thoi gian, khong chan ca 4 bang khi SQL cham.
+            DataTable data = new DataTable();
+            using (var command = new SqlCommand(sql, connection))
+            using (var adapter = new SqlDataAdapter(command))
+            {
+                command.CommandTimeout = 5;
+                command.Parameters.Add("@ProjectId", SqlDbType.UniqueIdentifier).Value = projectId;
+                command.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = userId;
+                adapter.Fill(data);
+            }
+            var map = new Dictionary<Guid, PersonalMeetingLabor>();
+            foreach (DataRow row in data.Rows)
+                map[(Guid)row["IdLichHop"]] = new PersonalMeetingLabor
+                {
+                    ThamGia = row["ThamGia"] != DBNull.Value && Convert.ToInt32(row["ThamGia"]) == 1,
+                    GioThucTe = row["GioThucTe"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(row["GioThucTe"])
+                };
+            return map;
+        }
+        private static Guid PersonalGuid(DataRow row, string column)
+        {
+            Guid id;
+            return Guid.TryParse(PersonalText(row, column), out id) ? id : Guid.Empty;
+        }
+        private static string PersonalLaborMinute(decimal? minutes)
+        {
+            return minutes.HasValue && minutes.Value > 0m
+                ? minutes.Value.ToString("0.##", CultureInfo.GetCultureInfo("vi-VN")) + " phút"
+                : "Chưa ghi nhận công";
+        }
+        private static string PersonalLaborHour(decimal hours)
+        {
+            return hours > 0m ? PersonalHourValue(hours) + " giờ công" : "Chưa ghi nhận công";
+        }
+        private static string PersonalLaborTooltip(string title, string[] columns, string[] values)
+        {
+            var b = new StringBuilder(700);
+            b.Append("<div class='pd-hour-hover-title'>").Append(EncodePersonal(title)).Append("</div><div class='pd-hour-hover-scroll'><table class='pd-hour-hover-table'><thead><tr>");
+            foreach (string column in columns) b.Append("<th>").Append(EncodePersonal(column)).Append("</th>");
+            b.Append("</tr></thead><tbody><tr>");
+            foreach (string value in values) b.Append("<td>").Append(EncodePersonal(value)).Append("</td>");
+            return b.Append("</tr></tbody></table></div>").ToString();
+        }
+        private static string PersonalTaskLaborTooltip(PdDoiSoat ds, bool isIssue, string name)
+        {
+            string[] columns = { "Tự khai thường", "Tự khai tăng ca", "PM chốt thường", "PM chốt tăng ca", "Kết quả cuối cùng", "Đối soát" };
+            string[] values = ds == null
+                ? new[] { "Chưa ghi nhận công", "Chưa ghi nhận công", "—", "—", "Chưa ghi nhận công", "PM chưa chốt" }
+                : new[] { PersonalLaborMinute(ds.ThuongTuKhai), PersonalLaborMinute(ds.TangCaTuKhai),
+                    ds.DaPmChot ? PersonalLaborMinute(ds.ThuongPm) : "—",
+                    ds.DaPmChot ? PersonalLaborMinute(ds.TangCaPm) : "—",
+                    PersonalLaborHour(ds.PhutPm / 60m), ds.DaPmChot ? "PM đã chốt" : "PM chưa chốt" };
+            string table = PersonalLaborTooltip((isIssue ? "Vấn đề: " : "Công việc: ") + name, columns, values);
+            return isIssue ? table + "<div class='pd-hour-hover-note'>Công vấn đề được đối soát và cộng độc lập với công việc liên kết.</div>" : table;
+        }
+        private static string PersonalMeetingLaborTooltip(DataRow meeting, PersonalMeetingLabor data)
+        {
+            var columns = new[] { "Tham gia", "Công lý thuyết", "Công thực tế" };
+            string[] values = data != null && data.LoiTaiDuLieu
+                ? new[] { "Không tải được dữ liệu", "Không tải được dữ liệu", "Không tải được dữ liệu" }
+                : data == null ? new[] { "Chưa xác nhận", "Chưa ghi nhận công", "Chưa ghi nhận công" }
+                : new[] { data.ThamGia ? "Có tham gia" : "Không tham gia",
+                    data.ThamGia ? PersonalHourText(PersonalMeetingHours(meeting)) : "Chưa ghi nhận công",
+                    data.ThamGia ? PersonalLaborHour(data.GioThucTe ?? PersonalMeetingHours(meeting)) : "Chưa ghi nhận công" };
+            return PersonalLaborTooltip("Cuộc họp: " + PersonalText(meeting, "TenCuocHop"), columns, values);
+        }
+        private static void AppendPersonalHourAction(StringBuilder b, string kind, Guid id, string caption, string tooltip)
+        {
+            if (id == Guid.Empty) { b.Append("<span class='pd-personal-hours'><i class='far fa-clock'></i>").Append(EncodePersonal(caption)).Append("</span>"); return; }
+            b.Append("<button type='button' class='pd-personal-hours pd-hour-hover-button' data-pd-labor-kind='").Append(kind)
+                .Append("' data-pd-labor-id='").Append(id.ToString("D"))
+                .Append("' aria-label='Xem đối soát và chi tiết giờ công'><i class='far fa-clock'></i>")
+                .Append(EncodePersonal(caption)).Append("</button>")
+                .Append("<div class='pd-hour-hover-source' hidden>").Append(tooltip).Append("</div>");
+        }
+
+        // Chỉ ghi mã lỗi an toàn ra giao diện; exception gốc luôn ở SysLogger.
+        private static string PdLoadErrorCode(Exception exception)
+        {
+            SqlException sqlError = exception as SqlException;
+            if (sqlError != null) return "SQL-" + sqlError.Number.ToString(CultureInfo.InvariantCulture);
+            return exception is TimeoutException ? "TIMEOUT" : "APP-" + exception.GetType().Name;
+        }
+
         private void BindPersonalProjectView()
         {
             Literal literal = FindProjectDetailControl(this, "litProjectPersonal") as Literal;
@@ -710,8 +896,10 @@ WHERE ISNULL(DaXoa, 0) = 0 AND LaNgayLamViec = 0
                     DataTable issues = PersonalQuery(connection, PersonalIssuesSql, QueryId, userId);
                     bool taskHoursAvailable = true;
                     bool issueHoursAvailable = true;
+                    var taskLabor = new Dictionary<Guid, PdDoiSoat>();
+                    var issueLabor = new Dictionary<Guid, PdDoiSoat>();
                     step = "Đọc đối soát Task";
-                    try { AttachDoiSoat(tasks, LoadDoiSoat(connection, QueryId, userId, false), "IdCongViec"); }
+                    try { taskLabor = LoadDoiSoat(connection, QueryId, userId, false); AttachDoiSoat(tasks, taskLabor, "IdCongViec"); }
                     catch (Exception ex)
                     {
                         SysLogger.LogError(ex, "DuAnDetail Phan viec cua toi: tai doi soat TASK that bai");
@@ -719,7 +907,7 @@ WHERE ISNULL(DaXoa, 0) = 0 AND LaNgayLamViec = 0
                         taskHoursAvailable = false;
                     }
                     step = "Đọc đối soát Issue";
-                    try { AttachDoiSoat(issues, LoadDoiSoat(connection, QueryId, userId, true), "IdVanDe"); }
+                    try { issueLabor = LoadDoiSoat(connection, QueryId, userId, true); AttachDoiSoat(issues, issueLabor, "IdVanDe"); }
                     catch (Exception ex)
                     {
                         SysLogger.LogError(ex, "DuAnDetail Phan viec cua toi: tai doi soat ISSUE that bai");
@@ -730,9 +918,25 @@ WHERE ISNULL(DaXoa, 0) = 0 AND LaNgayLamViec = 0
                     PersonalWorkCalendar workCalendar = tasks.Rows.Count > 0
                         ? LoadPersonalWorkCalendar(connection, tasks, DateTime.Now)
                         : new PersonalWorkCalendar();
+                    // Hover chi tiet gio hop chi la du lieu bo tro; loi khong lam mat 4 the ca nhan.
+                    var meetingLabor = new Dictionary<Guid, PersonalMeetingLabor>();
+                    if (meetingHoursAvailable && meetings.Rows.Count > 0)
+                    {
+                        try { meetingLabor = LoadPersonalMeetingLabor(connection, QueryId, userId); }
+                        catch (Exception hoverError)
+                        {
+                            SysLogger.LogError(hoverError, "DuAnDetail: không tải được hover giờ họp");
+                            foreach (DataRow meet in meetings.Rows)
+                            {
+                                Guid mid = PersonalGuid(meet, "IdLichHop");
+                                if (mid != Guid.Empty) meetingLabor[mid] = new PersonalMeetingLabor { LoiTaiDuLieu = true };
+                            }
+                        }
+                    }
                     step = "Dựng giao diện";
                     literal.Text = BuildPersonalHtml(tasks, meetings, issues, workCalendar,
-                        taskHoursAvailable, issueHoursAvailable, meetingHoursAvailable);
+                        taskHoursAvailable, issueHoursAvailable, meetingHoursAvailable,
+                        taskLabor, issueLabor, meetingLabor, HasProjectViewBridge());
                 }
             }
             catch (Exception exception)
@@ -825,7 +1029,7 @@ WHERE ISNULL(DaXoa, 0) = 0 AND LaNgayLamViec = 0
         private static readonly string TeamHoursEndedMeetingsSql = @"
 SELECT m.IdLichHop, m.TenCuocHop, m.ThoiGianBatDau, m.ThoiGianKetThuc,
        ISNULL(
-         (SELECT MAX(CAST(g.DaThamGiaOverride AS INT))
+         (SELECT MAX(CAST(g.DaThamGia AS INT))
           FROM dbo.TblLichHopGioCong g
           WHERE g.IdLichHop=m.IdLichHop AND g.IdNhanVien=@UserId),
          ISNULL(
@@ -1099,9 +1303,20 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                 }
                 sb.Append("<div class='pd-team-record").Append(i >= 6 ? " is-extra" : "")
                     .Append("'><div class='pd-team-record-main'><div class='pd-team-record-title'>");
-                if (!string.IsNullOrWhiteSpace(code)) sb.Append("<span class='pd-team-record-code'>")
-                        .Append(EncodePersonal(code)).Append("</span>");
-                sb.Append(EncodePersonal(name)).Append("</div><div class='pd-team-record-meta'>")
+                if ((kind == "task" || kind == "meeting") && HasProjectViewBridge())
+                {
+                    Guid recordId = PersonalGuid(row, kind == "task" ? "IdCongViec" : "IdLichHop");
+                    sb.Append("<button type='button' class='pd-view-object-link' data-pd-view-kind='")
+                        .Append(kind == "task" ? "task" : "meet")
+                        .Append("' data-pd-view-id='").Append(recordId.ToString("D"))
+                        .Append("' title='Xem chi tiết'>");
+                    if (kind == "task" && !string.IsNullOrWhiteSpace(code))
+                        sb.Append("<span class='pd-team-record-code'>")
+                            .Append(EncodePersonal(code.Trim().TrimEnd('.') + ".")).Append("</span> ");
+                    sb.Append(EncodePersonal(name)).Append("</button>");
+                }
+                else sb.Append(EncodePersonal(name));
+                sb.Append("</div><div class='pd-team-record-meta'>")
                     .Append(EncodePersonal(meta)).Append("</div></div><span class='pd-team-record-aside'>")
                     .Append("<span class='pd-team-record-hours' title='")
                     .Append(kind == "meeting" ? "Giờ công họp: chỉ tính khi có xác nhận tham gia" : "Giờ công chính thức từ PM chốt; chưa chốt chưa được cộng vào tổng")
@@ -1135,7 +1350,9 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
 
 
         private string BuildPersonalHtml(DataTable tasks, DataTable meetings, DataTable issues,
-            PersonalWorkCalendar calendar, bool taskHoursAvailable, bool issueHoursAvailable, bool meetingHoursAvailable)
+            PersonalWorkCalendar calendar, bool taskHoursAvailable, bool issueHoursAvailable, bool meetingHoursAvailable,
+            Dictionary<Guid, PdDoiSoat> taskLabor, Dictionary<Guid, PdDoiSoat> issueLabor,
+            Dictionary<Guid, PersonalMeetingLabor> meetingLabor, bool hasViewBridge)
         {
             DateTime now = DateTime.Now;
             StringBuilder builder = new StringBuilder(32000);
@@ -1168,7 +1385,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append("<button type='button' class='pd-compact-filter' data-pd-toggle-filter='task' aria-pressed='false' title='Chỉ hiển thị công việc chưa hoàn thành'><span data-pd-filter-label>Tất cả</span><i class='fas fa-exchange-alt'></i></button>")
                    .Append("</div></div><div class='pd-card-body'><div class='pd-personal-list'>");
             if (taskRows.Count == 0) builder.Append("<div class='pd-personal-empty'>Bạn chưa được giao công việc nào trong dự án này.</div>");
-            foreach (DataRow task in taskRows) AppendPersonalTaskCard(builder, task, now, calendar);
+            foreach (DataRow task in taskRows) AppendPersonalTaskCard(builder, task, now, calendar, taskLabor, taskHoursAvailable, hasViewBridge);
             if (taskRows.Count > 0) builder.Append("<div class='pd-personal-empty pd-filter-empty' hidden>Không có công việc chưa hoàn thành.</div>");
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalTaskDetail' data-pd-detail-title='Chi tiết công việc được giao' data-pd-detail-sub='Danh sách công việc được phân công trực tiếp cho bạn trong dự án.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
 
@@ -1180,8 +1397,8 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             if (meetings.Rows.Count == 0) builder.Append("<div class='pd-personal-empty'>Bạn chưa có cuộc họp nào trong dự án này.</div>");
             else
             {
-                foreach (DataRow meet in notEnded) AppendPersonalMeeting(builder, meet, now, false, meetingHoursAvailable);
-                foreach (DataRow meet in ended) AppendPersonalMeeting(builder, meet, now, true, meetingHoursAvailable);
+                foreach (DataRow meet in notEnded) AppendPersonalMeeting(builder, meet, now, false, meetingHoursAvailable, meetingLabor, hasViewBridge);
+                foreach (DataRow meet in ended) AppendPersonalMeeting(builder, meet, now, true, meetingHoursAvailable, meetingLabor, hasViewBridge);
             }
             if (meetings.Rows.Count > 0) builder.Append("<div class='pd-personal-empty pd-filter-empty' hidden>Không có cuộc họp chưa kết thúc.</div>");
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalMeetingDetail' data-pd-detail-title='Chi tiết cuộc họp của tôi' data-pd-detail-sub='Các cuộc họp bạn chủ trì hoặc tham gia trong dự án, ưu tiên hiển thị cuộc họp chưa kết thúc.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
@@ -1192,7 +1409,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append("<button type='button' class='pd-compact-filter' data-pd-toggle-filter='issue' aria-pressed='false' title='Chỉ hiển thị vấn đề chưa giải quyết'><span data-pd-filter-label>Tất cả</span><i class='fas fa-exchange-alt'></i></button>")
                    .Append("</div></div><div class='pd-card-body'><div class='pd-personal-list'>");
             if (issueRows.Count == 0) builder.Append("<div class='pd-personal-empty'>Chưa có vấn đề được phân công cho bạn.</div>");
-            foreach (DataRow issue in issueRows) AppendPersonalIssueCard(builder, issue);
+            foreach (DataRow issue in issueRows) AppendPersonalIssueCard(builder, issue, issueLabor, issueHoursAvailable);
             if (issueRows.Count > 0) builder.Append("<div class='pd-personal-empty pd-filter-empty' hidden>Không có vấn đề chưa giải quyết.</div>");
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalIssueDetail' data-pd-detail-title='Chi tiết vấn đề được giao' data-pd-detail-sub='Danh sách vấn đề bạn đang phụ trách trong dự án này.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
 
@@ -1202,7 +1419,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             AppendSummaryRow(builder, "Tổng giờ công cuộc họp", meetingHoursAvailable ? (decimal?)meetingHours : null, false);
             AppendSummaryRow(builder, "Tổng giờ công xử lý vấn đề", issueHoursAvailable ? (decimal?)issueHours : null, false);
             AppendSummaryRow(builder, "Tổng giờ công", totalsAvailable ? (decimal?)totalHours : null, true);
-            builder.Append("</div></div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalHourDetail' data-pd-detail-title='Chi tiết giờ công của bạn' data-pd-detail-sub='Công việc tính theo PM chốt, giờ họp theo quy tắc hiện tại, tránh cộng trùng với vấn đề liên kết.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
+            builder.Append("</div></div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalHourDetail' data-pd-detail-title='Chi tiết giờ công của bạn' data-pd-detail-sub='Công việc tính theo PM chốt, giờ họp theo quy tắc hiện tại, công Issue được PM chốt độc lập với công việc liên kết.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
             builder.Append("</div>");
 
             return builder.ToString();
@@ -1219,50 +1436,73 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append("</span></div>");
         }
 
-        private static void AppendPersonalTaskCard(StringBuilder builder, DataRow task, DateTime now, PersonalWorkCalendar calendar)
+        private static void AppendPersonalTaskCard(StringBuilder builder, DataRow task, DateTime now, PersonalWorkCalendar calendar, Dictionary<Guid, PdDoiSoat> labor, bool hoursAvailable, bool hasViewBridge)
         {
             PersonalTaskProgressInfo visual = GetPersonalTaskProgress(task, now, calendar);
             DateTime? dueDate = PersonalDate(task, "NgayKetThuc");
             builder.Append("<article class='pd-personal-item")
                    .Append(visual.Done ? " pd-task-done" : string.Empty)
-                   .Append("' data-pd-record='1'><div class='pd-personal-task-header'><div class='pd-personal-task-title'><div class='pd-personal-item-title pd-personal-task-heading'><span class='pd-personal-task-code'>")
-                   .Append(EncodePersonal(task["MaCongViec"]))
-                   .Append("</span><span class='pd-personal-task-name'>")
-                   .Append(EncodePersonal(task["TenCongViec"]))
-                   .Append("</span><span class='pd-personal-tag ").Append(visual.StatusCss).Append("'>")
+                   .Append("' data-pd-record='1'><div class='pd-personal-task-header'><div class='pd-personal-task-title'><div class='pd-personal-item-title pd-personal-task-heading'>");
+            if (hasViewBridge) builder.Append("<button type='button' class='pd-personal-task-name pd-view-object-link' data-pd-view-kind='task' data-pd-view-id='")
+                   .Append(PersonalGuid(task, "IdCongViec").ToString("D"))
+                   .Append("' title='Xem chi tiết công việc'>");
+            else builder.Append("<span class='pd-personal-task-name'>");
+            string taskCode = PersonalText(task, "MaCongViec").Trim().TrimEnd('.');
+            if (!string.IsNullOrEmpty(taskCode))
+                builder.Append("<span class='pd-personal-task-code'>").Append(EncodePersonal(taskCode)).Append(".</span> ");
+            builder.Append(EncodePersonal(task["TenCongViec"]))
+                   .Append(hasViewBridge ? "</button>" : "</span>")
+                   .Append("<span class='pd-personal-tag ").Append(visual.StatusCss).Append("'>")
                    .Append(EncodePersonal(visual.Status)).Append("</span>");
             if (visual.LateFinished) builder.Append("<span class='pd-task-late-note'>(trễ hạn)</span>");
             builder.Append("</div><div class='pd-personal-due'>")
                    .Append(dueDate.HasValue ? "<span><i class='far fa-calendar-alt me-1'></i>Hạn " + dueDate.Value.ToString("dd/MM/yyyy") + "</span>" : "<span><i class='far fa-calendar-alt me-1'></i>Chưa có hạn</span>")
                    .Append("<span class='pd-task-percent' data-pd-progress-tooltip='Tiến độ theo thời gian' tabindex='0' aria-label='Tiến độ theo thời gian'>")
                    .Append(visual.Percent).Append("%</span></div>")
-                   .Append("</div><span class='pd-personal-hours'><i class='far fa-clock'></i>")
-                   .Append(EncodePersonal(DsCompact(task))).Append("</span></div>")
-                   .Append(PersonalTaskProgressBar(visual)).Append("</article>");
+                   .Append("</div>");
+            Guid taskId = PersonalGuid(task, "IdCongViec");
+            PdDoiSoat taskLabor;
+            labor.TryGetValue(taskId, out taskLabor);
+            AppendPersonalHourAction(builder, "task", taskId, DsCompact(task),
+                hoursAvailable ? PersonalTaskLaborTooltip(taskLabor, false, PersonalText(task, "MaCongViec") + " · " + PersonalText(task, "TenCongViec")) : "<div>Chưa tải được đối soát công việc.</div>");
+            builder.Append("</div>").Append(PersonalTaskProgressBar(visual)).Append("</article>");
         }
 
-        private static void AppendPersonalMeeting(StringBuilder builder, DataRow meet, DateTime now, bool ended, bool meetingHoursAvailable)
+        private static void AppendPersonalMeeting(StringBuilder builder, DataRow meet, DateTime now, bool ended, bool meetingHoursAvailable, Dictionary<Guid, PersonalMeetingLabor> meetingLabor, bool hasViewBridge)
         {
             DateTime? start = PersonalDate(meet, "ThoiGianBatDau");
             DateTime? finish = PersonalDate(meet, "ThoiGianKetThuc");
             builder.Append("<article class='pd-personal-item")
                    .Append(ended ? " pd-meeting-ended" : string.Empty)
                    .Append("' data-pd-record='1'><div class='pd-personal-task-header'><div class='pd-personal-task-title'>")
-                   .Append("<div class='pd-personal-item-title pd-personal-task-heading'><span class='pd-personal-task-name'>")
-                   .Append(EncodePersonal(meet["TenCuocHop"]))
-                   .Append("</span>")
+                   .Append("<div class='pd-personal-item-title pd-personal-task-heading'>");
+            if (hasViewBridge) builder.Append("<button type='button' class='pd-personal-task-name pd-view-object-link' data-pd-view-kind='meet' data-pd-view-id='")
+                   .Append(PersonalGuid(meet, "IdLichHop").ToString("D"))
+                   .Append("' title='Xem chi tiết cuộc họp'>");
+            else builder.Append("<span class='pd-personal-task-name'>");
+            builder.Append(EncodePersonal(meet["TenCuocHop"]))
+                   .Append(hasViewBridge ? "</button>" : "</span>")
                    .Append(PersonalMeetingBadge(start, finish, now))
                    .Append("</div><div class='pd-personal-schedule'>")
                    .Append("<div class='pd-personal-schedule-line'><i class='far fa-calendar-alt'></i><span>")
                    .Append(PersonalMeetingDayText(start, finish))
                    .Append("</span></div><div class='pd-personal-schedule-line'><i class='far fa-clock'></i><span>")
                    .Append(PersonalMeetingTimeText(start, finish))
-                   .Append("</span></div></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: ")
-                   .Append(meetingHoursAvailable ? PersonalHourValue(PersonalMeetingLaborHours(meet, now)) : "Chưa tải được")
-                   .Append("</span></div></article>");
+                   .Append("</span></div></div></div>");
+            Guid meetId = PersonalGuid(meet, "IdLichHop");
+            PersonalMeetingLabor ml;
+            meetingLabor.TryGetValue(meetId, out ml);
+            if (!meetingHoursAvailable) ml = new PersonalMeetingLabor { LoiTaiDuLieu = true };
+            if (ml == null && meetingHoursAvailable)
+                ml = new PersonalMeetingLabor { ThamGia = PersonalInt(meet, "XacNhanThamGia") == 1 };
+            decimal actualHours = ml != null && ml.ThamGia && ended ? (ml.GioThucTe ?? PersonalMeetingHours(meet)) : 0m;
+            string laborLabel = ml != null && ml.LoiTaiDuLieu ? "Không tải được giờ công"
+                : actualHours > 0m ? "Giờ công: " + PersonalHourValue(actualHours) : "Chưa ghi nhận công";
+            AppendPersonalHourAction(builder, "meeting", meetId, laborLabel, PersonalMeetingLaborTooltip(meet, ml));
+            builder.Append("</div></article>");
         }
 
-        private void AppendPersonalIssueCard(StringBuilder builder, DataRow issue)
+        private void AppendPersonalIssueCard(StringBuilder builder, DataRow issue, Dictionary<Guid, PdDoiSoat> labor, bool hoursAvailable)
         {
             int status = PersonalInt(issue, "TrangThai");
             bool processed = status == (int)TrangThaiVanDeEnum.Processed;
@@ -1281,8 +1521,13 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append("<span><i class='far fa-calendar-alt me-1'></i>")
                    .Append(created.HasValue ? "Ngày tạo " + created.Value.ToString("dd/MM/yyyy") : "Chưa có ngày tạo")
                    .Append("</span></div>")
-                   .Append("</div><span class='pd-personal-hours'><i class='far fa-clock'></i>")
-                   .Append(EncodePersonal(DsCompact(issue))).Append("</span></div></article>");
+                   .Append("</div>");
+            Guid issueId = PersonalGuid(issue, "IdVanDe");
+            PdDoiSoat issueLabor;
+            labor.TryGetValue(issueId, out issueLabor);
+            AppendPersonalHourAction(builder, "issue", PersonalGuid(issue, "IdVanDe"), DsCompact(issue),
+                hoursAvailable ? PersonalTaskLaborTooltip(issueLabor, true, PersonalText(issue, "TenVanDe")) : "<div>Chưa tải được đối soát vấn đề.</div>");
+            builder.Append("</div></article>");
         }
 
 

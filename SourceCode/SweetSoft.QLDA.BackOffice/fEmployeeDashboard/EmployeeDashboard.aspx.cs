@@ -89,15 +89,6 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
                 List<ProjectItem> projects = LoadProjects(userId);
                 List<TaskItem> allTasks = LoadTasks(userId);
                 List<IssueItem> issues = LoadIssues(userId);
-                List<TodayTimeProjectItem> todayTimeProjects = LoadTodayTimeProjects(userId, allTasks, projects);
-                rptTodayTimeProjects.DataSource = todayTimeProjects;
-                rptTodayTimeProjects.DataBind();
-                pnlNoTodayTimeProjects.Visible = todayTimeProjects.Count == 0;
-                // Chi nhac khi thuc su co viec can xu ly tai du an dang thuc hien;
-                // popup chon du an van hien ca du an 0 (chua bat dau) / 3 (hoan thanh).
-                hfEdDailyKey.Value = todayTimeProjects.Any(x => x.TaskCount > 0 && x.StatusCode == (int)DuAnStatus.DangThucHien)
-                    ? userId.ToString("N") + "_" + DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture)
-                    : string.Empty;
                 List<MeetingItem> meetings = LoadMeetings(userId);
                 List<ExceptionItem> exceptions = LoadExceptions();
                 Dictionary<DayOfWeek, WorkdayConfiguration> workdayConfigurations = LoadWorkdayConfigurations();
@@ -398,61 +389,6 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
         /// Hien thi tat ca du an ma nhan vien dang la thanh vien, phan nhom theo TrangThai.
         /// So luong "viec can lam" van chi tinh viec hom nay hoac da qua han.
         /// </summary>
-        private List<TodayTimeProjectItem> LoadTodayTimeProjects(Guid userId, List<TaskItem> currentWeekTasks, List<ProjectItem> availableProjects)
-        {
-            DateTime today = DateTime.Today;
-            List<TaskItem> source = currentWeekTasks;
-            if (_weekStart != GetMonday(today))
-            {
-                DateTime savedStart = _weekStart, savedEnd = _weekEnd;
-                try { _weekStart = GetMonday(today); _weekEnd = _weekStart.AddDays(6); source = LoadTasks(userId); }
-                finally { _weekStart = savedStart; _weekEnd = savedEnd; }
-            }
-
-            var activeTasks = source.Where(t => t.ProjectId != Guid.Empty && !t.IsCompleted &&
-                (t.IsOverdue || ((t.StartDate ?? t.EndDate ?? today).Date <= today &&
-                                  (t.EndDate ?? t.StartDate ?? today).Date >= today)))
-                .GroupBy(t => t.ProjectId)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            List<TodayTimeProjectItem> results = (availableProjects ?? new List<ProjectItem>())
-                .Select(project =>
-                {
-                    List<TaskItem> tasks;
-                    if (!activeTasks.TryGetValue(project.Id, out tasks)) tasks = new List<TaskItem>();
-                    return new TodayTimeProjectItem
-                    {
-                        Code = project.Code,
-                        Name = project.Name,
-                        StatusCode = project.StatusCode,
-                        StatusText = project.StatusText,
-                        StatusCss = project.StatusCss,
-                        TaskCount = tasks.Count,
-                        OverdueCount = tasks.Count(task => task.IsOverdue),
-                        NavigateUrl = GetKhaiBaoGioUrl(project.Id)
-                    };
-                })
-                .OrderBy(item => ProjectStatusOrder(item.StatusCode))
-                .ThenByDescending(item => item.OverdueCount)
-                .ThenBy(item => item.Name)
-                .ToList();
-
-            int? previousStatus = null;
-            foreach (TodayTimeProjectItem item in results)
-            {
-                item.ShowGroupHeader = !previousStatus.HasValue || item.StatusCode != previousStatus.Value;
-                previousStatus = item.StatusCode;
-            }
-            return results;
-        }
-
-
-        /// <summary>Đường dẫn Tính giờ công việc trong dự án, ProjectId được bảo vệ.</summary>
-        protected string GetKhaiBaoGioUrl(Guid projectId)
-        {
-            return GetRelativeClientPath(RewriteURLHelper.ProjectTimeTracking(projectId));
-        }
-
         /// <summary>Tất cả công việc được giao cho user trong các dự án đang hiển thị, kể cả đã hoàn thành.</summary>
         private List<TaskItem> LoadProjectOverviewTasks(Guid userId, IEnumerable<ProjectItem> allowedProjects)
         {
@@ -469,7 +405,66 @@ INNER JOIN dbo.TblThanhVienDuAn tv ON tv.IdDuAn = d.IdDuAn AND tv.IdNhanVien = @
 WHERE tn.IdNhanVien = @UserId AND ISNULL(tv.DaXoa, 0) = 0
   AND ISNULL(t.DaXoa, 0) = 0 AND ISNULL(d.DaXoa, 0) = 0
 ORDER BY t.NgayKetThuc, t.TenCongViec;", GuidParameter("@UserId", userId));
-            return ParseTasksFromDataTable(table).Where(x => projectIds.Contains(x.ProjectId)).ToList();
+            return SetTaskProgressHover(ParseTasksFromDataTable(table).Where(x => projectIds.Contains(x.ProjectId)).ToList(), userId);
+        }
+
+        // Số công việc được giao RIÊNG cho nhân viên; độc lập với tiến độ của cả dự án.
+        // Một truy vấn tổng hợp cho tất cả dự án, tránh chạy SQL trong vòng lặp Repeater.
+        // Thong ke phan cong theo tung du an chi truy van 1 lan / request (khong SQL trong ASPX).
+        private bool _edAssignedStatsRequested;
+        private Dictionary<Guid, int[]> _edAssignedStatsCache;
+        private Dictionary<Guid, int[]> GetAssignedProjectStatsCached(Guid userId)
+        {
+            if (!_edAssignedStatsRequested)
+            {
+                _edAssignedStatsRequested = true;
+                _edAssignedStatsCache = LoadAssignedProjectStats(userId);
+            }
+            return _edAssignedStatsCache;
+        }
+
+        // Moi thanh tien do TASK hien thong ke phan cong rieng cua nhan vien trong du an.
+        // Khong can thiet lap thong ke cho thanh tien do DU AN.
+        private List<TaskItem> SetTaskProgressHover(List<TaskItem> tasks, Guid userId)
+        {
+            if (tasks == null || tasks.Count == 0) return tasks;
+            Dictionary<Guid, int[]> counts = null;
+            try { counts = GetAssignedProjectStatsCached(userId); }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("EmployeeDashboard.SetTaskProgressHover: " + ex); }
+            foreach (TaskItem task in tasks)
+            {
+                int[] value;
+                if (counts == null) task.AssignedTaskTooltip = "Chưa tải được thống kê công việc được giao";
+                else if (counts.TryGetValue(task.ProjectId, out value) && value != null && value.Length >= 2)
+                    task.AssignedTaskTooltip = "Đã hoàn thành " + value[1] + "/" + value[0] + " công việc được giao";
+                else task.AssignedTaskTooltip = "Đã hoàn thành 0/0 công việc được giao";
+            }
+            return tasks;
+        }
+
+        private Dictionary<Guid, int[]> LoadAssignedProjectStats(Guid userId)
+        {
+            DataTable table = Query(@"
+SELECT t.IdDuAn,
+       COUNT(DISTINCT t.IdCongViec) AS SoViecDuocGiao,
+       COUNT(DISTINCT CASE WHEN ISNULL(t.TrangThai, 0) IN (2, 3)
+                           THEN t.IdCongViec END) AS SoViecDaHoanThanh
+FROM dbo.TblCongViec_NhanVien AS nv
+INNER JOIN dbo.TblCongViec AS t ON t.IdCongViec = nv.IdCongViec
+INNER JOIN dbo.TblDuAn AS d ON d.IdDuAn = t.IdDuAn
+WHERE nv.IdNhanVien = @UserId
+  AND ISNULL(t.DaXoa, 0) = 0
+  AND ISNULL(d.DaXoa, 0) = 0
+GROUP BY t.IdDuAn;", GuidParameter("@UserId", userId));
+
+            Dictionary<Guid, int[]> result = new Dictionary<Guid, int[]>();
+            foreach (DataRow row in table.Rows)
+            {
+                Guid id = GuidValue(row["IdDuAn"]);
+                if (id != Guid.Empty)
+                    result[id] = new[] { IntValue(row["SoViecDuocGiao"]), IntValue(row["SoViecDaHoanThanh"]) };
+            }
+            return result;
         }
 
         private List<ProjectItem> LoadProjects(Guid userId)
@@ -486,9 +481,28 @@ GROUP BY d.IdDuAn, d.MaDuAn, d.TenDuAn, d.NgayBatDau, d.NgayDuKienHoanThanh, d.T
 ORDER BY CASE WHEN d.NgayDuKienHoanThanh IS NULL THEN 1 ELSE 0 END,
          d.NgayDuKienHoanThanh ASC, d.TenDuAn ASC;", GuidParameter("@UserId", userId));
 
+            // Không để lỗi tải thống kê phân công biến thành số 0 giả hoặc làm hỏng toàn bộ Dashboard.
+            Dictionary<Guid, int[]> assignedStats = null;
+            if (table.Rows.Count > 0)
+            {
+                try { assignedStats = GetAssignedProjectStatsCached(userId); }
+                catch (Exception ex) { System.Diagnostics.Trace.TraceError("EmployeeDashboard.LoadAssignedProjectStats: " + ex); }
+            }
+
             List<ProjectItem> items = new List<ProjectItem>();
             foreach (DataRow row in table.Rows)
             {
+                Guid projectId = GuidValue(row["IdDuAn"]);
+                int[] assigned = null;
+                if (assignedStats != null)
+                {
+                    if (!assignedStats.TryGetValue(projectId, out assigned))
+                        assigned = new[] { 0, 0 };
+                }
+                int assignedTotal = assigned == null ? 0 : assigned[0];
+                int assignedCompleted = assigned == null ? 0 : assigned[1];
+                int assignedProgress = assignedTotal <= 0 ? 0 : (int)Math.Round(assignedCompleted * 100.0 / assignedTotal, MidpointRounding.AwayFromZero);
+
                 int total = IntValue(row["TaskTotal"]);
                 int completed = IntValue(row["TaskCompleted"]);
                 int progress = total == 0 ? 0 : (int)Math.Round(completed * 100.0 / total, MidpointRounding.AwayFromZero);
@@ -502,7 +516,12 @@ ORDER BY CASE WHEN d.NgayDuKienHoanThanh IS NULL THEN 1 ELSE 0 END,
 
                 items.Add(new ProjectItem
                 {
-                    Id = GuidValue(row["IdDuAn"]),
+                    Id = projectId,
+                    AssignedTotal = assignedTotal,
+                    AssignedCompleted = assignedCompleted,
+                    AssignedProgress = assignedProgress,
+                    AssignedSummary = assigned == null ? "Chưa tải được phân công" : assignedCompleted + "/" + assignedTotal + " công việc được giao hoàn thành",
+                    AssignedPercentText = assigned == null ? "—" : assignedProgress.ToString(CultureInfo.InvariantCulture) + "%",
                     Code = FirstNonEmpty(Value(row, "MaDuAn"), "Dự án"),
                     Name = FirstNonEmpty(Value(row, "TenDuAn"), "Chưa đặt tên dự án"),
                     Progress = Math.Max(0, Math.Min(100, progress)),
@@ -540,7 +559,7 @@ ORDER BY t.NgayKetThuc, t.TenCongViec;",
                 DateParameter("@WeekStart", _weekStart),
                 DateParameter("@WeekEnd", _weekEnd));
 
-            return ParseTasksFromDataTable(table);
+            return SetTaskProgressHover(ParseTasksFromDataTable(table), userId);
         }
 
         private List<TaskItem> LoadTasksByProject(Guid userId, Guid projectId)
@@ -560,7 +579,7 @@ ORDER BY t.NgayKetThuc, t.TenCongViec;",
                 GuidParameter("@UserId", userId),
                 GuidParameter("@ProjectId", projectId));
 
-            return ParseTasksFromDataTable(table);
+            return SetTaskProgressHover(ParseTasksFromDataTable(table), userId);
         }
 
         private List<TaskItem> ParseTasksFromDataTable(DataTable table)
@@ -574,12 +593,22 @@ ORDER BY t.NgayKetThuc, t.TenCongViec;",
                 double progress = DoubleValue(row["PhanTramHoanThanh"]);
                 progress = Math.Max(0, Math.Min(100, progress));
 
-                bool overdue = hasEnd && endDate.Date < DateTime.Today && progress < 100;
-                bool dueSoon = hasEnd && endDate.Date >= DateTime.Today && (endDate.Date - DateTime.Today).TotalDays <= 2 && progress < 100;
-                bool completed = progress >= 100;
-
                 string rawStatus = Value(row, "TrangThai");
+                int taskStatusCode;
+                bool hasStatusCode = int.TryParse(rawStatus, NumberStyles.Integer, CultureInfo.InvariantCulture, out taskStatusCode);
+                // TrangThaiCongViec: 0=ChuaBatDau,1=DangThucHien,2=HoanThanh,3=HoanThanhTre,4=ChoDuyet.
+                bool completed = hasStatusCode ? (taskStatusCode == 2 || taskStatusCode == 3) : progress >= 100;
+                bool overdue = hasEnd && endDate.Date < DateTime.Today && !completed;
+                bool dueSoon = hasEnd && endDate.Date >= DateTime.Today && (endDate.Date - DateTime.Today).TotalDays <= 2 && !completed;
                 string status = FormatTaskStatus(rawStatus, progress, overdue);
+                string statusCss = hasStatusCode ? (taskStatusCode == 0 ? "is-not-started" : taskStatusCode == 1 ? "is-in-progress" : taskStatusCode == 2 || taskStatusCode == 3 ? "is-completed" : taskStatusCode == 4 ? "is-review" : "is-default") : (progress >= 100 ? "is-completed" : "is-default");
+                // Bang mau tien do cua DuAnDetail / tab Cong viec cua toi: 0 xam, 1 xanh duong,
+                // 2 xanh la, 3 do, 4 vang; canh bao qua han / sap han uu tien mau do / vang.
+                string progressToneCss = hasStatusCode && taskStatusCode >= 0 && taskStatusCode <= 4
+                    ? "ed-task-bar-" + taskStatusCode.ToString(CultureInfo.InvariantCulture)
+                    : (completed ? "ed-task-bar-2" : progress > 0 ? "ed-task-bar-1" : "ed-task-bar-0");
+                if (overdue) progressToneCss = "ed-task-bar-late";
+                else if (dueSoon) progressToneCss = "ed-task-bar-soon";
 
                 items.Add(new TaskItem
                 {
@@ -593,12 +622,14 @@ ORDER BY t.NgayKetThuc, t.TenCongViec;",
                     StartDate = hasStart ? (DateTime?)startDate.Date : null,
                     EndDate = hasEnd ? (DateTime?)endDate.Date : null,
                     DateRange = FormatTaskDateRange(hasStart ? (DateTime?)startDate : null, hasEnd ? (DateTime?)endDate : null),
-                    Progress = (int)Math.Round(progress, MidpointRounding.AwayFromZero),
+                    Progress = completed ? 100 : (int)Math.Round(progress, MidpointRounding.AwayFromZero),
                     IsOverdue = overdue,
                     IsDueSoon = dueSoon,
                     IsCompleted = completed,
                     StatusText = status,
-                    StatusCss = overdue ? "overdue" : completed ? "done" : "inprogress"
+                    StatusCss = statusCss,
+                    ProgressToneCss = progressToneCss,
+                    DeadlineText = overdue ? "Quá hạn" : dueSoon ? "Sắp hạn" : string.Empty
                 });
             }
 
@@ -822,7 +853,7 @@ FROM dbo.TblCauHinhTuanLamViec;");
                         {
                             SortAt = date.AddHours(23),
                             TimeLabel = task.IsOverdue ? "CẦN ƯU TIÊN" : "CÔNG VIỆC",
-                            Title = task.TaskName,
+                            Title = task.TaskCode + ". " + task.TaskName,
                             Subtitle = subtitle,
                             CssClass = "task"
                         });
@@ -871,10 +902,6 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
 
         private void BindEmptyDashboard()
         {
-            rptTodayTimeProjects.DataSource = new List<TodayTimeProjectItem>();
-            rptTodayTimeProjects.DataBind();
-            pnlNoTodayTimeProjects.Visible = true;
-            hfEdDailyKey.Value = String.Empty;
             rptProjectsAll.DataSource = new List<ProjectItem>();
             rptProjectsAll.DataBind();
             rptProjectTasks.DataSource = new List<TaskItem>();
@@ -1044,8 +1071,19 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
 
         private string FormatTaskStatus(string rawStatus, double progress, bool overdue)
         {
-            if (overdue) return "Quá hạn";
             if (!String.IsNullOrWhiteSpace(rawStatus) && !Regex.IsMatch(rawStatus, @"^\d+(\.\d+)?$")) return rawStatus;
+            int code;
+            if (int.TryParse(rawStatus, NumberStyles.Integer, CultureInfo.InvariantCulture, out code))
+            {
+                switch (code)
+                {
+                    case 0: return "Chưa bắt đầu";
+                    case 1: return "Đang thực hiện";
+                    case 2: return "Hoàn thành";
+                    case 3: return "Hoàn thành trễ";
+                    case 4: return "Chờ duyệt";
+                }
+            }
             if (progress >= 100) return "Hoàn thành";
             if (progress > 0) return "Đang thực hiện";
             return "Chưa bắt đầu";
@@ -1143,6 +1181,12 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
         public class ProjectItem
         {
             public Guid Id { get; set; }
+            // Chỉ phục vụ thống kê phân công của NHÂN VIÊN trong popup dự án.
+            public int AssignedTotal { get; set; }
+            public int AssignedCompleted { get; set; }
+            public int AssignedProgress { get; set; }
+            public string AssignedSummary { get; set; }
+            public string AssignedPercentText { get; set; }
             public string Code { get; set; }
             public string Name { get; set; }
             public int Progress { get; set; }
@@ -1173,6 +1217,9 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public bool IsCompleted { get; set; }
             public string StatusText { get; set; }
             public string StatusCss { get; set; }
+            public string DeadlineText { get; set; }
+            public string ProgressToneCss { get; set; }
+            public string AssignedTaskTooltip { get; set; }
         }
 
         public class IssueItem
@@ -1216,19 +1263,6 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public string MorningEnd { get; set; }
             public string AfternoonStart { get; set; }
             public string AfternoonEnd { get; set; }
-        }
-
-        public class TodayTimeProjectItem
-        {
-            public string Code { get; set; }
-            public string Name { get; set; }
-            public int TaskCount { get; set; }
-            public int OverdueCount { get; set; }
-            public string NavigateUrl { get; set; }
-            public int StatusCode { get; set; }
-            public string StatusText { get; set; }
-            public string StatusCss { get; set; }
-            public bool ShowGroupHeader { get; set; }
         }
 
         public class CalendarDayItem

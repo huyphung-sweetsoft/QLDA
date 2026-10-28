@@ -740,6 +740,10 @@
         .modal:has(#pdPersonalDetailModalBody) .pd-summary-row.is-total { border-color:#c7a9e9;background:#f6f1fc;box-shadow:inset 3px 0 #54218d; }
         .pd-ds-floating-preview .pd-detail-item { border:1px solid #d7dfe9;background:#fff; }
 
+        /* Điều hướng từ TaskList: tô viền vàng theo đúng ID công việc, tự ngừng sau một nhịp. */
+        @keyframes pdTargetLaborPulse { 0%,100% { background-color:#fff;box-shadow:inset 0 0 0 0 transparent; } 25%,65% { background-color:#fff8d6;box-shadow:inset 0 0 0 2px #f3bd26; } 45%,85% { background-color:#fff0ad;box-shadow:inset 0 0 0 3px #efac0b; } }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table tr.pd-task-focus td { animation:pdTargetLaborPulse 1.75s ease-in-out 1 both; }
+        @media(prefers-reduced-motion:reduce) { .modal:has(#pdPersonalDetailModalBody) .pd-ds-table tr.pd-task-focus td { animation:none;box-shadow:inset 0 0 0 2px #f3bd26;background:#fff8d6; } }
         /* Ba bang ca nhan: cung chieu cao tung dong, gio cong tren - trang thai duoi. Khong cham popup chi tiet. */
         #projectPersonalView .pd-personal-tasks .pd-personal-item, #projectPersonalView .pd-personal-meetings .pd-personal-item, #projectPersonalView .pd-personal-issues .pd-personal-item { box-sizing:border-box;height:116px;min-height:116px;max-height:116px;padding:9px 12px;overflow:hidden; }
         #projectPersonalView .pd-personal-tasks .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading, #projectPersonalView .pd-personal-issues .pd-personal-task-header, #projectPersonalView .pd-personal-issues .pd-personal-issue-heading { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:8px;min-width:0; }
@@ -751,7 +755,32 @@
         #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading { margin-bottom:4px; }
         #projectPersonalView .pd-personal-meetings .pd-personal-meeting-line { margin-top:4px;line-height:1.35; }
         @media(max-width:560px) { #projectPersonalView .pd-personal-status-stack { gap:4px; } #projectPersonalView .pd-personal-status-stack > .pd-personal-tag { font-size:9.5px; } }
-    </style>
+
+        /* Badge giờ công của phần việc: chỉ thêm hover / click, không thay layout các thẻ. */
+        #projectPersonalView .pd-personal-hours.pd-hour-hover-button { appearance:none;cursor:pointer;font-family:inherit;line-height:1.35;text-align:center;transition:background .15s,border-color .15s; }
+        #projectPersonalView .pd-personal-hours.pd-hour-hover-button:hover { border-color:#a979d6!important;background:#f5effe!important; }
+        #projectPersonalView .pd-personal-hours.pd-hour-hover-button:focus-visible { outline:2px solid #874ebf;outline-offset:2px; }
+        .pd-hour-hover-source[hidden] { display:none!important; }
+        .pd-hour-hover-floating { position:fixed;z-index:10850;width:max-content;max-width:min(890px,calc(100vw - 24px));overflow:hidden;border:1px solid #ddc9ef;border-radius:12px;background:#fff;box-shadow:0 16px 42px rgba(37,23,67,.20);pointer-events:none;color:#334155;animation:pdHourQuickEnter .16s ease-out both; }
+        .pd-hour-hover-title { padding:11px 14px;background:#f5effc;color:#54218d;font-size:12.5px;font-weight:800; }
+        .pd-hour-hover-scroll { max-width:calc(100vw - 26px);overflow-x:auto; }
+        .pd-hour-hover-table { border-collapse:collapse;table-layout:auto;width:100%;font-size:11px; }
+        .pd-hour-hover-table th { padding:10px 12px;background:#f8f6fc;color:#54218d;border:1px solid #e6dff0;font-weight:800;white-space:nowrap; }
+        .pd-hour-hover-table td { padding:11px 12px;color:#45546b;border:1px solid #e6eaf1;white-space:nowrap;text-align:center;font-weight:650; }
+        .pd-hour-hover-table td:nth-last-child(2) { color:#5b2499;font-weight:800; }
+        .pd-hour-hover-empty { padding:15px 18px;color:#7c8798;font-size:12px; }
+        .pd-hour-hover-note { padding:8px 13px;color:#7b8798;background:#faf9fc;font-size:10.5px; }
+        @keyframes pdHourQuickEnter { from { opacity:0;transform:translateY(5px) scale(.99); } to { opacity:1;transform:translateY(0) scale(1); } }
+    
+        /* ViewDetail: tên công việc/cuộc họp có thể mở popup từ cả tab cá nhân và tab thành viên. */
+        .pd-view-object-link { display:inline;max-width:100%;margin:0;padding:0;border:0;border-radius:3px;background:transparent;color:inherit;font:inherit;font-weight:inherit;text-align:left;line-height:inherit;cursor:pointer;overflow-wrap:anywhere; }
+        .pd-view-object-link:hover { color:#2563eb!important;text-decoration:none!important;border-bottom-color:transparent!important; }
+        .pd-view-object-link:focus-visible { outline:2px solid #6da5ef;outline-offset:2px;text-decoration:none!important; }
+        /* Tên task: mã + tên cùng một kiểu chữ, không badge; vẫn cho phép bấm cả tên. */
+        #projectPersonalView .pd-personal-task-code,#projectTeamHoursView .pd-team-record-code,.modal:has(#pdPersonalDetailModalBody) .pd-team-record-code,.modal:has(#pdPersonalDetailModalBody) .pd-personal-task-code { display:inline;margin:0 4px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:inherit;font:inherit;line-height:inherit;vertical-align:baseline; }
+        #projectPersonalView .pd-personal-task-name.pd-view-object-link:hover,#projectTeamHoursView .pd-team-record-title .pd-view-object-link:hover { color:#2563eb!important;text-decoration:none!important; }
+        .pd-ds-hover-trigger.pd-view-object-link:hover,.pd-ds-hover-trigger.pd-view-object-link:focus-visible { border-bottom:0!important;text-decoration:none!important; }
+</style>
     <script type="text/javascript">
         // Delegated handlers survive WebForms UpdatePanel re-rendering.
         (function () {
@@ -1285,6 +1314,11 @@
     <%-- V14: Popup chi tiet ca nhan / bang cong PM duoc quan ly boi control rieng. --%>
     <SweetSoft:CtrlChiTietCong runat="server" ID="CtrlChiTietCong1" />
     <SweetSoft:CtrlChiTietCongCuocHop runat="server" ID="CtrlChiTietCongCuocHop1" />
+    <%-- Mở ViewDetail qua hai control có sẵn trong MasterTemplate/CtrlTodaySchedule (không render bản sao). --%>
+    <asp:HiddenField runat="server" ID="hfPdViewObjectKind" />
+    <asp:HiddenField runat="server" ID="hfPdViewObjectId" />
+    <asp:LinkButton runat="server" ID="btnPdViewObject" CausesValidation="false" OnClick="btnPdViewObject_Click" Style="display:none" aria-hidden="true" />
+
     <SweetSoft:ExtraModal runat="server" ID="mdlStatusChange" Type="Primary">
         <ContentTemplate>
             <asp:UpdatePanel ID="upStatusChange" runat="server" UpdateMode="Conditional">
@@ -1859,6 +1893,243 @@
             window.addEventListener('resize', function () {
                 layoutPersonalPins(); schedulePersonalHeightFit(); scheduleTeamHoursHeightFit();
             });
+        })();
+    </script>
+    <script type="text/javascript">
+        /* Chỉ nhận yêu cầu mở bảng công CỦA CHÍNH tài khoản đăng nhập.
+           Tất cả kiểm tra quyền và lọc @UserId vẫn nằm ở CtrlChiTietCong.ascx.cs. */
+        (function () {
+            var args = new URLSearchParams(window.location.search);
+            if (args.get('pdLabor') !== 'task') return;
+            var focusId = (args.get('pdTaskFocus') || '').toLowerCase();
+            if (!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(focusId)) focusId = '';
+            var attempts = 0;
+            var focusObserver = null;
+            function focusTaskRow() {
+                if (!focusId) return false;
+                var body = document.getElementById('pdPersonalDetailModalBody');
+                if (!body) return false;
+                // Chỉ chọn hàng ở bảng công, không tìm theo tên vì có thể trùng tên công việc.
+                var row = body.querySelector('tr[data-pd-task-id="' + focusId + '"]');
+                if (!row) return false;
+                if (focusObserver) { focusObserver.disconnect(); focusObserver = null; }
+                // AJAX có thể render hàng trước khi ExtraModal hiện xong; chờ popup mở rồi mới cuộn/nháy.
+                window.setTimeout(function () {
+                    if (!row.isConnected) return;
+                    var scrollHost = row.closest('.pd-ds-table-scroller');
+                    if (scrollHost && scrollHost.scrollHeight > scrollHost.clientHeight)
+                        scrollHost.scrollTop += row.getBoundingClientRect().top - scrollHost.getBoundingClientRect().top - 25;
+                    else {
+                        var modalBody = row.closest('.modal-body');
+                        if (modalBody) modalBody.scrollTop += row.getBoundingClientRect().top - modalBody.getBoundingClientRect().top - 90;
+                    }
+                    row.classList.remove('pd-task-focus');
+                    void row.offsetWidth;
+                    row.classList.add('pd-task-focus');
+                    row.addEventListener('animationend', function () { row.classList.remove('pd-task-focus'); }, { once: true });
+                    window.setTimeout(function () { if (row.isConnected) row.classList.remove('pd-task-focus'); }, 2300);
+                }, 320);
+                return true;
+            }
+            function awaitTaskRow() {
+                if (!focusId || focusTaskRow()) return;
+                // UpdatePanel có thể thay toàn bộ node pdPersonalDetailModalBody, quan sát document.body để không mất sự kiện.
+                if (!document.body || !window.MutationObserver) return;
+                focusObserver = new MutationObserver(focusTaskRow);
+                focusObserver.observe(document.body, { childList: true, subtree: true });
+                window.setTimeout(function () { if (focusObserver) { focusObserver.disconnect(); focusObserver = null; } }, 10000);
+            }
+            function openOwnTaskLabor() {
+                var ownTab = document.getElementById('btnProjectMyView');
+                if (!ownTab || !window.QLDAProjectDetailPopup || typeof window.QLDAProjectDetailPopup.open !== 'function') {
+                    if (++attempts < 16) window.setTimeout(openOwnTaskLabor, 200);
+                    return;
+                }
+                ownTab.click();
+                awaitTaskRow(); // Đăng ký trước khi WebForms AJAX trả bảng về.
+                var trigger = document.createElement('button');
+                trigger.type = 'button';
+                trigger.setAttribute('data-pd-detail-source', 'pdPersonalTaskDetail');
+                trigger.setAttribute('data-pd-detail-title', 'Bảng công công việc của tôi');
+                trigger.setAttribute('data-pd-detail-sub', 'Giờ công từ bản đối soát hiện tại trong dự án.');
+                // Lần đầu mở qua deep-link không có click trên trang đích: bật loader ExtraModal trực tiếp.
+                if (window.QLDAModalLoading) window.QLDAModalLoading.expect(trigger);
+                try { window.QLDAProjectDetailPopup.open(trigger); }
+                catch (error) { if (window.QLDAModalLoading) window.QLDAModalLoading.end(); throw error; }
+                args.delete('pdLabor');
+                args.delete('pdTaskFocus');
+                var clean = window.location.pathname + (args.toString() ? '?' + args.toString() : '') + window.location.hash;
+                try { window.history.replaceState(window.history.state, '', clean); } catch (ignored) { }
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', openOwnTaskLabor);
+            else openOwnTaskLabor();
+        })();
+    </script>
+    <script type="text/javascript">
+        /* Chỉ chuẩn hóa văn bản GIỜ CÔNG bằng 0, không can thiệp dữ liệu hoặc tính toán. */
+        (function () {
+            if (window.__pdEmptyLaborLabel26) return;
+            window.__pdEmptyLaborLabel26 = true;
+            function normalizeLabor(root) {
+                if (!root) return;
+                var selectors = '#projectPersonalView .pd-personal-hours,#projectPersonalView .pd-summary-row span,' +
+                    '#projectTeamHoursView .pd-personal-hours,#projectTeamHoursView .pd-team-hours-banner,' +
+                    '#projectTeamHoursView .pd-summary-row span,#projectTeamHoursView .pd-team-hours-value,#projectTeamHoursView .pd-ds-table td,' +
+                    '#pdPersonalDetailModalBody .pd-summary-row span,#pdPersonalDetailModalBody .pd-ds-table td';
+                var nodes = document.querySelectorAll(selectors);
+                var zero = /^(?:(?:Giờ công|Kết quả cuối)\s*:\s*)?0(?:[.,]0+)?\s*(?:giờ(?: công)?|phút)?$/i;
+                nodes.forEach(function (node) {
+                    // Chỉ đổi khi toàn bộ dữ liệu văn bản là số 0 của ô giờ công.
+                    // Bảng theo cột: td đầu tiên là tên task; không đụng tên task hay trạng thái.
+                    if (node.matches('td')) {
+                        var table = node.closest('.pd-ds-table');
+                        if (!table) return;
+                        var cells = node.parentElement ? Array.from(node.parentElement.children) : [];
+                        var pos = cells.indexOf(node);
+                        if (pos < 1 || pos > 5) return;
+                    }
+                    var text = (node.textContent || '').trim();
+                    if (!zero.test(text)) return;
+                    var textWalker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+                    var t, list = [];
+                    while ((t = textWalker.nextNode())) list.push(t);
+                    if (!list.length) return;
+                    list[0].nodeValue = 'Chưa ghi nhận công';
+                    list.slice(1).forEach(function (x) { x.nodeValue = ''; });
+                });
+            }
+            var pending = false;
+            function requestNormalize() {
+                if (pending) return;
+                pending = true;
+                window.requestAnimationFrame(function () { pending = false; normalizeLabor(document); });
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', requestNormalize);
+            else requestNormalize();
+            if (window.Sys && Sys.Application) Sys.Application.add_load(requestNormalize);
+            var root = document.querySelector('#pdPersonalDetailModalBody');
+            if (root && window.MutationObserver) new MutationObserver(requestNormalize).observe(root, { childList: true, subtree: true });
+        })();
+    </script>
+
+    <script type="text/javascript">
+        // Hover dữ liệu riêng của object; click mở ExtraModal và đánh dấu đúng dòng sau UpdatePanel.
+        (function () {
+            if (window.__pdPersonalHourQuickV2) return;
+            window.__pdPersonalHourQuickV2 = true;
+            var tooltip = null, active = null, targetFocus = null, focusObserver = null;
+            function buttonOf(target) { return target && target.closest ? target.closest('#projectPersonalView .pd-personal-hours[data-pd-labor-kind]') : null; }
+            function hide() { if (tooltip && tooltip.parentNode) tooltip.parentNode.removeChild(tooltip); tooltip = null;active = null; }
+            function show(button) {
+                if (!button || tooltip && button === active) return;
+                hide();
+                var card = button.closest('.pd-personal-item'), source = card && card.querySelector('.pd-hour-hover-source');
+                if (!source) return;
+                var el = document.createElement('div'); el.className = 'pd-hour-hover-floating'; el.setAttribute('role','tooltip'); el.innerHTML = source.innerHTML;
+                document.body.appendChild(el); tooltip = el; active = button;
+                var rect = button.getBoundingClientRect(), width = el.offsetWidth, height = el.offsetHeight;
+                var gap = 10, edge = 12, vw = window.innerWidth, vh = window.innerHeight;
+                // Ưu tiên góc trên-bên-phải của badge giờ công, không căn giữa trên hàng nữa.
+                var rightSpace = vw - rect.right - gap - edge, leftSpace = rect.left - gap - edge;
+                var x;
+                if (rightSpace >= width) x = rect.right + gap;
+                else if (leftSpace >= width) x = rect.left - width - gap;
+                else x = Math.max(edge, Math.min(rect.right - width, vw - width - edge));
+                // Nếu đủ chỗ thì đặt hẳn phía trên; nếu ở gần đầu trang thì căn đỉnh với badge.
+                var y = rect.top - height - gap;
+                if (y < edge) y = rect.top - 6;
+                if (y + height > vh - edge) y = vh - height - edge;
+                el.style.left = Math.round(Math.max(edge, Math.min(x, vw - width - edge))) + 'px';
+                el.style.top = Math.round(Math.max(edge, y)) + 'px';
+            }
+            function stopObserve() { if(focusObserver){focusObserver.disconnect();focusObserver=null;} }
+            function flash(row) {
+                window.setTimeout(function(){
+                    if(!row.isConnected)return;
+                    var list=row.closest('.pd-ds-table-scroller');
+                    if(list && list.scrollHeight>list.clientHeight) list.scrollTop+=row.getBoundingClientRect().top-list.getBoundingClientRect().top-25;
+                    else {var body=row.closest('.modal-body');if(body)body.scrollTop+=row.getBoundingClientRect().top-body.getBoundingClientRect().top-90;}
+                    row.classList.remove('pd-task-focus');void row.offsetWidth;row.classList.add('pd-task-focus');
+                    window.setTimeout(function(){if(row.isConnected)row.classList.remove('pd-task-focus');},1950);
+                },360);
+            }
+            function checkFocus(){
+                if(!targetFocus || targetFocus.waiting)return false;
+                var body=document.getElementById('pdPersonalDetailModalBody');if(!body)return false;
+                var key=targetFocus.kind==='issue'?'data-pd-issue-id':'data-pd-task-id';
+                var rows=body.querySelectorAll('tr['+key+']'),matched=null;
+                for(var i=0;i<rows.length;i++){if((rows[i].getAttribute(key)||'').toLowerCase()===targetFocus.id){matched=rows[i];break;}}
+                if(!matched)return false;
+                stopObserve();targetFocus=null;flash(matched);return true;
+            }
+            function waitFocus(kind,id){
+                stopObserve();targetFocus={kind:kind,id:id,waiting:true};
+                if(window.MutationObserver && document.body){focusObserver=new MutationObserver(checkFocus);focusObserver.observe(document.body,{childList:true,subtree:true});}
+                window.setTimeout(function(){stopObserve();targetFocus=null;},12000);
+            }
+            function openHours(button){
+                var kind=button.getAttribute('data-pd-labor-kind');
+                var id=(button.getAttribute('data-pd-labor-id')||'').toLowerCase();
+                if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(id))return;
+                var source=kind==='meeting'?'pdPersonalMeetingDetail':kind==='issue'?'pdPersonalIssueDetail':'pdPersonalTaskDetail';
+                var api=kind==='meeting'?window.QLDAProjectMeetingPopup:window.QLDAProjectDetailPopup;
+                if(!api || typeof api.open!=='function')return;
+                var btn=document.createElement('button');btn.type='button';
+                btn.setAttribute('data-pd-detail-source',source);
+                btn.setAttribute('data-pd-detail-title',kind==='meeting'?'Chi tiết công họp của tôi':kind==='issue'?'Chi tiết vấn đề được giao':'Bảng công công việc của tôi');
+                btn.setAttribute('data-pd-detail-sub','Giờ công của bạn trong dự án hiện tại.');
+                if(kind==='meeting')btn.setAttribute('data-pd-focus-meeting-id',id);else waitFocus(kind,id);
+                hide();
+                if(window.QLDAModalLoading && typeof window.QLDAModalLoading.expect==='function')window.QLDAModalLoading.expect(btn);
+                try { api.open(btn); } catch(err){stopObserve();targetFocus=null;if(window.QLDAModalLoading && typeof window.QLDAModalLoading.end==='function')window.QLDAModalLoading.end();throw err;}
+            }
+            document.addEventListener('mouseover',function(e){var btn=buttonOf(e.target);if(btn)show(btn);});
+            document.addEventListener('mouseout',function(e){if(active && active.contains(e.target) && (!e.relatedTarget || !active.contains(e.relatedTarget)))hide();});
+            document.addEventListener('focusin',function(e){var btn=buttonOf(e.target);if(btn)show(btn);});
+            document.addEventListener('focusout',function(e){if(e.target===active)hide();});
+            document.addEventListener('click',function(e){var btn=buttonOf(e.target);if(!btn)return;e.preventDefault();e.stopPropagation();openHours(btn);},true);
+            window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);
+            if(window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager)Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function(sender,args){
+                hide();if(targetFocus){if(args && args.get_error && args.get_error()){stopObserve();targetFocus=null;}else{targetFocus.waiting=false;checkFocus();}}
+            });
+        })();
+    </script>
+
+    <script type="text/javascript">
+        // Cùng luồng ExtraModal/OpenModal(Guid) như CtrlTodaySchedule; không chuyển trang.
+        (function () {
+            if (window.__pdViewObjectLink20261027) return;
+            window.__pdViewObjectLink20261027 = true;
+            var kindId = '<%= FindProjectDetailControl(this, "hfPdViewObjectKind") != null ? FindProjectDetailControl(this, "hfPdViewObjectKind").ClientID : "" %>';
+            var objectId = '<%= FindProjectDetailControl(this, "hfPdViewObjectId") != null ? FindProjectDetailControl(this, "hfPdViewObjectId").ClientID : "" %>';
+            var actionId = '<%= FindProjectDetailControl(this, "btnPdViewObject") != null ? FindProjectDetailControl(this, "btnPdViewObject").ClientID : "" %>';
+            var guidRe = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+            var loading = false;
+            function openLink(link) {
+                if (!link || loading) return;
+                var kind = link.getAttribute('data-pd-view-kind'), id = link.getAttribute('data-pd-view-id') || '';
+                if (kind === 'meet' && !id && link.hasAttribute('data-pd-view-current')) { var current = document.querySelector('#pmcPopupRoot input[id$="hfMeetingId"]'); id = current ? current.value : ''; }
+                if (kind !== 'task' && kind !== 'meet' || !guidRe.test(id)) return;
+                var kindInput = document.getElementById(kindId), idInput = document.getElementById(objectId), action = document.getElementById(actionId);
+                if (!kindInput || !idInput || !action) return;
+                kindInput.value = kind; idInput.value = id; loading = true;
+                if (window.QLDAModalLoading && typeof window.QLDAModalLoading.expect === 'function') window.QLDAModalLoading.expect(action);
+                try { action.click(); } catch (err) { loading = false; if (window.QLDAModalLoading && typeof window.QLDAModalLoading.end === 'function') window.QLDAModalLoading.end(); throw err; }
+            }
+            document.addEventListener('click', function (event) {
+                var link = event.target.closest && event.target.closest('[data-pd-view-kind][data-pd-view-id]');
+                if (!link) return;
+                event.preventDefault(); event.stopPropagation(); openLink(link);
+            }, true);
+            document.addEventListener('keydown', function (event) {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                var link = event.target.closest && event.target.closest('span[role="link"][data-pd-view-kind][data-pd-view-id]');
+                if (!link) return;
+                event.preventDefault(); event.stopPropagation(); openLink(link);
+            }, true);
+            if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () { loading = false; });
+            }
         })();
     </script>
 </asp:Content>

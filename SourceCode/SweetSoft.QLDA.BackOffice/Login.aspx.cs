@@ -56,10 +56,7 @@ namespace SweetSoft.QLDA.BackOffice
         /// <summary>Trang đích sau đăng nhập: tài khoản nhân viên vào trang khai báo giờ, tài khoản khác vào dashboard.</summary>
         private string ResolveHomeUrl(Guid userId)
         {
-            AspnetUser user = UserManager.Instance.GetUserById(userId);
-            return (user != null && user.LaNhanVien)
-                ? RewriteURLHelper.KhaiBaoGio
-                : RewriteURLHelper.EmployeeDashboard;
+            return RewriteURLHelper.EmployeeDashboard;
         }
 
         private void ApplyControlText()
