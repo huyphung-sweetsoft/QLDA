@@ -192,18 +192,44 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
-				TableSchema.TableColumn colvarDaThamGiaOverride = new TableSchema.TableColumn(schema);
-				colvarDaThamGiaOverride.ColumnName = "DaThamGiaOverride";
-				colvarDaThamGiaOverride.DataType = DbType.Boolean;
-				colvarDaThamGiaOverride.MaxLength = 0;
-				colvarDaThamGiaOverride.AutoIncrement = false;
-				colvarDaThamGiaOverride.IsNullable = true;
-				colvarDaThamGiaOverride.IsPrimaryKey = false;
-				colvarDaThamGiaOverride.IsForeignKey = false;
-				colvarDaThamGiaOverride.IsReadOnly = false;
-				colvarDaThamGiaOverride.DefaultSetting = @"";
-				colvarDaThamGiaOverride.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarDaThamGiaOverride);
+				TableSchema.TableColumn colvarDaThamGia = new TableSchema.TableColumn(schema);
+				colvarDaThamGia.ColumnName = "DaThamGia";
+				colvarDaThamGia.DataType = DbType.Boolean;
+				colvarDaThamGia.MaxLength = 0;
+				colvarDaThamGia.AutoIncrement = false;
+				colvarDaThamGia.IsNullable = true;
+				colvarDaThamGia.IsPrimaryKey = false;
+				colvarDaThamGia.IsForeignKey = false;
+				colvarDaThamGia.IsReadOnly = false;
+				colvarDaThamGia.DefaultSetting = @"";
+				colvarDaThamGia.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDaThamGia);
+				
+				TableSchema.TableColumn colvarGioVaoThucTe = new TableSchema.TableColumn(schema);
+				colvarGioVaoThucTe.ColumnName = "GioVaoThucTe";
+				colvarGioVaoThucTe.DataType = DbType.DateTime;
+				colvarGioVaoThucTe.MaxLength = 0;
+				colvarGioVaoThucTe.AutoIncrement = false;
+				colvarGioVaoThucTe.IsNullable = true;
+				colvarGioVaoThucTe.IsPrimaryKey = false;
+				colvarGioVaoThucTe.IsForeignKey = false;
+				colvarGioVaoThucTe.IsReadOnly = false;
+				colvarGioVaoThucTe.DefaultSetting = @"";
+				colvarGioVaoThucTe.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarGioVaoThucTe);
+				
+				TableSchema.TableColumn colvarGioRaThucTe = new TableSchema.TableColumn(schema);
+				colvarGioRaThucTe.ColumnName = "GioRaThucTe";
+				colvarGioRaThucTe.DataType = DbType.DateTime;
+				colvarGioRaThucTe.MaxLength = 0;
+				colvarGioRaThucTe.AutoIncrement = false;
+				colvarGioRaThucTe.IsNullable = true;
+				colvarGioRaThucTe.IsPrimaryKey = false;
+				colvarGioRaThucTe.IsForeignKey = false;
+				colvarGioRaThucTe.IsReadOnly = false;
+				colvarGioRaThucTe.DefaultSetting = @"";
+				colvarGioRaThucTe.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarGioRaThucTe);
 				
 				BaseSchema = schema;
 				//add this schema to the provider
@@ -255,12 +281,28 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
 		}
 		  
-		[XmlAttribute("DaThamGiaOverride")]
+		[XmlAttribute("DaThamGia")]
 		[Bindable(true)]
-		public bool? DaThamGiaOverride 
+		public bool? DaThamGia 
 		{
-			get { return GetColumnValue<bool?>(Columns.DaThamGiaOverride); }
-			set { SetColumnValue(Columns.DaThamGiaOverride, value); }
+			get { return GetColumnValue<bool?>(Columns.DaThamGia); }
+			set { SetColumnValue(Columns.DaThamGia, value); }
+		}
+		  
+		[XmlAttribute("GioVaoThucTe")]
+		[Bindable(true)]
+		public DateTime? GioVaoThucTe 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.GioVaoThucTe); }
+			set { SetColumnValue(Columns.GioVaoThucTe, value); }
+		}
+		  
+		[XmlAttribute("GioRaThucTe")]
+		[Bindable(true)]
+		public DateTime? GioRaThucTe 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.GioRaThucTe); }
+			set { SetColumnValue(Columns.GioRaThucTe, value); }
 		}
 		
 		#endregion
@@ -282,7 +324,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat,bool? varDaThamGiaOverride)
+		public static void Insert(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat,bool? varDaThamGia,DateTime? varGioVaoThucTe,DateTime? varGioRaThucTe)
 		{
 			TblLichHopGioCong item = new TblLichHopGioCong();
 			
@@ -296,7 +338,11 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
-			item.DaThamGiaOverride = varDaThamGiaOverride;
+			item.DaThamGia = varDaThamGia;
+			
+			item.GioVaoThucTe = varGioVaoThucTe;
+			
+			item.GioRaThucTe = varGioRaThucTe;
 			
 		
 			if (System.Web.HttpContext.Current != null)
@@ -308,7 +354,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat,bool? varDaThamGiaOverride)
+		public static void Update(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat,bool? varDaThamGia,DateTime? varGioVaoThucTe,DateTime? varGioRaThucTe)
 		{
 			TblLichHopGioCong item = new TblLichHopGioCong();
 			
@@ -322,7 +368,11 @@ namespace SweetSoft.QLDA.DataAccess
 			
 				item.NgayCapNhat = varNgayCapNhat;
 			
-				item.DaThamGiaOverride = varDaThamGiaOverride;
+				item.DaThamGia = varDaThamGia;
+			
+				item.GioVaoThucTe = varGioVaoThucTe;
+			
+				item.GioRaThucTe = varGioRaThucTe;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -372,9 +422,23 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn DaThamGiaOverrideColumn
+        public static TableSchema.TableColumn DaThamGiaColumn
         {
             get { return Schema.Columns[5]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn GioVaoThucTeColumn
+        {
+            get { return Schema.Columns[6]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn GioRaThucTeColumn
+        {
+            get { return Schema.Columns[7]; }
         }
         
         
@@ -388,7 +452,9 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string SoGioThucTe = @"SoGioThucTe";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
-			 public static string DaThamGiaOverride = @"DaThamGiaOverride";
+			 public static string DaThamGia = @"DaThamGia";
+			 public static string GioVaoThucTe = @"GioVaoThucTe";
+			 public static string GioRaThucTe = @"GioRaThucTe";
 						
 		}
 		#endregion
