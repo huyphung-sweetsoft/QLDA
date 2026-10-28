@@ -113,14 +113,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
             upnlFastComplete.Update();
 
+            mdlFastComplete.OpenModal(true);
+            // Gửi startup script qua Page để hoạt động cả khi popup mở bằng AJAX.
             ScriptManager.RegisterStartupScript(
-                this,
+                Page,
                 GetType(),
                 "InitFastStatus",
-                "setTimeout(calculateFastCompleteStatus, 150);",
+                "if(window.calculateFastCompleteStatus){window.calculateFastCompleteStatus();}",
                 true);
-
-            mdlFastComplete.OpenModal(true);
         }
 
         /// <summary>
@@ -208,11 +208,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         "Công việc hoàn thành trễ hạn. Vui lòng nhập lý do trễ hạn!",
                         MSGType.Warning);
 
+                    // Đảm bảo UI hiển thị đúng nhánh trễ khi server từ chối lưu.
                     ScriptManager.RegisterStartupScript(
-                        this,
+                        Page,
                         GetType(),
                         "KeepLateUI",
-                        "setTimeout(calculateFastCompleteStatus, 100);",
+                        "if(window.calculateFastCompleteStatus){window.calculateFastCompleteStatus();}",
                         true);
                     return;
                 }
@@ -260,7 +261,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 if (LuuHoanThanhQuaKbg20 != null)
                     LuuHoanThanhQuaKbg20(task.IdCongViec, IsPM, luuNghiepVuTask);
                 else
-                    Kbg20TichHopTask.LuuHoanThanh(ProjectId,task.IdCongViec,IsPM,luuNghiepVuTask);
+                    Kbg20TichHopTask.LuuHoanThanh(ProjectId, task.IdCongViec, IsPM, luuNghiepVuTask);
                 if (SauKhiHoanThanhKbg20 != null)
                     SauKhiHoanThanhKbg20(task, IsPM);
                 else if (Kbg20TichHopTask.DuocKichHoat)
@@ -308,7 +309,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         }
                         catch (Exception)
                         {
-                           
+
                         }
                     }
 
