@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
@@ -227,33 +227,44 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             }
             return result;
         }
-        // Người tạo cuộc họp được xem là người chủ trì theo dữ liệu TblLichHop.IdNguoiTao.
-        // Tra cứu theo danh sách GUID từ database, không nhận SQL tự do từ trình duyệt.
-        private Dictionary<Guid, string> LoadCalendarChairNames(IEnumerable<TblLichHop> meetings)
+        // Lay chu tri bang SQL theo lo IdLichHop (model SubSonic cu chua co IdChuTri).
+        // Khong phat sinh N query cho N cuoc hop.
+        private Dictionary<Guid, string> LoadCalendarChairNames(IEnumerable<TblLichHop> meetings,
+            out Dictionary<Guid, Guid> chairIds)
         {
-            var result = new Dictionary<Guid, string>();
-            List<Guid> ids = meetings.Where(m => m.IdNguoiTao != Guid.Empty)
-                .Select(m => m.IdNguoiTao).Distinct().ToList();
-            if (ids.Count == 0) return result;
+            chairIds = new Dictionary<Guid, Guid>();
+            var names = new Dictionary<Guid, string>();
+            List<TblLichHop> rows = meetings.Where(m => m != null).ToList();
+            foreach (TblLichHop item in rows) chairIds[item.IdLichHop] = item.IdNguoiTao;
+            if (rows.Count == 0) return names;
             try
             {
-                string safeIds = string.Join(",", ids.Select(id => "'" + id.ToString("D") + "'"));
-                string sql = "SELECT UserId, DisplayName, UserName FROM dbo.aspnet_Users WHERE UserId IN (" + safeIds + ")";
+                string safeIds = string.Join(",", rows.Select(m => "'" + m.IdLichHop.ToString("D") + "'"));
+                string sql = @"SELECT m.IdLichHop,COALESCE(m.IdChuTri,m.IdNguoiTao) AS IdChuTri,
+                   COALESCE(NULLIF(LTRIM(RTRIM(u.DisplayName)),N''),NULLIF(LTRIM(RTRIM(u.UserName)),N''),N'') AS TenChuTri
+                   FROM dbo.TblLichHop m LEFT JOIN dbo.aspnet_Users u
+                   ON u.UserId=COALESCE(m.IdChuTri,m.IdNguoiTao)
+                   WHERE m.IdLichHop IN (" + safeIds + ")";
                 using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
-                {
                     while (reader.Read())
                     {
-                        Guid id;
-                        if (!Guid.TryParse(Convert.ToString(reader["UserId"]), out id)) continue;
-                        string name = Convert.ToString(reader["DisplayName"]);
-                        if (string.IsNullOrWhiteSpace(name)) name = Convert.ToString(reader["UserName"]);
-                        if (!string.IsNullOrWhiteSpace(name)) result[id] = name.Trim();
+                        Guid id = (Guid)reader["IdLichHop"];
+                        if (reader["IdChuTri"] != DBNull.Value) chairIds[id] = (Guid)reader["IdChuTri"];
+                        string title = Convert.ToString(reader["TenChuTri"]);
+                        if (!string.IsNullOrWhiteSpace(title)) names[id] = title.Trim();
                     }
-                }
             }
-            catch (Exception) { /* Vẫn hiển thị cuộc họp nếu không tải được tên người chủ trì. */ }
-            return result;
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("Read calendar chairs: " + ex); }
+            return names;
         }
+
+        private static Guid CalendarChairId(TblLichHop meeting, IDictionary<Guid, Guid> chairIds)
+        {
+            Guid chair;
+            return chairIds != null && chairIds.TryGetValue(meeting.IdLichHop, out chair)
+                ? chair : meeting.IdNguoiTao;
+        }
+
         private static string CalendarAttr(string value) { return CalendarEsc(value).Replace("'", "&#39;"); }
         // Đồng bộ với UpdateMeetingStatuses: 0=đã lên lịch, 1=sắp diễn ra, 2=đang diễn ra, 3=đã kết thúc.
         // Tính từ giờ server để thẻ có màu đúng ngay khi Calendar được render, kể cả trước lần refresh 60 giây tiếp theo.
@@ -264,13 +275,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (meeting.ThoiGianBatDau <= now.AddMinutes(15)) return 1;
             return 0;
         }
-        private string BuildCalendarEventButton(TblLichHop meeting, DateTime day, Dictionary<Guid, CalendarAttendees> attendees, Dictionary<Guid, string> chairs)
+        private string BuildCalendarEventButton(TblLichHop meeting, DateTime day, Dictionary<Guid, CalendarAttendees> attendees, Dictionary<Guid, string> chairs, Dictionary<Guid, Guid> chairIds)
         {
             string id = meeting.IdLichHop.ToString("D");
             string title = CalendarEsc(meeting.TenCuocHop);
             byte statusCode = CalendarStatusAt(meeting, DateTime.Now);
             string time = CalendarDisplayTime(meeting.ThoiGianBatDau, meeting.ThoiGianKetThuc, day);
-            bool ownerIsMe = meeting.IdNguoiTao == SweetContext.Current.UserId;
+            bool ownerIsMe = CalendarChairId(meeting, chairIds) == SweetContext.Current.UserId;
             string jsId = "&quot;" + id + "&quot;";
 
             // Outside is a div rather than button: a button cannot contain action buttons.
@@ -300,7 +311,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             // Chế độ không lật: tooltip cũ hiện thông tin ngắn gọn tại ô lịch.
             string statusLabel = statusCode == 0 ? "Đã lên lịch" : statusCode == 1 ? "Sắp diễn ra" : statusCode == 2 ? "Đang diễn ra" : "Đã kết thúc";
             string chairName;
-            if (!chairs.TryGetValue(meeting.IdNguoiTao, out chairName) || string.IsNullOrWhiteSpace(chairName)) chairName = "Chưa có thông tin";
+            if (!chairs.TryGetValue(meeting.IdLichHop, out chairName) || string.IsNullOrWhiteSpace(chairName)) chairName = "Chưa có thông tin";
             CalendarAttendees attendeeInfo;
             int count = attendees.TryGetValue(meeting.IdLichHop, out attendeeInfo) ? attendeeInfo.Count : 0;
             html.Append("<div class='meet-cal-popover' aria-hidden='true'>");
@@ -314,7 +325,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             return html.ToString();
         }
         // Thẻ cố định cho popup ngày: không lật, thao tác trực tiếp như cột Action ở tab Danh sách.
-        private string BuildCalendarDayEvent(TblLichHop meeting, DateTime day)
+        private string BuildCalendarDayEvent(TblLichHop meeting, DateTime day, Dictionary<Guid, Guid> chairIds)
         {
             string id = meeting.IdLichHop.ToString("D");
             string jsId = "&quot;" + id + "&quot;";
@@ -324,7 +335,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             var html = new StringBuilder(460);
             html.Append("<div class='meet-cal-day-entry is-status-" + status + "' data-meet-id='" + id + "'>");
             html.Append("<button type='button' class='meet-day-entry-main' title='Xem chi tiết " + titleAttr + "' onclick='return SweetMeetCalendar.openAction(&quot;view&quot;," + jsId + ");'>");
-            if (meeting.IdNguoiTao == SweetContext.Current.UserId)
+            if (CalendarChairId(meeting, chairIds) == SweetContext.Current.UserId)
                 html.Append("<i class='fas fa-crown meet-cal-host-icon' aria-hidden='true'></i>");
             html.Append("<span class='meet-day-entry-time'>" + CalendarEsc(CalendarDisplayTime(meeting.ThoiGianBatDau, meeting.ThoiGianKetThuc, day).Split('–')[0]) + "</span><span class='meet-day-entry-title'>" + title + "</span></button>");
             html.Append("<div class='meet-day-entry-actions'>");
@@ -339,7 +350,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         }
         // Mỗi ngày tối đa hai cuộc họp hiển thị trực tiếp. Toàn bộ lịch họp được giữ
         // trong vùng ẩn để ExtraModal có thể sử dụng mà không gọi API mới.
-        private void RenderCalendarDayMeetings(StringBuilder html, List<TblLichHop> meetings, DateTime date, Dictionary<Guid, CalendarAttendees> attendees, Dictionary<Guid, string> chairs)
+        private void RenderCalendarDayMeetings(StringBuilder html, List<TblLichHop> meetings, DateTime date, Dictionary<Guid, CalendarAttendees> attendees, Dictionary<Guid, string> chairs, Dictionary<Guid, Guid> chairIds)
         {
             List<TblLichHop> ordered = meetings.OrderBy(m => m.ThoiGianBatDau).ThenBy(m => m.TenCuocHop).ToList();
             html.Append("<div class='meet-cal-day-items'>");
@@ -348,7 +359,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             else
             {
                 foreach (TblLichHop meeting in ordered.Take(2))
-                    html.Append(BuildCalendarEventButton(meeting, date, attendees, chairs));
+                    html.Append(BuildCalendarEventButton(meeting, date, attendees, chairs, chairIds));
                 if (ordered.Count > 2)
                     html.Append("<button type='button' class='meet-cal-view-more' aria-label='Xem thêm " + (ordered.Count - 2) + " cuộc họp ngày " + date.ToString("dd/MM/yyyy") + "'><i class='fas fa-plus-circle' aria-hidden='true'></i> " + (ordered.Count - 2) + " cuộc họp nữa</button>");
             }
@@ -356,7 +367,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             // Nội dung nguồn để sử dụng trong ExtraModal; ẩn hoàn toàn khỏi ô ngày.
             html.Append("<div class='meet-cal-day-all' hidden>");
             foreach (TblLichHop meeting in ordered)
-                html.Append(BuildCalendarDayEvent(meeting, date));
+                html.Append(BuildCalendarDayEvent(meeting, date, chairIds));
             html.Append("</div>");
         }
         private string BuildMeetingCalendarHtml()
@@ -376,9 +387,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             // Calendar luôn hiển thị cuộc họp do chính người dùng chủ trì hoặc có tên trong TblLichHop_NhanVien.
             // Nếu truy vấn người tham gia lỗi, chỉ còn các cuộc họp người dùng làm chủ trì; không trả về toàn bộ lịch dự án.
             Guid currentUserId = SweetContext.Current.UserId;
+            Dictionary<Guid, Guid> chairIds;
+            Dictionary<Guid, string> chairs = LoadCalendarChairNames(meetings, out chairIds);
+            // Nguoi tao duoc xem hop da tao; chu tri moi moi co vuong mien / quyen chu tri.
             meetings = meetings.Where(m => m.IdNguoiTao == currentUserId ||
+                CalendarChairId(m, chairIds) == currentUserId ||
                 (attendees.ContainsKey(m.IdLichHop) && attendees[m.IdLichHop].IncludesCurrentUser)).ToList();
-            Dictionary<Guid, string> chairs = LoadCalendarChairNames(meetings);
             var configs = new SubSonic.Select().From(TblCauHinhTuanLamViec.Schema).ExecuteTypedList<TblCauHinhTuanLamViec>();
             // Hỗ trợ cả quy ước thứ trong tuần 0–6 (CN=0) và 1–7 (CN=7).
             bool configHasSundayZero = configs.Any(c => Convert.ToInt32(c.NgayTrongTuan) == 0);
@@ -431,7 +445,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 if (CURRENT_PAGE.IsAdd) html.Append("<button type='button' class='meet-cal-create' title='Tạo cuộc họp' aria-label='Tạo cuộc họp ngày " + date.ToString("dd/MM/yyyy") + "' onclick='event.stopPropagation();return SweetMeetCalendar.createMeeting(&quot;" + date.ToString("yyyy-MM-dd") + "&quot;);'><i class='fas fa-plus' aria-hidden='true'></i></button>");
                 html.Append("</span></div>");
                 // Calendar gọn: một ngày chỉ có thẻ họp, không hiển thị ca sáng/chiều.
-                RenderCalendarDayMeetings(html, dayMeetings, date, attendees, chairs);
+                RenderCalendarDayMeetings(html, dayMeetings, date, attendees, chairs, chairIds);
                 html.Append("</div>");
             }
             html.Append("</div></div>");
@@ -716,7 +730,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                     TblLichHop meet = TblLichHop.FetchByID(idCuocHop);
                     if (meet == null) return;
 
-                    Guid? hostId = meet.IdNguoiTao;
+                    Guid host = meet.IdNguoiTao;
+                    try
+                    {
+                        string sql = "SELECT COALESCE(IdChuTri,IdNguoiTao) AS ChairId FROM dbo.TblLichHop WHERE IdLichHop='" + meet.IdLichHop.ToString("D") + "'";
+                        using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+                            if (reader.Read() && reader["ChairId"] != DBNull.Value) host = (Guid)reader["ChairId"];
+                    }
+                    catch (Exception ex) { System.Diagnostics.Trace.TraceError("Meet chair for participants: " + ex); }
+                    Guid? hostId = host;
                     DateTime startDate = meet.ThoiGianBatDau;
                     DateTime endDate = meet.ThoiGianKetThuc;
 

@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -131,7 +131,22 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             return CanViewLabor && meeting != null && meeting.IdDuAn == ProjectId && meeting.DaXoa != true
                    && meeting.ThoiGianKetThuc <= DateTime.Now
-                   && (CanManageProject || meeting.IdNguoiTao == SweetContext.Current.UserId);
+                   && (CanManageProject || IsMeetingChair(meeting.IdLichHop, SweetContext.Current.UserId));
+        }
+
+
+        private static bool IsMeetingChair(Guid meetId, Guid userId)
+        {
+            if (meetId == Guid.Empty || userId == Guid.Empty) return false;
+            using (SqlConnection db = new SqlConnection(GetConnectionString()))
+            using (SqlCommand command = new SqlCommand(@"SELECT COUNT(1) FROM dbo.TblLichHop
+ WHERE IdLichHop=@MeetId AND COALESCE(IdChuTri,IdNguoiTao)=@UserId", db))
+            {
+                command.Parameters.Add(GuidParameter("@MeetId", meetId));
+                command.Parameters.Add(GuidParameter("@UserId", userId));
+                db.Open();
+                return Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+            }
         }
 
         protected string CurrentDurationInvariant
@@ -292,7 +307,7 @@ SELECT CASE WHEN EXISTS (
     SELECT 1 FROM dbo.TblLichHop m
     WHERE m.IdLichHop=@IdLichHop AND m.IdDuAn=@IdDuAn
       AND (m.DaXoa=0 OR m.DaXoa IS NULL)
-      AND (@CanManage=1 OR m.IdNguoiTao=@UserId OR EXISTS (
+      AND (@CanManage=1 OR m.IdNguoiTao=@UserId OR COALESCE(m.IdChuTri,m.IdNguoiTao)=@UserId OR EXISTS (
           SELECT 1 FROM dbo.TblLichHop_NhanVien nv
           WHERE nv.IdLichHop=m.IdLichHop AND nv.IdNhanVien=@UserId))
 ) THEN 1 ELSE 0 END;";
@@ -368,9 +383,13 @@ WITH DanhSach AS (
     FROM dbo.TblLichHop_NhanVien p
     WHERE p.IdLichHop = @IdLichHop AND p.IdNhanVien IS NOT NULL
     UNION
-    SELECT m.IdNguoiTao
+    SELECT COALESCE(m.IdChuTri,m.IdNguoiTao)
     FROM dbo.TblLichHop m
-    WHERE m.IdLichHop = @IdLichHop AND m.IdNguoiTao IS NOT NULL
+    WHERE m.IdLichHop = @IdLichHop AND COALESCE(m.IdChuTri,m.IdNguoiTao) IS NOT NULL
+    UNION
+    -- Giữ lịch sử giờ công của người từng chủ trì, dù không có trong danh sách hiện tại.
+    SELECT g.IdNhanVien FROM dbo.TblLichHopGioCong g
+    WHERE g.IdLichHop=@IdLichHop AND g.IdNhanVien IS NOT NULL
 ), TatCa AS (
     SELECT d.IdNhanVien,
            COALESCE(NULLIF(LTRIM(RTRIM(u.DisplayName)), N''),
@@ -378,7 +397,7 @@ WITH DanhSach AS (
                     CONVERT(NVARCHAR(36), d.IdNhanVien)) AS TenNhanVien,
            COALESCE(NULLIF(LTRIM(RTRIM(mu.Email)), N''), N'') AS Email,
            COALESCE(NULLIF(LTRIM(RTRIM(u.Avatar)), N''), N'') AS Avatar,
-           CASE WHEN d.IdNhanVien = m.IdNguoiTao THEN 1 ELSE 0 END AS LaChuTri,
+           CASE WHEN d.IdNhanVien = COALESCE(m.IdChuTri,m.IdNguoiTao) THEN 1 ELSE 0 END AS LaChuTri,
            ISNULL(CAST(g.DaThamGia AS INT),
                  ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia, 0) AS INT))
                          FROM dbo.TblLichHop_NhanVien p
@@ -495,12 +514,12 @@ ORDER BY SoThuTu ASC;";
         {
             const string where = @" FROM dbo.TblLichHop m
 WHERE m.IdDuAn=@IdDuAn AND (m.DaXoa=0 OR m.DaXoa IS NULL)
-  AND (@CanManage=1 OR m.IdNguoiTao=@UserId
+  AND (@CanManage=1 OR m.IdNguoiTao=@UserId OR COALESCE(m.IdChuTri,m.IdNguoiTao)=@UserId
        OR EXISTS (SELECT 1 FROM dbo.TblLichHop_NhanVien p
                   WHERE p.IdLichHop=m.IdLichHop AND p.IdNhanVien=@UserId))
    AND (@Filter=0 OR (@Filter=1 AND m.ThoiGianKetThuc>GETDATE())
         OR (@Filter=2 AND m.ThoiGianKetThuc<=GETDATE())
-        OR (@Filter=3 AND m.IdNguoiTao=@UserId))
+        OR (@Filter=3 AND COALESCE(m.IdChuTri,m.IdNguoiTao)=@UserId))
    AND (@NameSearch=N'' OR m.TenCuocHop LIKE @NamePattern)
    AND (@FromDate IS NULL OR m.ThoiGianBatDau >= @FromDate)
    AND (@ToExclusive IS NULL OR m.ThoiGianBatDau < @ToExclusive)
@@ -530,7 +549,7 @@ WHERE m.IdDuAn=@IdDuAn AND (m.DaXoa=0 OR m.DaXoa IS NULL)
             string sql = @"
 WITH DanhSachCoThuTu AS (
  SELECT m.IdLichHop, m.TenCuocHop, m.ThoiGianBatDau, m.ThoiGianKetThuc, m.DaXacNhanChamCong,
-        CASE WHEN m.IdNguoiTao=@UserId THEN 1 ELSE 0 END AS LaChuTri,
+        CASE WHEN COALESCE(m.IdChuTri,m.IdNguoiTao)=@UserId THEN 1 ELSE 0 END AS LaChuTri,
         ROW_NUMBER() OVER (ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC) AS SoThuTu" + where + @"
 )
 SELECT IdLichHop, TenCuocHop, ThoiGianBatDau, ThoiGianKetThuc, LaChuTri, DaXacNhanChamCong
@@ -826,7 +845,7 @@ ORDER BY SoThuTu ASC;";
                     (MeetingFilter == "all" ||
                     (MeetingFilter == "ended" && requestedMeeting.ThoiGianKetThuc <= DateTime.Now) ||
                     (MeetingFilter == "active" && requestedMeeting.ThoiGianKetThuc > DateTime.Now) ||
-                    (MeetingFilter == "hosted" && requestedMeeting.IdNguoiTao == SweetContext.Current.UserId)))
+                    (MeetingFilter == "hosted" && IsMeetingChair(requestedMeeting.IdLichHop, SweetContext.Current.UserId))))
                 {
                     if (SelectedMeetingId != requestedId) LaborPage = 1;
                     SelectedMeetingId = requestedId;
@@ -862,7 +881,7 @@ ORDER BY SoThuTu ASC;";
             if (!IsValidMeeting(meetingId, ProjectId, out meeting)) return;
             if (MeetingFilter == "active" && meeting.ThoiGianKetThuc <= DateTime.Now) return;
             if (MeetingFilter == "ended" && meeting.ThoiGianKetThuc > DateTime.Now) return;
-            if (MeetingFilter == "hosted" && meeting.IdNguoiTao != SweetContext.Current.UserId) return;
+            if (MeetingFilter == "hosted" && !IsMeetingChair(meeting.IdLichHop, SweetContext.Current.UserId)) return;
             if (SelectedMeetingId != meetingId) LaborPage = 1;
             SelectedMeetingId = meetingId;
             BindTab();
@@ -1469,7 +1488,8 @@ WHERE IdLichHop=@MeetId
                     // Khong cho xac nhan neu van con nhan vien chua luu trang thai tham gia.
                     const string pendingSql = @"WITH DanhSach AS (
  SELECT IdNhanVien FROM dbo.TblLichHop_NhanVien WHERE IdLichHop=@IdLichHop AND IdNhanVien IS NOT NULL
- UNION SELECT IdNguoiTao FROM dbo.TblLichHop WHERE IdLichHop=@IdLichHop AND IdNguoiTao IS NOT NULL)
+ UNION SELECT COALESCE(IdChuTri,IdNguoiTao) FROM dbo.TblLichHop WHERE IdLichHop=@IdLichHop AND COALESCE(IdChuTri,IdNguoiTao) IS NOT NULL
+ UNION SELECT IdNhanVien FROM dbo.TblLichHopGioCong WHERE IdLichHop=@IdLichHop AND IdNhanVien IS NOT NULL)
  SELECT COUNT(1) FROM DanhSach d LEFT JOIN dbo.TblLichHopGioCong g
  ON g.IdLichHop=@IdLichHop AND g.IdNhanVien=d.IdNhanVien WHERE g.DaThamGia IS NULL";
                     using (SqlCommand pending = new SqlCommand(pendingSql, db))

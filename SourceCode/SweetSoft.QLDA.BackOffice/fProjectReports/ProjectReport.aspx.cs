@@ -48,7 +48,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.PROJECT_REPORT));
-                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PROJECT_REPORT);
+                Navigation1.MainTitle = this.ProjectName;
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
                 {
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },

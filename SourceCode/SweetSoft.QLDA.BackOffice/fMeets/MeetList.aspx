@@ -33,6 +33,31 @@
     .meeting-form-card-title i { color: #6366f1; font-size: 13px; }
     .meeting-form-field { margin-bottom: 12px; }
     .meeting-form-field:last-child { margin-bottom: 0; }
+    /* Chủ trì: Select2 cùng họ giao diện Người yêu cầu của CostList; giới hạn CSS trong popup Meet. */
+    #<%= dlDetail.ClientID %> .meeting-chair-field { position:relative; min-width:0; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .meeting-chair-select { width:100%; height:40px; border:1px solid #929cab; border-radius:5px; background:#fff; color:#212529; font-size:14px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .select2-container { width:100% !important; display:block; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .select2-container--default .select2-selection--single { height:40px !important; min-height:40px !important; border:1px solid #929cab !important; border-radius:5px !important; background:#fff !important; display:flex !important; align-items:center !important; box-shadow:none !important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .select2-selection__rendered { width:100%; min-width:0; padding:0 32px 0 8px !important; line-height:normal !important; color:#212529 !important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .select2-selection__arrow { height:100% !important; top:0 !important; right:7px !important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .select2-container--focus .select2-selection--single, #<%= dlDetail.ClientID %> .meeting-chair-field .select2-container--open .select2-selection--single { border-color:#8254b4 !important; box-shadow:0 0 0 2px rgba(84,33,141,.12) !important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-result { display:flex; align-items:center; gap:8px; min-width:0; padding:2px 0; }
+    #<%= dlDetail.ClientID %> .meeting-chair-avatar { display:flex; align-items:center; justify-content:center; flex:0 0 32px; width:32px; height:32px; border-radius:50%; overflow:hidden; color:#fff; font-size:11px; font-weight:800; }
+    #<%= dlDetail.ClientID %> .meeting-chair-avatar img { display:block; width:100%; height:100%; object-fit:cover; }
+    #<%= dlDetail.ClientID %> .meeting-chair-info { display:flex; flex-direction:column; justify-content:center; min-width:0; line-height:1.16; }
+    #<%= dlDetail.ClientID %> .meeting-chair-name { font-size:12.5px; font-weight:700; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #<%= dlDetail.ClientID %> .meeting-chair-email { margin-top:3px; font-size:10.5px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #<%= dlDetail.ClientID %> .select2-selection__rendered .meeting-chair-result { padding:0; }
+    #<%= dlDetail.ClientID %> .select2-selection__rendered .meeting-chair-avatar { flex-basis:27px; width:27px; height:27px; font-size:9px; }
+    #<%= dlDetail.ClientID %> .select2-selection__rendered .meeting-chair-name { font-size:12px; }
+    #<%= dlDetail.ClientID %> .select2-selection__rendered .meeting-chair-email { font-size:10px; margin-top:1px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu.select2-dropdown { border:1px solid #d6c5e9; border-radius:8px; overflow:hidden; box-shadow:0 10px 30px rgba(31,19,56,.14); z-index:20030; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu .select2-search--dropdown { padding:8px 10px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu .select2-search__field { padding:7px 10px; border:1px solid #d6c5e9; border-radius:6px; outline:none; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu .select2-search__field:focus { border-color:#8b5cf6; box-shadow:0 0 0 2px rgba(139,92,246,.1); }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu .select2-results__option { padding:7px 10px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu .select2-results__option--highlighted[aria-selected] { background:#f3edff; color:#334155; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu .select2-results__option[aria-selected=true] { background:#f7f4ff; }
     .meeting-form-field .form-label { margin-bottom: 6px; font-size: 11px; font-weight: 700; color: #475569; }
     .meeting-form-field .form-text { margin-top: 6px; font-size: 10px; color: #94a3b8; }
     .meeting-summary-box { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
@@ -147,6 +172,53 @@
         .meeting-method-box .form-select { min-width:0; }
         .meet-join-reminder { padding:12px 9px; }
     }
+
+    /* Read-only status matches input visual height without being an editable dropdown. */
+    #<%= dlDetail.ClientID %> .meeting-status-display { display:flex;align-items:center;gap:8px;min-height:42px;height:42px;box-sizing:border-box;width:100%;padding:0 12px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;font-size:14px;font-weight:600; }
+    #<%= dlDetail.ClientID %> .meeting-status-display i { color:#94a3b8;font-size:9px; }
+    #<%= dlDetail.ClientID %> .meeting-status-display[data-status="1"] i { color:#3b82f6; }
+    #<%= dlDetail.ClientID %> .meeting-status-display[data-status="2"] i { color:#10b981; }
+    #<%= dlDetail.ClientID %> .meeting-status-display[data-status="3"] i { color:#64748b; }
+    /* Keep each label adjacent to ITS input, never flush against the control above. */
+    #<%= dlDetail.ClientID %> .meeting-input-row { --bs-gutter-y:0; margin-bottom:17px;align-items:flex-start; }
+    #<%= dlDetail.ClientID %> .meeting-input-row > [class*="col-"] { display:flex;min-width:0; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field { display:flex;flex-direction:column;width:100%;min-width:0;margin:0!important; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field > label.form-label { position:relative;display:block!important;box-sizing:border-box;min-height:19px;line-height:19px!important;height:auto;margin:0 0 7px!important;padding:0 0 0 21px!important;font-size:11.5px;font-weight:700;white-space:nowrap; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field > label.form-label::before { left:0!important; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field input:not([type=hidden]):not([type=checkbox]), #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field select:not(.select2-hidden-accessible) { box-sizing:border-box;min-height:42px!important;height:42px!important;border-color:#cbd5e1!important;border-radius:7px; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .input-group { display:flex;flex-wrap:nowrap; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .input-group > input { min-width:0;flex:1; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .input-group > button, #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .input-group > .input-group-text { height:42px!important;min-height:42px!important; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .meeting-readonly-input, #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field input:disabled { background:#fff!important;color:#334155!important;-webkit-text-fill-color:#334155!important;opacity:1!important;border:1px solid #cbd5e1!important; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .select2-selection--single { height:42px!important;min-height:42px!important;border-color:#cbd5e1!important;display:flex!important;align-items:center!important; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .meeting-chair-select { min-height:42px!important;height:42px!important; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-form-field .meeting-method-note { margin-top:5px;line-height:1.25; }
+    #<%= dlDetail.ClientID %> .meeting-input-row .meeting-input-shell > input { padding-right:46px!important; }
+    @media(max-width:767.98px) { #<%= dlDetail.ClientID %> .meeting-input-row { --bs-gutter-y:12px; } }
+
+    /* Dropdown Chu tri doc lap Select2: hien avatar, email ngay ca khi thu vien ngoai chua san sang. */
+    #<%= dlDetail.ClientID %> .meeting-chair-field { position:relative; }
+    #<%= dlDetail.ClientID %> .meeting-chair-field .meeting-chair-native-hidden { display:none!important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-combo { position:relative;width:100%;min-width:0; }
+    #<%= dlDetail.ClientID %> .meeting-chair-combo.is-open { z-index:50; }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger { width:100%;height:42px;min-height:42px;display:flex;align-items:center;gap:9px;padding:4px 9px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;text-align:left;cursor:pointer;box-shadow:none;transition:border-color .12s,box-shadow .12s; }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger:hover { border-color:#a78bfa; }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger:focus-visible, #<%= dlDetail.ClientID %> .meeting-chair-combo.is-open .meeting-chair-trigger { outline:none;border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.12); }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger .meeting-chair-result { min-width:0;flex:1; }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger .meeting-chair-avatar { width:28px;height:28px;flex:0 0 28px;font-size:10px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger .meeting-chair-name { font-size:12px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-trigger .meeting-chair-email { font-size:10px;margin-top:2px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-chevron { display:inline-flex;align-items:center;justify-content:center;color:#94a3b8;font-size:11px;flex:0 0 12px; }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu-custom { position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:20060;min-width:265px;padding:7px;border:1px solid #ddd6fe;border-radius:10px;background:#fff;box-shadow:0 14px 30px rgba(37,20,69,.16); }
+    #<%= dlDetail.ClientID %> .meeting-chair-menu-custom[hidden] { display:none!important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-search { width:100%;height:34px!important;min-height:34px!important;padding:5px 9px!important;margin:0 0 7px!important;border:1px solid #d5caea!important;border-radius:7px!important;background:#fff!important;font-size:12px!important; }
+    #<%= dlDetail.ClientID %> .meeting-chair-search:focus { outline:none;border-color:#8b5cf6!important;box-shadow:0 0 0 2px rgba(139,92,246,.12); }
+    #<%= dlDetail.ClientID %> .meeting-chair-options { max-height:260px;overflow-y:auto;overscroll-behavior:contain; }
+    #<%= dlDetail.ClientID %> .meeting-chair-option { width:100%;display:flex;align-items:center;gap:9px;padding:7px;border:0;border-radius:7px;background:transparent;text-align:left;cursor:pointer; }
+    #<%= dlDetail.ClientID %> .meeting-chair-option:hover, #<%= dlDetail.ClientID %> .meeting-chair-option.is-selected { background:#f2eafd; }
+    #<%= dlDetail.ClientID %> .meeting-chair-option.is-selected .meeting-chair-name { color:#5b21b6; }
+    #<%= dlDetail.ClientID %> .meeting-chair-option .meeting-chair-result { width:100%; }
+    #<%= dlDetail.ClientID %> .meeting-chair-empty { padding:12px;text-align:center;color:#94a3b8;font-size:12px; }
 </style>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -167,21 +239,28 @@
                 <div class="col-lg-7 meeting-form-column">
                     <div class="meeting-form-card">
                         <div class="meeting-form-card-title"><i class="fas fa-calendar-alt"></i><span>Thông tin cuộc họp</span></div>
-                        <div class="row g-2">
-                            <div class="col-md-8">
+                        <div class="row g-2 meeting-input-row">
+                            <div class="col-md-5">
                                 <div class="meeting-form-field">
                                     <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_NAME) %></label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtTenCuocHop" Required="true"></SweetSoft:ExtraTextBox>
                                 </div>
                             </div>
                             <div class="col-md-4">
+                                <div class="meeting-form-field meeting-chair-field">
+                                    <label class="form-label label-valid">Chủ trì</label>
+                                    <asp:DropDownList runat="server" ID="ddlMeetChair" CssClass="meeting-chair-select form-select" aria-label="Chọn người chủ trì cuộc họp" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="meeting-form-field">
                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
-                                    <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" Enabled="false" CssClass="disabled meeting-readonly-input"></SweetSoft:ExtraDropdown>
+                                    <asp:HiddenField runat="server" ID="hfMeetStatus" Value="0" />
+                                    <div class="meeting-status-display" data-status="0" role="status"><i class="fas fa-circle" aria-hidden="true"></i><asp:Label runat="server" ID="lblMeetStatus" CssClass="meeting-status-text" Text="Đã lên lịch" /></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-2">
+                        <div class="row g-2 meeting-input-row">
                             <div class="col-md-4">
                                 <div class="meeting-form-field">
                                     <label class="form-label label-valid">Ngày bắt đầu</label>
@@ -247,8 +326,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-6">
+                        <div class="row g-2 mb-3 meeting-input-row meeting-last-input-row">
+                            <div class="col-md-4">
                                 <div class="meeting-form-field">
                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.END_TIME) %></label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtThoiGianKetThuc" Enabled="false" CssClass="disabled meeting-readonly-input" PlaceHolder="Hệ thống tự tính..."></SweetSoft:ExtraTextBox>
@@ -263,7 +342,7 @@
                                     </asp:DropDownList></div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <div class="meeting-form-field">
                                     <label class="form-label label-valid" id="meetingLocationLabel"><%= GetResourceText(BackEndResourceKeys.MEETING_ROOM) %></label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtDiaDiemHop" Required="true"></SweetSoft:ExtraTextBox>
@@ -283,9 +362,7 @@
                                     <asp:TextBox runat="server" ID="txtNhanVienThamGia" CssClass="d-none" ReadOnly="true"></asp:TextBox>
                                     <asp:HiddenField runat="server" ID="hdfNhanVienIds" />
                                     <div id="selectedMeetingMembers" class="selected-meeting-members-box">
-                                        <div class="selected-meeting-members-empty">
-                                            <i class="fas fa-user-friends"></i><span>Chưa có nhân viên tham gia cuộc họp.</span>
-                                        </div>
+                                        <asp:Literal runat="server" ID="litSelectedMeetingMembers" />
                                     </div>
                                 </div>
                             </div>
@@ -388,6 +465,189 @@
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
+    <script type="text/javascript">
+        // Chu tri: menu co avatar va email, giu asp:DropDownList goc cho WebForms postback.
+        // Khong phu thuoc Select2 de tranh roi ve dropdown mac dinh khi chua tai plugin.
+        (function (w, d) {
+            'use strict';
+            var selectId = '<%= MeetChairClientId %>';
+            var modalId = '<%= dlDetail.ClientID %>';
+            var api = w.MeetChairUI || {};
+
+            function element(tag, css, content) {
+                var el = d.createElement(tag);
+                if (css) el.className = css;
+                if (content !== undefined) el.textContent = content;
+                return el;
+            }
+            function validColor(value) { return /^#[0-9a-f]{6}$/i.test(value || '') ? value : '#7c3aed'; }
+            function optionData(option) {
+                return {
+                    id: option.value,
+                    name: option.getAttribute('data-name') || option.textContent || '',
+                    email: option.getAttribute('data-email') || 'Chưa cập nhật email',
+                    initials: option.getAttribute('data-initials') || '?',
+                    color: validColor(option.getAttribute('data-color')),
+                    avatar: option.getAttribute('data-avatar') || ''
+                };
+            }
+            function person(data) {
+                var wrap = element('span', 'meeting-chair-result');
+                var avatar = element('span', 'meeting-chair-avatar');
+                avatar.style.backgroundColor = data.color;
+                avatar.textContent = data.initials;
+                if (data.avatar && /^(https?:\/\/|\/[^\/])/i.test(data.avatar)) {
+                    var img = element('img');
+                    img.src = data.avatar;
+                    img.alt = '';
+                    img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); };
+                    avatar.textContent = '';
+                    avatar.appendChild(img);
+                    var fallback = element('span', '', data.initials);
+                    fallback.style.cssText = 'display:none;align-items:center;justify-content:center;width:100%;height:100%';
+                    avatar.appendChild(fallback);
+                    img.onerror = function () { img.style.display = 'none'; fallback.style.display = 'flex'; };
+                }
+                var info = element('span', 'meeting-chair-info');
+                info.appendChild(element('span', 'meeting-chair-name', data.name));
+                info.appendChild(element('span', 'meeting-chair-email', data.email));
+                wrap.appendChild(avatar);
+                wrap.appendChild(info);
+                return wrap;
+            }
+            function close(root) {
+                if (!root) return;
+                root.classList.remove('is-open');
+                var menu = root.querySelector('.meeting-chair-menu-custom');
+                var trigger = root.querySelector('.meeting-chair-trigger');
+                if (menu) menu.hidden = true;
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+            function currentOption(select) {
+                return select.options[select.selectedIndex] || select.options[0] || null;
+            }
+            function syncSelected(root) {
+                var select = root._chairSelect;
+                if (!select) return;
+                var trigger = root.querySelector('.meeting-chair-trigger');
+                var arrow = root.querySelector('.meeting-chair-chevron');
+                if (!trigger) return;
+                while (trigger.firstChild) trigger.removeChild(trigger.firstChild);
+                var option = currentOption(select);
+                if (option) trigger.appendChild(person(optionData(option)));
+                else trigger.appendChild(element('span', 'meeting-chair-name', 'Chọn chủ trì'));
+                trigger.appendChild(arrow || element('span', 'meeting-chair-chevron', '▾'));
+            }
+            function renderOptions(root) {
+                var select = root._chairSelect;
+                var search = root.querySelector('.meeting-chair-search');
+                var container = root.querySelector('.meeting-chair-options');
+                var q = (search && search.value || '').trim().toLocaleLowerCase();
+                if (!container || !select) return;
+                container.textContent = '';
+                var count = 0;
+                Array.prototype.forEach.call(select.options, function (option) {
+                    var data = optionData(option);
+                    if (!data.id || (q && (data.name + ' ' + data.email).toLocaleLowerCase().indexOf(q) < 0)) return;
+                    count++;
+                    var button = element('button', 'meeting-chair-option' + (option.selected ? ' is-selected' : ''));
+                    button.type = 'button';
+                    button.setAttribute('role', 'option');
+                    button.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+                    button.appendChild(person(data));
+                    button.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        select.value = data.id;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        syncSelected(root);
+                        close(root);
+                        root.querySelector('.meeting-chair-trigger').focus();
+                    });
+                    container.appendChild(button);
+                });
+                if (!count) container.appendChild(element('div', 'meeting-chair-empty', 'Không tìm thấy nhân viên'));
+            }
+            function open(root) {
+                var menu = root.querySelector('.meeting-chair-menu-custom');
+                var search = root.querySelector('.meeting-chair-search');
+                root.classList.add('is-open');
+                menu.hidden = false;
+                root.querySelector('.meeting-chair-trigger').setAttribute('aria-expanded', 'true');
+                search.value = '';
+                renderOptions(root);
+                search.focus();
+            }
+            function initialize() {
+                var select = d.getElementById(selectId);
+                var modal = d.getElementById(modalId);
+                if (!select || !modal) return;
+                var root = select.nextElementSibling;
+                if (!root || !root.classList.contains('meeting-chair-combo')) {
+                    root = element('div', 'meeting-chair-combo');
+                    var trigger = element('button', 'meeting-chair-trigger');
+                    trigger.type = 'button';
+                    trigger.setAttribute('aria-label', 'Chọn người chủ trì');
+                    trigger.setAttribute('aria-haspopup', 'listbox');
+                    trigger.setAttribute('aria-expanded', 'false');
+                    var menu = element('div', 'meeting-chair-menu-custom');
+                    menu.hidden = true;
+                    var search = element('input', 'meeting-chair-search');
+                    search.type = 'search';
+                    search.placeholder = 'Tìm tên hoặc email...';
+                    search.setAttribute('aria-label', 'Tìm người chủ trì');
+                    var options = element('div', 'meeting-chair-options');
+                    options.setAttribute('role', 'listbox');
+                    menu.appendChild(search);
+                    menu.appendChild(options);
+                    root.appendChild(trigger);
+                    root.appendChild(menu);
+                    select.insertAdjacentElement('afterend', root);
+                    trigger.addEventListener('click', function () {
+                        if (root.classList.contains('is-open')) close(root); else open(root);
+                    });
+                    trigger.addEventListener('keydown', function (e) {
+                        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(root); }
+                    });
+                    search.addEventListener('input', function () { renderOptions(root); });
+                    root.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') { e.preventDefault(); close(root); trigger.focus(); }
+                        if (e.key === 'Enter' && e.target === search) {
+                            e.preventDefault();
+                            var first = root.querySelector('.meeting-chair-option');
+                            if (first) first.click();
+                        }
+                    });
+                    select.addEventListener('change', function () { syncSelected(root); if (root.classList.contains('is-open')) renderOptions(root); });
+                }
+                root._chairSelect = select;
+                select.classList.add('meeting-chair-native-hidden');
+                syncSelected(root);
+                if (root.classList.contains('is-open')) renderOptions(root);
+            }
+            if (!api._initialized) {
+                d.addEventListener('mousedown', function (e) {
+                    var root = (d.getElementById(modalId) && d.getElementById(modalId).querySelector('.meeting-chair-combo.is-open'));
+                    if (root && !root.contains(e.target)) close(root);
+                });
+                d.addEventListener('keydown', function (e) {
+                    if (e.key !== 'Escape') return;
+                    var modal = d.getElementById(modalId);
+                    if (!modal) return;
+                    var root = modal.querySelector('.meeting-chair-combo.is-open');
+                    if (root) { e.stopPropagation(); close(root); }
+                }, true);
+                if (w.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(initialize);
+                }
+                api._initialized = true;
+            }
+            api.init = initialize;
+            w.MeetChairUI = api;
+            if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', initialize);
+            else initialize();
+            if (w.jQuery) w.jQuery(d).on('show.bs.modal.meetChair shown.bs.modal.meetChair', '#' + modalId, initialize);
+        })(window, document);
+    </script>
     <script type="text/javascript">
         // Nhắc trước giờ họp 5 phút: kiểm tra từ server mỗi 20s, không cần refresh trang.
         // Chỉ thay nội dung bên trong ExtraModal; không chỉnh khung/header/nút X bằng CSS.
@@ -702,6 +962,14 @@
                 $('#meetingMinuteGrid .meeting-minute-choice[data-minute="' + nearestMinute + '"]').addClass('active');
             }
 
+            function setMeetingStatus(value) {
+                var status = Math.max(0, Math.min(3, Number(value) || 0));
+                var descriptions = ['Đã lên lịch', 'Sắp diễn ra', 'Đang diễn ra', 'Đã kết thúc'];
+                $('#<%= dlDetail.ClientID %> input[id$="hfMeetStatus"]').val(String(status));
+                $('#<%= dlDetail.ClientID %> span[id$="lblMeetStatus"]').text(descriptions[status]);
+                $('#<%= dlDetail.ClientID %> .meeting-status-display').attr('data-status', String(status));
+            }
+
             function recalcMeetingTime() {
                 var startDate = parseDateText();
                 var startTime = parseStartTime();
@@ -725,7 +993,7 @@
                     var diffMinutes = (startDateTime - now) / 60000;
                     if (diffMinutes > 0 && diffMinutes <= 15) status = 1;
                 }
-                $('#<%= ddlTrangThai.ClientID %>').val(status).trigger('change');
+                setMeetingStatus(status);
             }
 
             function setTime(hour, minute, shouldRecalc) {
@@ -811,13 +1079,6 @@
             syncTimePicker();
             recalcMeetingTime();
             applyRecommendedStartIfEmpty();
-
-            var $selectedMeetingMembers = $('#selectedMeetingMembers');
-            var $selectedMeetingMembersSource = $('#<%= txtNhanVienThamGia.ClientID %>');
-            if ($selectedMeetingMembers.length && $selectedMeetingMembersSource.length) {
-                var selectedMembersHtml = $selectedMeetingMembersSource.val() || '';
-                $selectedMeetingMembers.html(selectedMembersHtml || '<div class="selected-meeting-members-empty"><i class="fas fa-user-friends"></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>');
-            }
 
             var $searchBox = $('#<%= txtSearchSingle.ClientID %>');
             var $selectAll = $('#chkSelectAllEmployees');

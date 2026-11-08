@@ -387,7 +387,7 @@ ORDER BY h.ThoiGianBatDau;";
               .Append("' data-tasks='").Append(tasks.Rows.Count)
               .Append("' data-overdue='").Append(overdueCount)
               .Append("' data-meetings='").Append(meetings.Rows.Count).Append("'>")
-              .Append("<div class='today-schedule-intro'><span class='today-schedule-intro-icon'><i class='far fa-calendar-check'></i></span><div><strong>")
+              .Append("<div class='today-schedule-intro'><span class='today-schedule-intro-icon'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='3' y='5' width='18' height='16' rx='2'/><path d='M7 3v4M17 3v4M3 10h18M8 15l2.5 2.5L16 12'/></svg></span><div><strong>")
               .Append(E(selectedDay.ToString("dddd", CultureInfo.GetCultureInfo("vi-VN"))))
               .Append(", ").Append(selectedDay.ToString("dd/MM/yyyy"))
               .Append("</strong><span>Những công việc được phân công và cuộc họp trong ngày được chọn</span></div></div>")

@@ -1090,102 +1090,216 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             return " (" + PersonalHourValue(duration) + " giờ)";
         }
 
+        // Bảng 5 cột: truy vấn tổng hợp theo dự án thay vì một lượt SQL/nhân viên.
+        // Giữ quy tắc của LoadDoiSoat: Task/Issue tách khóa, chỉ PM chốt mới tính giờ.
+        private sealed class TeamMatrixAmount
+        {
+            public int Count;
+            public decimal Hours;
+        }
+
+        private static Dictionary<Guid, TeamMatrixAmount> LoadTeamMatrixAmounts(SqlConnection connection, Guid projectId, string query)
+        {
+            var result = new Dictionary<Guid, TeamMatrixAmount>();
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.CommandTimeout = 45;
+                command.Parameters.Add("@ProjectId", SqlDbType.UniqueIdentifier).Value = projectId;
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Guid id = reader.GetGuid(0);
+                        result[id] = new TeamMatrixAmount
+                        {
+                            Count = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader.GetValue(1), CultureInfo.InvariantCulture),
+                            Hours = reader.IsDBNull(2) ? 0m : Convert.ToDecimal(reader.GetValue(2), CultureInfo.InvariantCulture)
+                        };
+                    }
+                }
+            }
+            return result;
+        }
+
+        // Khớp LoadPersonalTasks + LoadDoiSoat(false): giờ PM chốt từ bản hiện tại mới nhất.
+        private static readonly string TeamMatrixTaskSql = @"
+WITH DuocGiao AS (
+    SELECT DISTINCT nv.IdNhanVien, cv.IdCongViec
+    FROM dbo.TblCongViec_NhanVien nv
+    INNER JOIN dbo.TblCongViec cv ON cv.IdCongViec=nv.IdCongViec
+    WHERE cv.IdDuAn=@ProjectId AND ISNULL(cv.DaXoa,0)=0 AND nv.IdNhanVien IS NOT NULL
+), DoiSoat AS (
+    SELECT s.IdNhanVien, s.IdCongViec, s.SoPhutThuongPmChot, s.SoPhutTangCaPmChot,
+           s.LoaiSuKien, s.IdPmChot,
+           ROW_NUMBER() OVER (PARTITION BY s.IdNhanVien,s.IdCongViec
+             ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) rn
+    FROM dbo.TblKhaiBaoGioDoiSoat s
+    INNER JOIN dbo.TblCongViec cv ON cv.IdCongViec=s.IdCongViec
+       AND cv.IdDuAn=s.IdDuAn AND ISNULL(cv.DaXoa,0)=0
+    WHERE s.IdDuAn=@ProjectId AND s.IdCongViec IS NOT NULL
+      AND s.IdVanDe IS NULL AND s.LaBanHienTai=1
+)
+SELECT a.IdNhanVien,COUNT(*) SoLuong,
+       CAST(SUM(CASE WHEN d.rn=1 AND d.LoaiSuKien=4 AND d.IdPmChot IS NOT NULL
+                           AND d.IdPmChot<>'00000000-0000-0000-0000-000000000000'
+                           AND d.SoPhutThuongPmChot IS NOT NULL AND d.SoPhutTangCaPmChot IS NOT NULL
+                  THEN d.SoPhutThuongPmChot+d.SoPhutTangCaPmChot ELSE 0 END)/60.0 AS DECIMAL(18,4)) SoGio
+FROM DuocGiao a
+LEFT JOIN DoiSoat d ON d.IdNhanVien=a.IdNhanVien AND d.IdCongViec=a.IdCongViec AND d.rn=1
+GROUP BY a.IdNhanVien;";
+
+        // Issue chốt theo IdVanDe, sự kiện 4/6; không suy ra công từ IdCongViecBiAnhHuong.
+        private static readonly string TeamMatrixIssueSql = @"
+WITH DuocGiao AS (
+    SELECT DISTINCT nv.IdNhanVien, vd.IdVanDe
+    FROM dbo.TblVanDe_NhanVien nv
+    INNER JOIN dbo.TblVanDe vd ON vd.IdVanDe=nv.IdVanDe
+    WHERE vd.IdDuAn=@ProjectId AND ISNULL(vd.DaXoa,0)=0 AND nv.IdNhanVien IS NOT NULL
+), DoiSoat AS (
+    SELECT s.IdNhanVien,s.IdVanDe,s.SoPhutThuongPmChot,s.SoPhutTangCaPmChot,s.LoaiSuKien,
+           ROW_NUMBER() OVER (PARTITION BY s.IdNhanVien,s.IdVanDe
+             ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) rn
+    FROM dbo.TblKhaiBaoGioDoiSoat s
+    INNER JOIN dbo.TblVanDe vd ON vd.IdVanDe=s.IdVanDe
+       AND vd.IdDuAn=s.IdDuAn AND ISNULL(vd.DaXoa,0)=0
+    WHERE s.IdDuAn=@ProjectId AND s.IdVanDe IS NOT NULL
+      AND s.IdCongViec IS NULL AND s.LaBanHienTai=1
+)
+SELECT a.IdNhanVien,COUNT(*) SoLuong,
+       CAST(SUM(CASE WHEN d.rn=1 AND d.LoaiSuKien IN (4,6)
+                           AND d.SoPhutThuongPmChot IS NOT NULL AND d.SoPhutTangCaPmChot IS NOT NULL
+                  THEN d.SoPhutThuongPmChot+d.SoPhutTangCaPmChot ELSE 0 END)/60.0 AS DECIMAL(18,4)) SoGio
+FROM DuocGiao a
+LEFT JOIN DoiSoat d ON d.IdNhanVien=a.IdNhanVien AND d.IdVanDe=a.IdVanDe AND d.rn=1
+GROUP BY a.IdNhanVien;";
+
+        // Khớp TeamHoursEndedMeetingsSql / TeamMeetingLaborHours: chỉ cuộc họp đã kết thúc,
+        // PM override Có/Không tham gia trước, sau đó mới xét xác nhận gốc.
+        private static readonly string TeamMatrixMeetingSql = @"
+WITH DanhSach AS (
+    SELECT m.IdLichHop,m.IdNguoiTao IdNhanVien
+    FROM dbo.TblLichHop m
+    WHERE m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0 AND m.ThoiGianKetThuc<=GETDATE()
+          AND m.IdNguoiTao IS NOT NULL
+    UNION
+    SELECT m.IdLichHop,nv.IdNhanVien
+    FROM dbo.TblLichHop m
+    INNER JOIN dbo.TblLichHop_NhanVien nv ON nv.IdLichHop=m.IdLichHop
+    WHERE m.IdDuAn=@ProjectId AND ISNULL(m.DaXoa,0)=0 AND m.ThoiGianKetThuc<=GETDATE()
+          AND nv.IdNhanVien IS NOT NULL
+)
+SELECT ds.IdNhanVien,COUNT(*) SoLuong,
+       CAST(SUM(CASE WHEN ISNULL(g.DaThamGia,ISNULL(p.XacNhanThamGia,0))=1
+                     AND m.ThoiGianKetThuc>m.ThoiGianBatDau
+                 THEN ROUND(DATEDIFF(MINUTE,m.ThoiGianBatDau,m.ThoiGianKetThuc)/60.0,2)
+                 ELSE 0 END) AS DECIMAL(18,4)) SoGio
+FROM DanhSach ds
+INNER JOIN dbo.TblLichHop m ON m.IdLichHop=ds.IdLichHop
+OUTER APPLY (SELECT MAX(CAST(gg.DaThamGia AS INT)) DaThamGia
+             FROM dbo.TblLichHopGioCong gg
+             WHERE gg.IdLichHop=ds.IdLichHop AND gg.IdNhanVien=ds.IdNhanVien) g
+OUTER APPLY (SELECT MAX(CAST(ISNULL(pp.XacNhanThamGia,0) AS INT)) XacNhanThamGia
+             FROM dbo.TblLichHop_NhanVien pp
+             WHERE pp.IdLichHop=ds.IdLichHop AND pp.IdNhanVien=ds.IdNhanVien) p
+GROUP BY ds.IdNhanVien;";
+
+        private static string TeamMatrixSearchAttribute(TeamHoursPerson person)
+        {
+            return HttpUtility.HtmlAttributeEncode(((person.Name ?? "") + " " + (person.Email ?? "")).ToLowerInvariant()).Replace("'", "&#39;");
+        }
+
+        private static void AppendTeamMatrixCell(StringBuilder sb, TeamHoursPerson person, string kind,
+            string title, TeamMatrixAmount amount, bool available)
+        {
+            string source = kind == "total" ? "pdTeamFullDetail" : "pdTeamDetail-" + kind;
+            string guid = person.Id.ToString("D");
+            sb.Append("<td><button type='button' class='pd-team-matrix-action")
+                .Append(kind == "total" ? " is-total" : "")
+                .Append(available ? "" : " is-unavailable")
+                .Append("' data-pd-detail-member='").Append(guid)
+                .Append("' data-pd-detail-source='").Append(source)
+                .Append("' data-pd-detail-title='").Append(HttpUtility.HtmlAttributeEncode(title + " - " + person.Name).Replace("'", "&#39;"))
+                .Append("' data-pd-detail-sub='").Append(HttpUtility.HtmlAttributeEncode("Dữ liệu giờ công của " + person.Name + " trong dự án hiện tại.").Replace("'", "&#39;"))
+                .Append("' title='").Append(HttpUtility.HtmlAttributeEncode("Xem " + title.ToLowerInvariant() + " của " + person.Name).Replace("'", "&#39;"))
+                .Append("' ").Append(available ? "" : "disabled='disabled' ").Append(">");
+            if (available)
+            {
+                sb.Append("<strong>").Append(TeamLaborHourText(amount == null ? 0m : amount.Hours))
+                    .Append("</strong><small>");
+                if (kind == "total") sb.Append("Xem tổng hợp chi tiết");
+                else sb.Append(amount == null ? 0 : amount.Count).Append(kind == "task" ? " công việc" : kind == "meeting" ? " cuộc họp" : " vấn đề");
+                sb.Append("</small>");
+            }
+            else sb.Append("<strong>Chưa tải được</strong><small>Không thể xác nhận số giờ</small>");
+            sb.Append("</button></td>");
+        }
+
         private void BindProjectTeamHours()
         {
             if (!CanViewProjectTeamHours()) return;
-            // Danh sach nhan su va bang cong PHAI co vong loi rieng.
-            // Khong xoa danh sach ben trai neu mot query gio ben phai bi loi.
-            string step = "Tải danh sách nhân viên";
-            TeamHoursPerson chosen;
-            try
+            List<TeamHoursPerson> people;
+            try { people = GetProjectTeamHoursPeople(); }
+            catch (Exception ex)
             {
-                var people = GetProjectTeamHoursPeople();
-                Guid selected;
-                if (!Guid.TryParse(hfTeamHoursMember.Value, out selected)
-                    || !people.Any(x => x.Id == selected)) selected = people.Count > 0 ? people[0].Id : Guid.Empty;
-                hfTeamHoursMember.Value = selected == Guid.Empty ? "" : selected.ToString("D");
-                step = "Dựng danh sách nhân viên";
-                StringBuilder left = new StringBuilder(people.Count * 320 + 150);
-                left.Append("<div class='pd-team-actual-count' data-pd-total='").Append(people.Count).Append("' hidden></div>");
-                if (people.Count == 0) left.Append("<div class='pd-team-record-empty'>Dự án chưa có nhân sự được phân công.</div>");
-                foreach (var person in people)
-                {
-                    bool active = person.Id == selected;
-                    left.Append("<button type='button' class='pd-team-person")
-                        .Append(active ? " is-active" : "").Append("' data-pd-team-member='")
-                        .Append(person.Id.ToString("D"))
-                        .Append("' data-pd-search='")
-                        .Append(HttpUtility.HtmlEncode((person.Name + " " + person.Email).ToLowerInvariant()).Replace("'", "&#39;"))
-                        .Append("' aria-pressed='").Append(active ? "true" : "false")
-                        .Append("'>").Append(TeamHoursAvatar(person))
-                        .Append("<span class='pd-team-person-info'><span class='pd-team-person-name'>")
-                        .Append(EncodePersonal(person.Name))
-                        .Append("</span><span class='pd-team-person-email'>")
-                        .Append(EncodePersonal(person.Email)).Append("</span></span>");
-                    if (person.IsPM) left.Append("<span class='pd-team-pm'>PM</span>");
-                    left.Append("</button>");
-                }
-                litProjectTeamMembers.Text = left.ToString();
-                chosen = people.FirstOrDefault(x => x.Id == selected);
-            }
-            catch (Exception exc)
-            {
-                SysLogger.LogError(exc, "DuAnDetail Cong thanh vien: " + step);
-                litProjectTeamMembers.Text = "<div class='pd-team-record-empty'>Không tải được danh sách thành viên (bước: "
-                    + HttpUtility.HtmlEncode(step) + ").</div>";
-                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div>"
-                    + "<div class='pd-team-record-empty'>Chưa tải được danh sách nhân viên để chọn.</div>";
+                SysLogger.LogError(ex, "DuAnDetail: không tải được danh sách Công thành viên");
+                litProjectTeamHours.Text = "<div class='pd-team-record-empty'>Không tải được danh sách nhân viên dự án.</div>";
                 return;
             }
-            if (chosen == null)
-            {
-                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div>"
-                    + "<div class='pd-team-record-empty'>Chưa chọn được nhân viên.</div>";
-                return;
-            }
-            step = "Mở kết nối bảng công";
+
+            // Giữ các control sẵn có của WebForms để designer và popup chi tiết vẫn tương thích.
+            litProjectTeamMembers.Text = string.Empty;
+            Guid selected;
+            if (!Guid.TryParse(hfTeamHoursMember.Value, out selected) || !people.Any(x => x.Id == selected))
+                selected = people.Count == 0 ? Guid.Empty : people[0].Id;
+            hfTeamHoursMember.Value = selected == Guid.Empty ? string.Empty : selected.ToString("D");
+
+            Dictionary<Guid, TeamMatrixAmount> tasks = null, meetings = null, issues = null;
+            bool taskOk = false, meetingOk = false, issueOk = false;
             try
             {
                 using (SqlConnection conn = new SqlConnection(PersonalConnectionString()))
                 {
                     conn.Open();
-                    step = "Tải công việc của thành viên";
-                    DataTable tasks = LoadPersonalTasks(conn, QueryId, chosen.Id);
-                    step = "Tải cuộc họp của thành viên";
-                    bool meetingHoursAvailable;
-                    DataTable meetings = LoadTeamMeetingsSafe(conn, QueryId, chosen.Id, out meetingHoursAvailable);
-                    step = "Tải vấn đề của thành viên";
-                    DataTable issues = PersonalQuery(conn, PersonalIssuesSql, QueryId, chosen.Id);
-                    bool taskHoursAvailable = true, issueHoursAvailable = true;
-                    step = "Đọc giờ PM chốt Task";
-                    try { AttachDoiSoat(tasks, LoadDoiSoat(conn, QueryId, chosen.Id, false), "IdCongViec"); }
-                    catch (Exception ex)
-                    {
-                        SysLogger.LogError(ex, "DuAnDetail Cong thanh vien: doi soat TASK that bai");
-                        DanhDauGioChuaTaiDuoc(tasks);
-                        taskHoursAvailable = false;
-                    }
-                    step = "Đọc giờ PM chốt Issue";
-                    try { AttachDoiSoat(issues, LoadDoiSoat(conn, QueryId, chosen.Id, true), "IdVanDe"); }
-                    catch (Exception ex)
-                    {
-                        SysLogger.LogError(ex, "DuAnDetail Cong thanh vien: doi soat ISSUE that bai");
-                        DanhDauGioChuaTaiDuoc(issues);
-                        issueHoursAvailable = false;
-                    }
-                    step = "Dựng bảng công thành viên";
-                    litProjectTeamHours.Text = BuildProjectTeamHoursHtml(chosen, tasks, meetings, issues,
-                        taskHoursAvailable, issueHoursAvailable, meetingHoursAvailable);
+                    try { tasks = LoadTeamMatrixAmounts(conn, QueryId, TeamMatrixTaskSql); taskOk = true; }
+                    catch (Exception ex) { SysLogger.LogError(ex, "DuAnDetail: tổng công Task thành viên lỗi"); }
+                    try { meetings = LoadTeamMatrixAmounts(conn, QueryId, TeamMatrixMeetingSql); meetingOk = true; }
+                    catch (Exception ex) { SysLogger.LogError(ex, "DuAnDetail: tổng công cuộc họp thành viên lỗi"); }
+                    try { issues = LoadTeamMatrixAmounts(conn, QueryId, TeamMatrixIssueSql); issueOk = true; }
+                    catch (Exception ex) { SysLogger.LogError(ex, "DuAnDetail: tổng công Issue thành viên lỗi"); }
                 }
             }
-            catch (Exception exc)
+            catch (Exception ex) { SysLogger.LogError(ex, "DuAnDetail: mở kết nối tổng hợp công thành viên lỗi"); }
+            bool full = taskOk && meetingOk && issueOk;
+            StringBuilder sb = new StringBuilder(1400 + people.Count * 1300);
+            sb.Append("<span class='pd-team-actual-count' data-pd-total='").Append(people.Count).Append("' hidden></span>")
+              .Append("<div class='pd-team-matrix-scroll'><table class='pd-team-matrix' aria-label='Bảng giờ công thành viên'>")
+              .Append("<colgroup><col class='pd-team-col-person'/><col class='pd-team-col-metric'/><col class='pd-team-col-metric'/><col class='pd-team-col-metric'/><col class='pd-team-col-total'/></colgroup>")
+              .Append("<thead><tr><th scope='col'>Nhân viên</th><th scope='col'>Công công việc</th><th scope='col'>Công cuộc họp</th><th scope='col'>Công vấn đề</th><th scope='col'>Tổng công</th></tr></thead><tbody>");
+            if (people.Count == 0) sb.Append("<tr><td colspan='5' class='pd-team-matrix-empty'>Dự án chưa có nhân viên được phân công.</td></tr>");
+            foreach (TeamHoursPerson person in people)
             {
-                SysLogger.LogError(exc, "DuAnDetail Cong thanh vien: " + step);
-                // Khong xoa litProjectTeamMembers: danh sach DA tai thanh cong.
-                litProjectTeamHours.Text = "<div class='pd-team-detail-head'><strong>Bảng công thành viên</strong></div>"
-                    + "<div class='pd-team-record-empty'>Không tải được bảng công (bước: "
-                    + HttpUtility.HtmlEncode(step) + "). Vui lòng thử lại.</div>";
+                TeamMatrixAmount ta = null, me = null, iss = null;
+                if (taskOk) tasks.TryGetValue(person.Id, out ta);
+                if (meetingOk) meetings.TryGetValue(person.Id, out me);
+                if (issueOk) issues.TryGetValue(person.Id, out iss);
+                var total = full ? new TeamMatrixAmount { Hours = (ta == null ? 0m : ta.Hours) + (me == null ? 0m : me.Hours) + (iss == null ? 0m : iss.Hours) } : null;
+                sb.Append("<tr data-pd-team-row='1' data-pd-search='").Append(TeamMatrixSearchAttribute(person))
+                  .Append("'><td><div class='pd-team-matrix-person'>").Append(TeamHoursAvatar(person))
+                  .Append("<span class='pd-team-person-info'><span class='pd-team-person-name'>")
+                  .Append(EncodePersonal(person.Name)).Append("</span><span class='pd-team-person-email' title='")
+                  .Append(HttpUtility.HtmlAttributeEncode(person.Email).Replace("'", "&#39;")).Append("'>")
+                  .Append(EncodePersonal(person.Email)).Append("</span></span>");
+                if (person.IsPM) sb.Append("<span class='pd-team-pm'>PM</span>");
+                sb.Append("</div></td>");
+                AppendTeamMatrixCell(sb, person, "task", "Công công việc", ta, taskOk);
+                AppendTeamMatrixCell(sb, person, "meeting", "Công cuộc họp", me, meetingOk);
+                AppendTeamMatrixCell(sb, person, "issue", "Công vấn đề", iss, issueOk);
+                AppendTeamMatrixCell(sb, person, "total", "Tổng công", total, full);
+                sb.Append("</tr>");
             }
+            sb.Append("</tbody></table></div>");
+            if (!full) sb.Append("<div class='pd-team-matrix-warning'><i class='fas fa-exclamation-circle'></i> Một phần dữ liệu công chưa tải được. Tổng công được để trống, không tự xem là 0.</div>");
+            litProjectTeamHours.Text = sb.ToString();
         }
 
         protected void lbtLoadTeamHours_Click(object sender, EventArgs e)
@@ -1380,7 +1494,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             builder.Append("<div class='pd-personal-grid'>");
 
             // Công việc
-            builder.Append("<section class='pd-personal-card pd-personal-tasks' id='pdPersonalTaskCard'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='fas fa-tasks'></i><strong>Công việc được giao</strong></div><div class='pd-head-actions'><small>")
+            builder.Append("<section class='pd-personal-card pd-personal-tasks' id='pdPersonalTaskCard'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='fas fa-tasks'></i><strong>Công việc</strong></div><div class='pd-head-actions'><small>")
                    .Append(taskRows.Count).Append(" công việc</small>")
                    .Append("<button type='button' class='pd-compact-filter' data-pd-toggle-filter='task' aria-pressed='false' title='Chỉ hiển thị công việc chưa hoàn thành'><span data-pd-filter-label>Tất cả</span><i class='fas fa-exchange-alt'></i></button>")
                    .Append("</div></div><div class='pd-card-body'><div class='pd-personal-list'>");
@@ -1390,7 +1504,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalTaskDetail' data-pd-detail-title='Chi tiết công việc được giao' data-pd-detail-sub='Danh sách công việc được phân công trực tiếp cho bạn trong dự án.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
 
             // Cuộc họp
-            builder.Append("<section class='pd-personal-card pd-personal-meetings' id='pdPersonalMeetingCard'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-calendar-alt'></i><strong>Cuộc họp của tôi</strong></div><div class='pd-head-actions'><small>")
+            builder.Append("<section class='pd-personal-card pd-personal-meetings' id='pdPersonalMeetingCard'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-calendar-alt'></i><strong>Cuộc họp</strong></div><div class='pd-head-actions'><small>")
                    .Append(meetings.Rows.Count).Append(" cuộc họp</small>")
                    .Append("<button type='button' class='pd-compact-filter' data-pd-toggle-filter='meeting' aria-pressed='false' title='Chỉ hiển thị cuộc họp chưa kết thúc'><span data-pd-filter-label>Tất cả</span><i class='fas fa-exchange-alt'></i></button>")
                    .Append("</div></div><div class='pd-card-body'><div class='pd-personal-list'>");
@@ -1404,7 +1518,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalMeetingDetail' data-pd-detail-title='Chi tiết cuộc họp của tôi' data-pd-detail-sub='Các cuộc họp bạn chủ trì hoặc tham gia trong dự án, ưu tiên hiển thị cuộc họp chưa kết thúc.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
 
             // Vấn đề
-            builder.Append("<section class='pd-personal-card pd-personal-issues' id='pdPersonalIssueCard'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='fas fa-exclamation-circle'></i><strong>Vấn đề được giao</strong></div><div class='pd-head-actions'><small>")
+            builder.Append("<section class='pd-personal-card pd-personal-issues' id='pdPersonalIssueCard'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='fas fa-exclamation-circle'></i><strong>Vấn đề</strong></div><div class='pd-head-actions'><small>")
                    .Append(issueRows.Count).Append(" vấn đề</small>")
                    .Append("<button type='button' class='pd-compact-filter' data-pd-toggle-filter='issue' aria-pressed='false' title='Chỉ hiển thị vấn đề chưa giải quyết'><span data-pd-filter-label>Tất cả</span><i class='fas fa-exchange-alt'></i></button>")
                    .Append("</div></div><div class='pd-card-body'><div class='pd-personal-list'>");
@@ -1414,10 +1528,10 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalIssueDetail' data-pd-detail-title='Chi tiết vấn đề được giao' data-pd-detail-sub='Danh sách vấn đề bạn đang phụ trách trong dự án này.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
 
             // Giờ công
-            builder.Append("<section class='pd-personal-card pd-personal-time'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-clock'></i><strong>Giờ công của bạn</strong></div></div><div class='pd-card-body'><div class='pd-personal-list'><div class='pd-personal-summary'>");
-            AppendSummaryRow(builder, "Tổng giờ làm công việc", taskHoursAvailable ? (decimal?)taskHours : null, false);
-            AppendSummaryRow(builder, "Tổng giờ công cuộc họp", meetingHoursAvailable ? (decimal?)meetingHours : null, false);
-            AppendSummaryRow(builder, "Tổng giờ công xử lý vấn đề", issueHoursAvailable ? (decimal?)issueHours : null, false);
+            builder.Append("<section class='pd-personal-card pd-personal-time'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-clock'></i><strong>Tổng giờ công</strong></div></div><div class='pd-card-body'><div class='pd-personal-list'><div class='pd-personal-summary'>");
+            AppendSummaryRow(builder, "Công công việc", taskHoursAvailable ? (decimal?)taskHours : null, false);
+            AppendSummaryRow(builder, "Công cuộc họp", meetingHoursAvailable ? (decimal?)meetingHours : null, false);
+            AppendSummaryRow(builder, "Công vấn đề", issueHoursAvailable ? (decimal?)issueHours : null, false);
             AppendSummaryRow(builder, "Tổng giờ công", totalsAvailable ? (decimal?)totalHours : null, true);
             builder.Append("</div></div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalHourDetail' data-pd-detail-title='Chi tiết giờ công của bạn' data-pd-detail-sub='Công việc tính theo PM chốt, giờ họp theo quy tắc hiện tại, công Issue được PM chốt độc lập với công việc liên kết.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
             builder.Append("</div>");
@@ -1432,7 +1546,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                    .Append("'><strong>")
                    .Append(HttpUtility.HtmlEncode(title))
                    .Append("</strong><span>")
-                   .Append(hours.HasValue ? PersonalHourText(hours.Value) : "Chưa tải được")
+                   .Append(!hours.HasValue ? "Chưa tải được" : hours.Value > 0m ? PersonalHourText(hours.Value) : "Chưa có công")
                    .Append("</span></div>");
         }
 
@@ -2140,7 +2254,7 @@ WHERE IdHopDongThucHien=@Contract
 
         private void BindProjectInformation(DataRow row)
         {
-            Navigation1.MainTitle = GetDisplayText(row, "MaDuAn");
+            Navigation1.MainTitle = this.ProjectName;
             lblTenDuAn.Text = GetDisplayText(row, "TenDuAn");
             lblKhachHang.Text = GetDisplayText(row, "TenKhachHang");
             lblLoaiDuAn.Text = GetDisplayText(row, "TenLoaiDuAn");

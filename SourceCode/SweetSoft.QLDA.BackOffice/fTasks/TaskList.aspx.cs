@@ -39,7 +39,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     return;
                 }
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.TASK_LIST));
-                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.TASK_LIST);
+                Navigation1.MainTitle = this.ProjectName;
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
                 {
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },

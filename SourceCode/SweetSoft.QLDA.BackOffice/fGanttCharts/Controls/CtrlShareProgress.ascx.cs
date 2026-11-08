@@ -1,4 +1,4 @@
-using AngleSharp.Io;
+﻿using AngleSharp.Io;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -24,6 +24,97 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
 {
     public partial class CtrlShareProgress : ProgressReportControlBase
     {
+        // Snapshot do khach hang chinh sua chi de sinh Gantt, khong ghi ve TblCongViec.
+        public sealed class CustomerGanttTaskEdit
+        {
+            public string Id { get; set; }
+            public string Code { get; set; }
+            public string Name { get; set; }
+            public string StartDate { get; set; }
+            public string EndDate { get; set; }
+            public int Status { get; set; }
+            public bool IsVirtual { get; set; }
+            public string Assignee { get; set; }
+            public string DependencyId { get; set; }
+        }
+
+        // V8: ban Khach hang co the them/xoa/sua task ao. Tao DataTable moi de xuat HTML,
+        // tuyet doi khong ghi task ao vao SQL hoac su dung gia tri lai tu DB de thay the ban xem.
+        private static DataTable ApplyCustomerSnapshot(DataTable original, string payload)
+        {
+            if (original == null || original.Rows.Count == 0)
+                throw new InvalidOperationException("Dự án chưa có dữ liệu công việc.");
+            if (string.IsNullOrWhiteSpace(payload) || payload.Length > 1000000)
+                throw new InvalidOperationException("Dữ liệu Gantt khách hàng rỗng hoặc quá lớn.");
+            List<CustomerGanttTaskEdit> items;
+            try
+            {
+                items = new JavaScriptSerializer { MaxJsonLength = 1200000, RecursionLimit = 100 }
+                    .Deserialize<List<CustomerGanttTaskEdit>>(payload);
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("Không đọc được dữ liệu Gantt khách hàng.");
+            }
+            if (items == null || items.Count < 1 || items.Count > 500)
+                throw new InvalidOperationException("Bản trình bày cần từ 1 đến 500 công việc.");
+            var originalById = original.Rows.Cast<DataRow>()
+                .ToDictionary(r => Convert.ToString(r["IdCongViec"]), StringComparer.OrdinalIgnoreCase);
+            var submittedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var submittedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var validIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (CustomerGanttTaskEdit task in items)
+            {
+                Guid id;
+                if (task == null || !Guid.TryParse(task.Id, out id) || id == Guid.Empty || !submittedIds.Add(task.Id))
+                    throw new InvalidOperationException("Mã định danh công việc ảo không hợp lệ hoặc bị trùng.");
+                if (!originalById.ContainsKey(task.Id) && !task.IsVirtual)
+                    throw new InvalidOperationException("Có công việc không thuộc dự án và không được đánh dấu là công việc ảo.");
+                string code = (task.Code ?? "").Trim(), name = (task.Name ?? "").Trim();
+                if (code.Length == 0 || code.Length > 50 || name.Length == 0 || name.Length > 250 ||
+                    !System.Text.RegularExpressions.Regex.IsMatch(code, @"^[1-9]\d*(?:\.[1-9]\d*)*$") ||
+                    !submittedCodes.Add(code) || (task.Assignee ?? "").Length > 250)
+                    throw new InvalidOperationException("Mã hoặc tên công việc không hợp lệ, bị trùng: " + code);
+                DateTime startDate, endDate;
+                if (!DateTime.TryParseExact(task.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out startDate) ||
+                    !DateTime.TryParseExact(task.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out endDate) ||
+                    endDate < startDate || startDate.Year < 1900 || endDate.Year > 2100 || (endDate - startDate).TotalDays > 3660)
+                    throw new InvalidOperationException("Ngày của công việc " + code + " không hợp lệ.");
+                if (task.Status < 0 || task.Status > 4)
+                    throw new InvalidOperationException("Trạng thái của công việc " + code + " không hợp lệ.");
+                validIds.Add(task.Id);
+            }
+            DataTable result = original.Clone();
+            DataColumn idColumn = result.Columns["IdCongViec"];
+            DataColumn dependencyColumn = result.Columns.Contains("IdCongViecPhuThuoc") ? result.Columns["IdCongViecPhuThuoc"] : null;
+            foreach (CustomerGanttTaskEdit task in items)
+            {
+                if (!string.IsNullOrWhiteSpace(task.DependencyId) &&
+                    (!validIds.Contains(task.DependencyId) || task.DependencyId.Equals(task.Id, StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException("Phụ thuộc của công việc " + task.Code + " không hợp lệ.");
+                DataRow row = result.NewRow();
+                DataRow originalRow;
+                if (originalById.TryGetValue(task.Id, out originalRow)) row.ItemArray = (object[])originalRow.ItemArray.Clone();
+                else row.ItemArray = (object[])original.Rows[0].ItemArray.Clone();
+                Guid taskId = Guid.Parse(task.Id);
+                row["IdCongViec"] = idColumn.DataType == typeof(Guid) ? (object)taskId : task.Id;
+                row["MaCongViec"] = task.Code.Trim();
+                row["TenCongViec"] = task.Name.Trim();
+                row["NgayBatDau"] = DateTime.ParseExact(task.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                row["NgayKetThuc"] = DateTime.ParseExact(task.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                row["TrangThai"] = task.Status;
+                if (result.Columns.Contains("NhanVienThucHien")) row["NhanVienThucHien"] = (task.Assignee ?? "").Trim();
+                if (dependencyColumn != null)
+                {
+                    row["IdCongViecPhuThuoc"] = string.IsNullOrWhiteSpace(task.DependencyId)
+                        ? (object)DBNull.Value
+                        : (dependencyColumn.DataType == typeof(Guid) ? (object)Guid.Parse(task.DependencyId) : task.DependencyId);
+                }
+                result.Rows.Add(row);
+            }
+            return result;
+        }
+
         // Ten goi y ngan gon tai thoi diem bat dau; luon kiem tra lai tren server khi tao.
         protected string DefaultProgressProjectName
         {
@@ -232,35 +323,17 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                 if (ProjectId == Guid.Empty || Page.User == null || Page.User.Identity == null ||
                     !Page.User.Identity.IsAuthenticated || SweetContext.Current.UserId == Guid.Empty)
                     throw new InvalidOperationException("Không có quyền tạo báo cáo hoặc chưa xác định được dự án.");
-                string[] postedIds = Request.Form.GetValues("shareProgressTaskIds") ?? new string[0];
-                HashSet<string> selectedIds = new HashSet<string>(postedIds.Where(x => !string.IsNullOrWhiteSpace(x)), StringComparer.OrdinalIgnoreCase);
-                if (selectedIds.Count == 0)
-                {
-                    const string message = "Vui lòng chọn ít nhất một công việc để tạo báo cáo.";
-                    lblSelectionMessage.Text = message;
-                    BindTaskChoices(selectedIds);
-                    QueueClientModal(false, message);
-                    return;
-                }
-
+                string reportMode = (Request.Form["ganttReportMode"] ?? "internal").Trim().ToLowerInvariant();
+                if (reportMode != "internal" && reportMode != "customer")
+                    throw new InvalidOperationException("Chế độ tạo báo cáo không hợp lệ.");
+                // Dung toan bo task dang co tren Gantt (khong dung selection preset cu).
                 DataTable allTasks = GanttChartManager.Instance.GetGanttTasks(ProjectId);
-                DataTable selectedTasks = allTasks?.Clone();
-                if (selectedTasks != null && allTasks != null)
-                {
-                    foreach (DataRow row in allTasks.Rows)
-                    {
-                        string id = Convert.ToString(row["IdCongViec"]);
-                        if (selectedIds.Contains(id)) selectedTasks.ImportRow(row);
-                    }
-                }
-
-                if (selectedTasks == null || selectedTasks.Rows.Count == 0)
-                {
-                    lblSelectionMessage.Text = "Không tìm thấy các công việc đã chọn. Vui lòng mở lại danh sách và thử lại.";
-                    BindTaskChoices(selectedIds);
-                    QueueClientModal(false, lblSelectionMessage.Text);
-                    return;
-                }
+                if (allTasks == null || allTasks.Rows.Count == 0)
+                    throw new InvalidOperationException("Dự án chưa có công việc để tạo báo cáo.");
+                DataTable selectedTasks = reportMode == "customer"
+                    ? ApplyCustomerSnapshot(allTasks, Request.Form["ganttCustomerPayload"])
+                    : allTasks;
+                // Payload khach hang chi co o snapshot duoc validate; khong co lenh UPDATE/Save DB.
 
                 var project = DuAnManager.Instance.GetDuAnById(ProjectId);
                 string projectName = !string.IsNullOrWhiteSpace(project?.TenDuAn) ? project.TenDuAn : "Dự án";
@@ -269,8 +342,6 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                 reportName = reportName.Replace("\r", " ").Replace("\n", " ").Trim();
                 if (reportName.Length > 120) throw new InvalidOperationException("Tên báo cáo chỉ được tối đa 120 ký tự.");
                 string reportId = Guid.NewGuid().ToString("N");
-                string otp = GenerateOtp();
-                string salt = GenerateSalt();
                 DateTime reportCreatedUtc = DateTime.UtcNow;
                 string reportHtml = BuildGanttReportHtml(projectName, reportCreatedUtc, selectedTasks);
                 string fileName = "BaoCaoTienDo_" + reportId + ".html";
@@ -288,9 +359,9 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                     CreatedById = SweetContext.Current.UserId.ToString("D"),
                     CreatedByName = Page.User != null && Page.User.Identity != null ? Page.User.Identity.Name : string.Empty,
                     TaskCount = selectedTasks.Rows.Count,
-                    OtpSalt = salt,
-                    OtpHash = HashOtp(salt, otp),
-                    OtpProtected = ProtectReportOtp(otp),
+                    OtpSalt = null,
+                    OtpHash = null,
+                    OtpProtected = null,
                     ReportHtml = reportHtml,
                     CreatedUtc = reportCreatedUtc
                 };
@@ -317,7 +388,8 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                     {
                         Directory.CreateDirectory(HistoryFolder);
                         File.WriteAllText(dataPath, Serializer.Serialize(record), new UTF8Encoding(false));
-                        File.WriteAllText(htmlPath, BuildOtpGateHtml(reportId), new UTF8Encoding(false));
+                        // Bao cao MOI la file HTML doc truc tiep qua lien ket, KHONG co OTP.
+                        File.WriteAllText(htmlPath, reportHtml, new UTF8Encoding(false));
                         File.WriteAllText(historyFile, Serializer.Serialize(history), new UTF8Encoding(false));
                     }
                 }
@@ -334,9 +406,9 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
 
                 ltrReportFileName.Text = "<span class=\"share-progress-file-name\">" + HttpUtility.HtmlEncode(reportName) + "</span>";
                 lnkReportFile.NavigateUrl = reportUrl;
-                ltrOtp.Text = HttpUtility.HtmlEncode(otp);
-                hdfOtp.Value = otp;
-                lblCreateMessage.Text = "Đã tạo báo cáo với " + selectedTasks.Rows.Count.ToString(CultureInfo.InvariantCulture) + " công việc. Hãy gửi đường dẫn và OTP riêng cho khách hàng.";
+                ltrOtp.Text = string.Empty;
+                hdfOtp.Value = string.Empty;
+                lblCreateMessage.Text = "Đã tạo báo cáo " + (reportMode == "customer" ? "khách hàng" : "nội bộ") + " với " + selectedTasks.Rows.Count.ToString(CultureInfo.InvariantCulture) + " công việc. Người có liên kết có thể mở trực tiếp, không cần OTP.";
 
                 QueueClientModal(true, string.Empty);
             }
@@ -584,12 +656,13 @@ openReport('',true);
                     Id = id,
                     Code = Convert.ToString(row["MaCongViec"]),
                     Name = Convert.ToString(row["TenCongViec"]),
+                    Assignee = selectedTasks.Columns.Contains("NhanVienThucHien") ? Convert.ToString(row["NhanVienThucHien"]) : string.Empty,
                     DependencyId = dependency,
                     Level = GetTaskLevel(Convert.ToString(row["MaCongViec"])),
                     StartDay = startDay,
                     EndDay = endDay,
                     EndDate = end.HasValue ? end.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : string.Empty,
-                    Status = statusValue == 2 ? "done" : statusValue == 1 ? "doing" : "todo"
+                    Status = statusValue == 3 ? "done-late" : (statusValue == 2 ? "done" : statusValue == 4 ? "review" : statusValue == 1 ? "doing" : "todo")
                 });
             }
 
@@ -609,119 +682,124 @@ openReport('',true);
             string encodedReportTitle = HttpUtility.HtmlEncode(title);
 
             return @"<!doctype html>
-                <html lang=""vi""><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width,initial-scale=1""><meta name=""robots"" content=""noindex,nofollow,noarchive""><title>" + encodedReportTitle + @"</title>
-                <style>
-                *{box-sizing:border-box}html,body{height:100%;margin:0;font-family:Arial,""Segoe UI"",sans-serif;color:#1f2937;background:#f3f6f9}body{padding:14px 15px 16px}.report-title{font-size:22px;line-height:1.3;font-weight:700;margin:0 0 16px;color:#111827}.legend{display:flex;align-items:center;gap:19px;flex-wrap:wrap;margin-bottom:18px;color:#555;font-size:13px}.legend-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.swatch{width:17px;height:17px;border-radius:4px;display:inline-block;background-image:linear-gradient(-45deg,rgba(255,255,255,.18) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.18) 50%,rgba(255,255,255,.18) 75%,transparent 75%,transparent);background-size:20px 20px}.done{background-color:#34a853}.doing{background-color:#4285f4}.warning{background-color:#f4b400}.overdue{background-color:#ea4335}.todo{background:#cbd5e1;background-image:none}.today-swatch{width:2px;height:17px;background:#ea4335;display:inline-block}.dependency-swatch{font-weight:bold;color:#ff9800;font-size:17px}.gantt-viewport{height:calc(100vh - 110px);min-height:440px;overflow:auto;background:#fff;border:1px solid #ccc;border-radius:7px;box-shadow:0 4px 12px rgba(0,0,0,.04);position:relative}.gantt-body{display:flex;width:max-content;min-width:100%;min-height:100%}.task-col{width:350px;flex:0 0 350px;position:sticky;left:0;z-index:20;background:#fff;border-right:1px solid #ccc;box-shadow:2px 0 8px rgba(0,0,0,.04)}.task-col-header,.chart-header{height:54px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:#f8f9fa;border-bottom:1px solid #ccc;position:sticky;top:0;z-index:30}.task-row,.task-track{height:52px;min-height:52px;border-bottom:1px solid #e5e5e5;position:relative;overflow:hidden}.task-row{display:flex;align-items:center;background:#fff;padding:0 8px;font-size:13px}.task-level-1{height:40px;display:flex;align-items:center;gap:7px;flex:1;min-width:0;background:#f4ebff;border-left:4px solid #5e35b1;border-radius:6px;color:#5e35b1;font-weight:700;padding:0 10px;overflow:hidden}.task-level-1 .task-text,.task-level-child .task-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.task-list-icon{font-size:15px;flex-shrink:0}.task-level-child{width:100%;display:flex;align-items:center;min-width:0;color:#333;white-space:nowrap}.branch{display:inline-block;width:14px;height:18px;flex:0 0 14px;border-left:1.5px solid #aaa;border-bottom:1.5px solid #aaa;margin-right:8px;transform:translateY(-6px)}.task-code{font-weight:700;margin-right:4px}.chart-col{position:relative;flex:0 0 auto}.chart-header{display:block;position:sticky;top:0;z-index:25}.tick-label{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#555;white-space:nowrap;border-left:1px solid #e0e0e0}.chart-tracks{position:relative}.task-track{border-bottom:1px solid #e5e5e5;background-color:#fff;background-image:linear-gradient(to right,#f2f2f2 1px,transparent 1px);background-repeat:repeat-x}.bar{position:absolute;top:14px;height:24px;border-radius:5px;overflow:visible;box-shadow:0 0 0 4px rgba(0,0,0,.035);z-index:6}.bar-fill{position:absolute;inset:0;border-radius:5px;overflow:hidden;background-image:linear-gradient(-45deg,rgba(255,255,255,.19) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.19) 50%,rgba(255,255,255,.19) 75%,transparent 75%,transparent);background-size:28px 28px;animation:stripe 1.5s linear infinite}.bar-label{position:absolute;left:8px;top:0;line-height:24px;font-size:11px;font-weight:700;color:rgba(255,255,255,.97);white-space:nowrap;pointer-events:none}.bar.todo .bar-label{color:#334155}.bar.overdue{box-shadow:0 0 0 4px rgba(234,67,53,.1)}.today-line{position:absolute;top:0;bottom:0;width:2px;background:#ea4335;z-index:4;pointer-events:none}.today-label{position:absolute;top:4px;transform:translateX(-50%);color:#ea4335;background:#fff;font-size:11px;font-weight:700;white-space:nowrap;z-index:28;padding:1px 3px;pointer-events:none}.connections{position:absolute;left:0;top:0;pointer-events:none;z-index:5;overflow:visible}.dep-line{fill:none;stroke:#ff9800;stroke-width:1.6;stroke-dasharray:4 4}.empty-report{padding:35px;color:#64748b;text-align:center}@keyframes stripe{to{background-position:28px 0}}
-                /* Cay cong viec: thu gon/mo rong cung luc phan ten, thanh tien do va duong phu thuoc. */
-                /* Chevron nhỏ như Gantt chính, bấm toàn vùng tên task (không tạo nút vuông). */
-                .report-tree-expandable{cursor:pointer;transition:background-color .16s ease,color .16s ease}
-                .task-level-1.report-tree-expandable:hover{background:#ece0fb}
-                .task-level-child.report-tree-expandable{min-height:40px;border-radius:5px}
-                .task-level-child.report-tree-expandable:hover{background:#f6f0fe;color:#512192}
-                .report-tree-expandable:focus-visible{outline:2px solid #9665cf;outline-offset:-2px}
-                .report-tree-toggle{flex:0 0 15px;width:15px;height:22px;margin-right:2px;display:inline-flex;align-items:center;justify-content:center;pointer-events:none;color:#526070}
-                .task-level-1 .report-tree-toggle{color:#5e35b1}
-                .report-tree-chevron{width:7px;height:7px;display:block;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);transition:transform .2s ease}
-                .report-tree-expandable[aria-expanded=""false""] .report-tree-chevron{transform:rotate(-45deg)}
-                /* Sticky task names must sit above every timeline layer when scrolling horizontally. */
-                .gantt-viewport { isolation: isolate; }
-                .gantt-body { position: relative; }
-                .gantt-body > .task-col { position: sticky; left: 0; z-index: 80; background: #fff; }
-                .gantt-body .task-col-header { z-index: 90; }
-                .gantt-body > .chart-col { position: relative; z-index: 1; }
-                .gantt-body .chart-header { z-index: 10; }
-                .gantt-body .chart-tracks { position: relative; z-index: 1; }
-                </style></head><body>
-                <h1 class=""report-title"">" + encodedReportTitle + @"</h1>
-                <div class=""legend"">
-                <span class=""legend-item""><span class=""swatch done""></span>Hoàn thành</span><span class=""legend-item""><span class=""swatch doing""></span>Đang thực hiện</span><span class=""legend-item""><span class=""swatch warning""></span>Sắp đến hạn</span><span class=""legend-item""><span class=""swatch overdue""></span>Trễ hạn</span><span class=""legend-item""><span class=""swatch todo""></span>Chưa bắt đầu</span><span class=""legend-item""><span class=""today-swatch""></span>Hôm nay</span><span class=""legend-item""><span class=""dependency-swatch"">➜</span>Liên kết phụ thuộc</span>
-                </div>
-                <div class=""gantt-viewport"" id=""ganttViewport""><div class=""gantt-body"" id=""ganttBody""><div class=""task-col"" id=""taskCol""><div class=""task-col-header"">Tên công việc</div><div id=""taskRows""></div></div><div class=""chart-col"" id=""chartCol""><div class=""chart-header"" id=""chartHeader""></div><div class=""chart-tracks"" id=""chartTracks""></div></div></div></div>
-                <script>(function(){
-                var encoded='" + encodedData + @"';var report=JSON.parse(decodeURIComponent(escape(atob(encoded))));var DAY_WIDTH=60;var ROW_HEIGHT=52;var NAME_WIDTH=350;var viewport=document.getElementById('ganttViewport');var taskRows=document.getElementById('taskRows');var chartCol=document.getElementById('chartCol');var header=document.getElementById('chartHeader');var tracks=document.getElementById('chartTracks');var body=document.getElementById('ganttBody');var totalDays=Math.max(1,report.TotalDays);var chartWidth=totalDays*DAY_WIDTH;var taskHeight=report.Tasks.length*ROW_HEIGHT;var pct=function(index){return index/totalDays*100;};
-                function esc(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/""/g,'&quot;').replace(/'/g,'&#39;');}
-                function dateAt(dayOffset){var p=report.StartDate.split('-').map(Number);var d=new Date(p[0],p[1]-1,p[2]);d.setDate(d.getDate()+dayOffset);return d;}
-                function dateText(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
-                function dayOffset(iso){if(!iso)return 0;var p=iso.split('-').map(Number);return Math.round((new Date(p[0],p[1]-1,p[2])-dateAt(0))/86400000);}
-                function getEffectiveStatus(task){if(task.Status==='done')return 'done';if(!task.EndDate)return task.Status||'todo';var remaining=dayOffset(task.EndDate)-report.TodayIndex;if(remaining<0)return 'overdue';if(remaining<=2)return 'warning';return task.Status||'todo';}
-                function barText(status){if(status==='done')return 'Hoàn thành';if(status==='doing')return 'Đang thực hiện';if(status==='warning')return 'Sắp đến hạn';if(status==='overdue')return 'Trễ hạn';return 'Chưa bắt đầu';}
-                header.style.width=chartWidth+'px';tracks.style.width=chartWidth+'px';tracks.style.height=taskHeight+'px';chartCol.style.width=chartWidth+'px';body.style.width=(NAME_WIDTH+chartWidth)+'px';
-                for(var i=0;i<totalDays;i++){var tick=document.createElement('div');tick.className='tick-label';tick.style.left=pct(i)+'%';tick.style.width=(100/totalDays)+'%';tick.textContent=dateText(dateAt(i));header.appendChild(tick);}
-                if(!report.Tasks||report.Tasks.length===0){taskRows.innerHTML='<div class=""empty-report"">Không có công việc được chọn.</div>';return;}
-                var taskTrackById={};var barById={};
-                report.Tasks.forEach(function(task,index){var row=document.createElement('div');row.className='task-row';var level=Math.max(1,parseInt(task.Level||1,10));if(level===1){row.innerHTML='<div class=""task-level-1""><span class=""task-list-icon"">☷</span><span class=""task-text""><span class=""task-code"">'+esc(task.Code)+'.</span> '+esc(task.Name)+'</span></div>';}else{var indent=Math.max(0,(level-2)*26);row.innerHTML='<div class=""task-level-child"" style=""padding-left:'+(indent+8)+'px""><span class=""branch""></span><span class=""task-text""><span class=""task-code"">'+esc(task.Code)+'.</span> '+esc(task.Name)+'</span></div>';}
-                taskRows.appendChild(row);
-                var track=document.createElement('div');track.className='task-track';track.style.backgroundSize=(100/totalDays)+'% 100%';track.dataset.taskid=task.Id;track.style.height=ROW_HEIGHT+'px';track.style.width=chartWidth+'px';
-                var start=Math.max(0,Math.min(parseInt(task.StartDay||0,10),totalDays-1));var end=Math.max(start+1,Math.min(parseInt(task.EndDay||start+1,10),totalDays));var status=getEffectiveStatus(task);var bar=document.createElement('div');bar.className='bar '+status;bar.style.left=pct(start)+'%';bar.style.width=((end-start)/totalDays*100)+'%';bar.title=barText(status)+(task.EndDate?' · Hạn: '+task.EndDate.split('-').reverse().join('/'):'');bar.innerHTML='<div class=""bar-fill""></div><span class=""bar-label"">'+esc(barText(status))+'</span>';track.appendChild(bar);tracks.appendChild(track);taskTrackById[task.Id]=track;barById[task.Id]=bar;
-                });
-                var svgNS='http://www.w3.org/2000/svg';var svg=document.createElementNS(svgNS,'svg');svg.setAttribute('class','connections');svg.setAttribute('width',String(chartWidth));svg.setAttribute('height',String(taskHeight));svg.setAttribute('viewBox','0 0 '+chartWidth+' '+taskHeight);svg.innerHTML='<defs><marker id=""dependencyArrow"" viewBox=""0 0 10 10"" refX=""8"" refY=""5"" markerWidth=""6"" markerHeight=""6"" orient=""auto""><path d=""M 0 0 L 10 5 L 0 10 z"" fill=""#ff9800""></path></marker></defs>';tracks.insertBefore(svg,tracks.firstChild);
-                report.Tasks.forEach(function(task){if(!task.DependencyId||!taskTrackById[task.DependencyId]||!barById[task.DependencyId]||!barById[task.Id])return;var preTrack=taskTrackById[task.DependencyId],curTrack=taskTrackById[task.Id],preBar=barById[task.DependencyId],curBar=barById[task.Id];var sx=preBar.offsetLeft+preBar.offsetWidth,sy=preTrack.offsetTop+ROW_HEIGHT/2,ex=curBar.offsetLeft,ey=curTrack.offsetTop+ROW_HEIGHT/2;var mid=Math.max(sx+12,Math.min(ex-10,(sx+ex)/2));var path=document.createElementNS(svgNS,'path');path.setAttribute('class','dep-line');path.setAttribute('d','M '+sx+' '+sy+' L '+mid+' '+sy+' L '+mid+' '+ey+' L '+(ex-4)+' '+ey);path.setAttribute('marker-end','url(#dependencyArrow)');svg.appendChild(path);});
-                var today=document.createElement('div');today.className='today-line';today.style.left=pct(report.TodayIndex+.5)+'%';tracks.appendChild(today);var todayLabel=document.createElement('div');todayLabel.className='today-label';todayLabel.textContent='Hôm nay';todayLabel.style.left=pct(report.TodayIndex+.5)+'%';header.appendChild(todayLabel);
-                // Thu gon theo ma cong viec, khong theo chi so hang; tuong thich bao cao thieu cap cha.
-                var collapsedCodes={};
-                var taskRowsArray=Array.prototype.slice.call(taskRows.children);
-                function hasSelectedChildren(code){return report.Tasks.some(function(t){return String(t.Code||'').indexOf(code+'.')===0;});}
-                function drawVisibleDependencies(){
-                    Array.prototype.slice.call(svg.querySelectorAll('.dep-line')).forEach(function(line){line.parentNode.removeChild(line);});
-                    report.Tasks.forEach(function(task){
-                        if(!task.DependencyId)return;
-                        var from=taskTrackById[task.DependencyId],to=taskTrackById[task.Id];
-                        if(!from||!to||from.style.display==='none'||to.style.display==='none')return;
-                        var fromBar=barById[task.DependencyId],toBar=barById[task.Id];
-                        if(!fromBar||!toBar)return;
-                        var sx=fromBar.offsetLeft+fromBar.offsetWidth;
-                        var sy=from.offsetTop+ROW_HEIGHT/2;
-                        var ex=toBar.offsetLeft;
-                        var ey=to.offsetTop+ROW_HEIGHT/2;
-                        var mid=Math.max(sx+12,Math.min(ex-10,(sx+ex)/2));
-                        var path=document.createElementNS(svgNS,'path');
-                        path.setAttribute('class','dep-line');
-                        path.setAttribute('d','M '+sx+' '+sy+' L '+mid+' '+sy+' L '+mid+' '+ey+' L '+(ex-4)+' '+ey);
-                        path.setAttribute('marker-end','url(#dependencyArrow)');svg.appendChild(path);
-                    });
-                }
-                function applyTreeVisibility(){
-                    var visible=0;
-                    report.Tasks.forEach(function(task,i){
-                        var code=String(task.Code||'');
-                        var hidden=Object.keys(collapsedCodes).some(function(parent){return !!collapsedCodes[parent]&&code.indexOf(parent+'.')===0;});
-                        taskRowsArray[i].style.display=hidden?'none':'';
-                        var track=taskTrackById[task.Id];if(track)track.style.display=hidden?'none':'';
-                        if(!hidden)visible++;
-                        var actionArea=taskRowsArray[i].querySelector('.report-tree-expandable');
-                        if(actionArea)actionArea.setAttribute('aria-expanded',collapsedCodes[code]?'false':'true');
-                    });
-                    var height=visible*ROW_HEIGHT;
-                    tracks.style.height=height+'px';svg.setAttribute('height',String(height));
-                    svg.setAttribute('viewBox','0 0 '+chartWidth+' '+Math.max(1,height));
-                    // Cap nhat sau khi CSS da sap xep lai vi tri cac hang.
-                    window.requestAnimationFrame?window.requestAnimationFrame(drawVisibleDependencies):drawVisibleDependencies();
-                }
-                report.Tasks.forEach(function(task,index){
-                    var code=String(task.Code||'');if(!code||!hasSelectedChildren(code))return;
-                    var row=taskRowsArray[index];
-                    var inside=row.querySelector('.task-level-1,.task-level-child');if(!inside)return;
-                    // Chi tiết có nhánh con: tên, mã và mũi tên cùng là một vùng kích hoạt.
-                    inside.classList.add('report-tree-expandable');
-                    inside.setAttribute('role','button');
-                    inside.setAttribute('tabindex','0');
-                    inside.setAttribute('aria-expanded','true');
-                    inside.setAttribute('aria-label','Thu gọn hoặc mở rộng công việc '+code+' '+String(task.Name||''));
-                    inside.title='Bấm để thu gọn / mở rộng công việc con';
-                    var arrow=document.createElement('span');
-                    arrow.className='report-tree-toggle';
-                    arrow.setAttribute('aria-hidden','true');
-                    arrow.innerHTML='<span class=""report-tree-chevron""></span>';
-                    // Task con: giữ nét nhánh cây phía trước, mũi tên nằm sát mã giống Gantt chính.
-                    var branch=inside.querySelector('.branch');
-                    if(branch)inside.insertBefore(arrow,branch.nextSibling);
-                    else inside.insertBefore(arrow,inside.firstChild);
-                    function toggleBranch(){collapsedCodes[code]=!collapsedCodes[code];applyTreeVisibility();}
-                    inside.addEventListener('click',function(e){e.preventDefault();toggleBranch();});
-                    inside.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleBranch();}});
-                });
-                applyTreeVisibility();
-                })();</script></body></html>";
+<html lang=""vi""><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width,initial-scale=1""><meta name=""robots"" content=""noindex,nofollow,noarchive""><title>" + encodedReportTitle + @"</title>
+<style>
+* { box-sizing:border-box; }
+html,body { height:100%;margin:0;font-family:Arial,""Segoe UI"",sans-serif;color:#293445;background:#f3f4f8; }
+body { display:flex;flex-direction:column;min-height:100vh;padding:16px 20px 20px; }
+.report-top { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:13px;flex:0 0 auto; }
+.report-title { margin:0;color:#3f1e70;font-size:20px;font-weight:800;line-height:1.4; }
+.report-help-holder { position:relative;flex:0 0 auto; }
+.report-help { display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid #ddcfef;border-radius:10px;background:#f8f4ff;color:#63309e;font-size:19px;font-weight:800;cursor:pointer;transition:background-color .15s ease,color .15s ease; }
+.report-help:hover,.report-help.is-pinned { background:#54218d;color:#fff;border-color:#54218d; }
+.report-help:focus-visible { outline:2px solid #9258ca;outline-offset:2px; }
+.legend { display:none;position:absolute;right:0;top:calc(100% + 7px);width:min(570px,calc(100vw - 40px));padding:13px 17px 12px;border:1px solid #deccef;border-radius:13px;background:#fff;z-index:300;box-shadow:0 12px 30px rgba(61,38,95,.16); }
+.legend.is-open { display:block; }
+.legend-title { margin:0 0 10px;color:#5b268c;font-size:13px;font-weight:800; }
+.legend-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 11px; }
+.legend-item { display:flex;align-items:center;gap:8px;color:#4b5565;font-size:12px;font-weight:650;white-space:nowrap; }
+.swatch { display:inline-block;flex:0 0 14px;width:14px;height:14px;border-radius:3px; }
+.swatch.done { background:#34a853; }
+.swatch.doing { background:#4285f4; }
+.swatch.warning { background:#f4b400; }
+.swatch.overdue { background:#ea4335; }
+.swatch.todo { background:#cbd5e1; }
+.swatch.today { width:2px;flex-basis:2px;height:15px;margin-left:5px;margin-right:7px;border-radius:0;background:#ea4335; }
+.swatch.dependency { background:none;color:#f59e0b;font-size:18px;font-weight:900; }
+.legend-note { display:block;margin-top:10px;color:#8b7b9d;font-size:11px; }
+.gantt-viewport { isolation:isolate;position:relative;flex:1 1 auto;min-height:360px;height:calc(100vh - 94px);overflow:auto;background:#fff;border:1px solid #ded5e8;border-radius:11px;box-shadow:0 3px 15px rgba(59,35,91,.06);scrollbar-width:thin; }
+.gantt-body { display:flex;position:relative;width:max-content;min-width:100%;min-height:100%; }
+.task-col { position:sticky;left:0;z-index:80;width:350px;flex:0 0 350px;background:#fff;border-right:1px solid #d4d7df;box-shadow:3px 0 8px rgba(20,21,24,.045); }
+.task-col-header { position:sticky;top:0;z-index:90;height:44px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #d7d7db;background:#f8f9fb;color:#273144;font-weight:800;font-size:13px; }
+.task-row { display:flex;align-items:center;height:52px;max-height:52px;padding:0 8px;border-bottom:1px solid #e4e6eb;background:#fff;font-size:13px;overflow:hidden; }
+.task-row:hover { background:#faf7ff; }
+.task-level-1 { display:flex;align-items:center;width:100%;min-width:0;height:40px;padding:0 10px;gap:6px;border-left:4px solid #5e35b1;border-radius:7px;background:#f3eaff;color:#6232ae;font-size:13px;font-weight:750; }
+.task-level-child { display:flex;align-items:center;width:100%;min-width:0;height:40px;color:#303b4b;font-size:13px; }
+.task-list-icon { flex:0 0 auto;margin-right:3px;font-size:14px; }
+.task-text { flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.task-code { font-weight:750; }
+.branch { display:inline-block;flex:0 0 14px;width:14px;height:18px;margin-right:6px;border-left:1.5px solid #aab1bb;border-bottom:1.5px solid #aab1bb;transform:translateY(-6px); }
+.report-tree-expandable { cursor:pointer;transition:background-color .15s ease,color .15s ease; }
+.task-level-1.report-tree-expandable:hover { background:#eadafc; }
+.task-level-child.report-tree-expandable:hover { background:#f7f0ff;border-radius:6px; }
+.report-tree-expandable:focus-visible { outline:2px solid #9260ca;outline-offset:-2px; }
+.report-tree-toggle { display:inline-flex;align-items:center;justify-content:center;flex:0 0 14px;width:14px;height:22px;margin-right:2px;color:#7a6890;pointer-events:none; }
+.report-tree-chevron { display:block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);transition:transform .17s ease; }
+.report-tree-expandable[aria-expanded=""false""] .report-tree-chevron { transform:rotate(-45deg); }
+.chart-col { position:relative;z-index:1;flex:0 0 auto;min-height:100%; }
+.chart-header { position:sticky;top:0;z-index:10;height:44px;background:#f8f9fb;border-bottom:1px solid #d7d7db; }
+.tick-label { display:flex;position:absolute;top:0;height:100%;align-items:center;justify-content:center;color:#647084;font-size:12px;white-space:nowrap;border-left:1px solid #e6e9ed; }
+.chart-tracks { position:relative;z-index:1;min-height:100px; }
+.task-track { position:relative;height:52px;max-height:52px;overflow:hidden;border-bottom:1px solid #e4e6eb;background-color:#fff;background-repeat:repeat-x; }
+.task-track.hide-bar .bar { opacity:0!important;pointer-events:none!important; }
+.bar { position:absolute;top:14px;height:24px;z-index:7;border-radius:5px;cursor:default;box-shadow:0 0 0 4px rgba(0,0,0,.035);transition:filter .18s ease,box-shadow .18s ease; }
+.bar:hover { filter:brightness(1.08);box-shadow:0 3px 10px rgba(0,0,0,.17); }
+.bar-fill { position:absolute;inset:0;overflow:hidden;border-radius:5px; }
+.bar-fill.animated-stripes { background-image:linear-gradient(-45deg,rgba(255,255,255,.17) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.17) 50%,rgba(255,255,255,.17) 75%,transparent 75%,transparent);background-size:28px 28px;animation:report-stripes 1.5s linear infinite; }
+.bar.status-done .bar-fill { background-color:#34a853; }
+.bar.status-doing .bar-fill { background-color:#4285f4; }
+.bar.status-warning .bar-fill { background-color:#f4b400; }
+.bar.status-overdue .bar-fill { background-color:#ea4335; }
+.bar.status-todo .bar-fill { background-color:#cbd5e1; }
+.static-text { position:absolute;top:0;left:8px;width:calc(100% - 14px);height:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:24px;color:#fff;font-size:13px;font-weight:800;pointer-events:none; }
+.bar.status-todo .static-text { color:#334155; }
+.bar.status-overdue { box-shadow:0 0 0 4px rgba(234,67,53,.10); }
+.today-line { position:absolute;top:0;bottom:0;width:2px;background:#ea4335;z-index:4;pointer-events:none; }
+.connections { position:absolute;left:0;top:0;z-index:5;pointer-events:none;overflow:visible; }
+.dep-line { fill:none;stroke:#ff9800;stroke-width:1.5;stroke-dasharray:4 4; }
+.report-tip { display:none;position:fixed;z-index:2147483000;max-width:min(330px,calc(100vw - 20px));padding:9px 13px;border:1px solid rgba(167,139,250,.4);border-radius:9px;background:#5930a1;color:#fff;font-size:12.5px;font-weight:750;line-height:1.4;white-space:normal;overflow-wrap:anywhere;pointer-events:none;box-shadow:0 9px 23px rgba(48,27,78,.2); }
+.report-tip[data-kind=""todo""] { background:#526276; }
+.report-tip[data-kind=""done""],.report-tip[data-kind=""late""] { background:#24884b; }
+.report-tip[data-kind=""doing""] { background:#2563c9; }
+.report-tip[data-kind=""warning""] { background:#ad7508; }
+.report-tip[data-kind=""overdue""] { background:#d73939; }
+.empty-report { padding:30px;color:#64748b;text-align:center; }
+@keyframes report-stripes { to { background-position:28px 0; } }
+@media(max-width:650px) { body { padding:10px; } .report-title { font-size:16px; } .task-col { width:245px;flex-basis:245px; } .legend-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(prefers-reduced-motion:reduce) { .bar-fill.animated-stripes { animation:none; } .report-tree-chevron,.bar { transition:none; } }
+</style></head><body>
+<div class=""report-top""><h1 class=""report-title"">" + encodedReportTitle + @"</h1><div class=""report-help-holder"" id=""reportHelpHolder""><button type=""button"" class=""report-help"" id=""reportHelp"" aria-label=""Chú thích biểu đồ"" aria-expanded=""false"" aria-controls=""reportLegend"">?</button><section class=""legend"" id=""reportLegend"" aria-hidden=""true""><h2 class=""legend-title"">Chú thích biểu đồ</h2><div class=""legend-grid""><span class=""legend-item""><i class=""swatch done""></i>Hoàn thành</span><span class=""legend-item""><i class=""swatch doing""></i>Đang thực hiện</span><span class=""legend-item""><i class=""swatch warning""></i>Sắp đến hạn</span><span class=""legend-item""><i class=""swatch overdue""></i>Trễ hạn</span><span class=""legend-item""><i class=""swatch todo""></i>Chưa bắt đầu</span><span class=""legend-item""><i class=""swatch today""></i>Hôm nay</span><span class=""legend-item""><i class=""swatch dependency"">➜</i>Liên kết phụ thuộc</span></div><small class=""legend-note"">Rê chuột để xem. Nhấn dấu ? để ghim hoặc bỏ ghim.</small></section></div></div>
+<div class=""gantt-viewport"" id=""ganttViewport""><div class=""gantt-body"" id=""ganttBody""><div class=""task-col"" id=""taskCol""><div class=""task-col-header"">Công việc</div><div id=""taskRows""></div></div><div class=""chart-col"" id=""chartCol""><div class=""chart-header"" id=""chartHeader""></div><div class=""chart-tracks"" id=""chartTracks""></div></div></div></div><div class=""report-tip"" id=""reportTip"" role=""tooltip""></div>
+<script>
+(function(){'use strict';
+var encoded='" + encodedData + @"';var report=JSON.parse(decodeURIComponent(escape(atob(encoded))));
+var ROW_HEIGHT=52,DAY_WIDTH=60,NAME_WIDTH=window.innerWidth<=650?245:350;
+var viewport=document.getElementById('ganttViewport'),taskRows=document.getElementById('taskRows'),chartCol=document.getElementById('chartCol'),header=document.getElementById('chartHeader'),tracks=document.getElementById('chartTracks'),body=document.getElementById('ganttBody');
+var totalDays=Math.max(1,report.TotalDays),chartWidth=Math.max(totalDays*DAY_WIDTH,Math.max(300,viewport.clientWidth-NAME_WIDTH)),pct=function(day){return day/totalDays*100;};
+function esc(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/""/g,'&quot;').replace(/'/g,'&#39;');}
+function dateAt(n){var a=report.StartDate.split('-').map(Number),d=new Date(a[0],a[1]-1,a[2]);d.setDate(d.getDate()+n);return d;}
+function labelDate(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
+function dateTip(iso){var a=String(iso||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:iso;}
+function remainingDays(task){return task.EndDate?Math.round((Date.UTC(Number(task.EndDate.slice(0,4)),Number(task.EndDate.slice(5,7))-1,Number(task.EndDate.slice(8,10)))-Date.UTC(dateAt(report.TodayIndex).getFullYear(),dateAt(report.TodayIndex).getMonth(),dateAt(report.TodayIndex).getDate()))/86400000):null;}
+function displayStatus(task){var raw=String(task.Status||'todo');if(raw==='done')return {label:'Hoàn thành',css:'done',warning:'',tip:'Hoàn thành'};if(raw==='done-late')return {label:'Hoàn thành trễ',css:'done',warning:'',tip:'Hoàn thành trễ'};var label=raw==='review'?'Chờ duyệt':raw==='doing'?'Đang thực hiện':'Chưa bắt đầu';var css=raw==='review'||raw==='doing'?'doing':'todo',warning='',kind='';var rem=remainingDays(task);if(rem!==null){if(rem<0){warning='Trễ hạn '+Math.abs(rem)+' ngày';kind='overdue';}else if(rem<=2){warning=rem===0?'Sắp đến hạn (hôm nay)':'Sắp đến hạn (còn '+rem+' ngày)';kind='warning';}if(raw==='doing'&&kind)css=kind;}return {label:label,css:css,warning:warning,tip:warning||label,kind:kind};}
+var rootHelp=document.getElementById('reportHelp'),rootLegend=document.getElementById('reportLegend'),helpHolder=document.getElementById('reportHelpHolder'),legendPinned=false;
+function updateLegend(){var open=legendPinned||helpHolder.matches(':hover')||helpHolder.contains(document.activeElement);rootLegend.classList.toggle('is-open',open);rootLegend.setAttribute('aria-hidden',open?'false':'true');rootHelp.setAttribute('aria-expanded',open?'true':'false');rootHelp.classList.toggle('is-pinned',legendPinned);}
+helpHolder.addEventListener('mouseenter',updateLegend);helpHolder.addEventListener('mouseleave',function(){if(!legendPinned){rootHelp.blur();updateLegend();}});
+rootHelp.addEventListener('click',function(){legendPinned=!legendPinned;if(!legendPinned)rootHelp.blur();updateLegend();});
+document.addEventListener('click',function(e){if(!helpHolder.contains(e.target)&&!legendPinned){rootHelp.blur();updateLegend();}});
+header.style.width=chartWidth+'px';tracks.style.width=chartWidth+'px';chartCol.style.width=chartWidth+'px';body.style.width=(NAME_WIDTH+chartWidth)+'px';
+for(var i=0;i<totalDays;i++){var tick=document.createElement('div');tick.className='tick-label';tick.style.left=pct(i)+'%';tick.style.width=pct(1)+'%';tick.textContent=labelDate(dateAt(i));header.appendChild(tick);}
+if(!report.Tasks||!report.Tasks.length){taskRows.innerHTML='<div class=""empty-report"">Không có công việc được chọn.</div>';return;}
+var rowById=Object.create(null),trackById=Object.create(null),barById=Object.create(null),toggleById=Object.create(null),collapsed=Object.create(null),descendants=Object.create(null),tip=document.getElementById('reportTip');
+report.Tasks.forEach(function(task){descendants[task.Code]=report.Tasks.some(function(x){return String(x.Code||'').indexOf(String(task.Code)+'.')===0;});});
+function bindTip(target,message,kind){target.addEventListener('mouseenter',function(){tip.textContent=message;tip.dataset.kind=kind||'';tip.style.display='block';placeTip(target);});target.addEventListener('mousemove',function(){placeTip(target);});target.addEventListener('mouseleave',function(){tip.style.display='none';});}
+function placeTip(el){if(tip.style.display==='none')return;var r=el.getBoundingClientRect(),tw=tip.offsetWidth,th=tip.offsetHeight,left=r.right+9,top=r.top+(r.height-th)/2;if(left+tw>innerWidth-8)left=Math.max(8,r.left-tw-9);left=Math.max(8,Math.min(innerWidth-tw-8,left));top=Math.max(8,Math.min(innerHeight-th-8,top));tip.style.left=Math.round(left)+'px';tip.style.top=Math.round(top)+'px';}
+report.Tasks.forEach(function(task){var code=String(task.Code||''),level=Math.max(1,parseInt(task.Level||1,10)),row=document.createElement('div');row.className='task-row';row.dataset.code=code;row.dataset.id=task.Id;var content=document.createElement('div');content.className=level===1?'task-level-1':'task-level-child';if(level>1){content.style.paddingLeft=Math.min(104,Math.max(0,(level-2)*26))+'px';var branch=document.createElement('span');branch.className='branch';content.appendChild(branch);}if(descendants[code]){content.classList.add('report-tree-expandable');content.setAttribute('role','button');content.tabIndex=0;content.setAttribute('aria-expanded','true');content.setAttribute('aria-label','Thu gọn hoặc mở rộng '+code+' '+String(task.Name||''));var arrow=document.createElement('span');arrow.className='report-tree-toggle';arrow.innerHTML='<span class=""report-tree-chevron""></span>';content.appendChild(arrow);toggleById[task.Id]=content;}
+if(level===1){var icon=document.createElement('span');icon.className='task-list-icon';icon.textContent='☷';content.appendChild(icon);}var label=document.createElement('span');label.className='task-text';label.innerHTML='<span class=""task-code"">'+esc(code)+'.</span> '+esc(task.Name);content.appendChild(label);row.appendChild(content);taskRows.appendChild(row);rowById[task.Id]=row;
+if(descendants[code]){var toggle=function(){collapsed[code]=!collapsed[code];refreshVisibility();};content.addEventListener('click',toggle);content.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});}
+var track=document.createElement('div');track.className='task-track';track.style.width=chartWidth+'px';track.style.backgroundImage='linear-gradient(to right,#f2f2f2 1px,transparent 1px)';track.style.backgroundSize=pct(1)+'% 100%';var start=Math.max(0,Math.min(Number(task.StartDay)||0,totalDays-1)),end=Math.max(start+1,Math.min(Number(task.EndDay)||start+1,totalDays)),s=displayStatus(task);
+var bar=document.createElement('div');bar.className='bar status-'+s.css+(task.Status==='done-late'?' is-completed-late':'');bar.style.left=pct(start)+'%';bar.style.width=pct(end-start)+'%';bar.dataset.ganttTip=s.tip;
+var fill=document.createElement('div');fill.className='bar-fill animated-stripes';var text=document.createElement('div');text.className='static-text';text.textContent=s.label;fill.appendChild(text);bar.appendChild(fill);bindTip(bar,s.tip+(task.EndDate?' · Hạn '+dateTip(task.EndDate):'')+(task.Assignee?' · '+task.Assignee:''),task.Status==='done-late'?'late':s.kind||s.css);
+track.appendChild(bar);tracks.appendChild(track);trackById[task.Id]=track;barById[task.Id]=bar;});
+var todayIndex=Number(report.TodayIndex);if(Number.isFinite(todayIndex)&&todayIndex>=0&&todayIndex<totalDays){var today=document.createElement('div');today.className='today-line';today.style.left=pct(todayIndex+.5)+'%';tracks.appendChild(today);}
+var ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),defs=document.createElementNS(ns,'defs'),marker=document.createElementNS(ns,'marker'),head=document.createElementNS(ns,'path');svg.setAttribute('class','connections');svg.setAttribute('width',chartWidth);svg.setAttribute('aria-hidden','true');marker.setAttribute('id','reportDependencyArrow');marker.setAttribute('viewBox','0 0 10 10');marker.setAttribute('refX','8');marker.setAttribute('refY','5');marker.setAttribute('markerWidth','6');marker.setAttribute('markerHeight','6');marker.setAttribute('orient','auto');head.setAttribute('d','M 0 0 L 10 5 L 0 10 z');head.setAttribute('fill','#ff9800');marker.appendChild(head);defs.appendChild(marker);svg.appendChild(defs);tracks.appendChild(svg);
+function isBarVisible(id){var t=trackById[id];return !!t&&t.style.display!=='none'&&!t.classList.contains('hide-bar');}
+function drawDependencies(){Array.prototype.slice.call(svg.querySelectorAll('.dep-line')).forEach(function(p){p.parentNode.removeChild(p);});report.Tasks.forEach(function(task){if(!task.DependencyId||!isBarVisible(task.DependencyId)||!isBarVisible(task.Id))return;var from=trackById[task.DependencyId],to=trackById[task.Id],a=barById[task.DependencyId],b=barById[task.Id];if(!a||!b)return;var sx=a.offsetLeft+a.offsetWidth,sy=from.offsetTop+a.offsetTop+a.offsetHeight/2,ex=b.offsetLeft,ey=to.offsetTop+b.offsetTop+b.offsetHeight/2,elbow=sx+12,path=document.createElementNS(ns,'path');path.setAttribute('class','dep-line');path.setAttribute('marker-end','url(#reportDependencyArrow)');path.setAttribute('d','M '+sx+' '+sy+' L '+elbow+' '+sy+' L '+elbow+' '+ey+' L '+(ex-3)+' '+ey);svg.appendChild(path);});}
+function refreshVisibility(){var count=0;report.Tasks.forEach(function(task){var code=String(task.Code||''),hidden=Object.keys(collapsed).some(function(parent){return !!collapsed[parent]&&code.indexOf(parent+'.')===0;});rowById[task.Id].style.display=hidden?'none':'';trackById[task.Id].style.display=hidden?'none':'';trackById[task.Id].classList.toggle('hide-bar',!!descendants[code]&&!collapsed[code]);if(toggleById[task.Id])toggleById[task.Id].setAttribute('aria-expanded',collapsed[code]?'false':'true');if(!hidden)count++;});var height=count*ROW_HEIGHT;tracks.style.height=Math.max(100,height)+'px';svg.setAttribute('height',height);svg.setAttribute('viewBox','0 0 '+chartWidth+' '+Math.max(1,height));requestAnimationFrame(drawDependencies);tip.style.display='none';}
+refreshVisibility();
+})();
+</script></body></html>
+";
         }
 
         private static DateTime? GetNullableDate(DataRow row, string column)
@@ -752,6 +830,7 @@ openReport('',true);
         public string Id { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
+        public string Assignee { get; set; }
         public string DependencyId { get; set; }
         public int Level { get; set; }
         public int StartDay { get; set; }

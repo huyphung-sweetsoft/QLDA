@@ -74,7 +74,7 @@
             // Fallback cho theme khong phat hidden event, sau khi transition thong thuong ket thuc.
             w.setTimeout(finish, 700);
         }
-        function loading(show, mode) { var el = document.getElementById('shareProgressInlineLoader'); if (!el && show) { el = document.createElement('div'); el.id = 'shareProgressInlineLoader'; el.className = 'share-progress-loading-overlay'; el.style.display = 'none'; el.setAttribute('aria-live', 'polite'); el.setAttribute('aria-busy', 'true'); el.innerHTML = '<div class="share-progress-loading-card"><div class="share-progress-spinner"></div><div id="shareProgressLoadingTitle" class="share-progress-loading-title"></div><div id="shareProgressLoadingText" class="share-progress-loading-text"></div><div class="share-progress-loading-track"><span></span></div></div>'; document.body.appendChild(el); } if (!el) return; var title = document.getElementById('shareProgressLoadingTitle'); var text = document.getElementById('shareProgressLoadingText'); if (title && text) { if (mode === 'delete-report') { title.textContent = 'Đang xóa báo cáo'; text.textContent = 'Đang thu hồi liên kết và xóa báo cáo khỏi nhật ký. Vui lòng chờ trong giây lát...'; } else if (mode === 'reset-otp') { title.textContent = 'Đang cấp lại mã OTP'; text.textContent = 'Đang tạo mã OTP mới cho báo cáo và cập nhật nhật ký. Vui lòng chờ trong giây lát...'; } else { title.textContent = 'Đang tạo báo cáo tiến độ'; text.textContent = 'Đang dựng biểu đồ Gantt và bảo vệ báo cáo bằng mã OTP. Vui lòng chờ trong giây lát...'; } } el.style.display = show ? 'flex' : 'none'; }
+        function loading(show, mode) { var el = document.getElementById('shareProgressInlineLoader'); if (!el && show) { el = document.createElement('div'); el.id = 'shareProgressInlineLoader'; el.className = 'share-progress-loading-overlay'; el.style.display = 'none'; el.setAttribute('aria-live', 'polite'); el.setAttribute('aria-busy', 'true'); el.innerHTML = '<div class="share-progress-loading-card"><div class="share-progress-spinner"></div><div id="shareProgressLoadingTitle" class="share-progress-loading-title"></div><div id="shareProgressLoadingText" class="share-progress-loading-text"></div><div class="share-progress-loading-track"><span></span></div></div>'; document.body.appendChild(el); } if (!el) return; var title = document.getElementById('shareProgressLoadingTitle'); var text = document.getElementById('shareProgressLoadingText'); if (title && text) { if (mode === 'delete-report') { title.textContent = 'Đang xóa báo cáo'; text.textContent = 'Đang thu hồi liên kết và xóa báo cáo khỏi nhật ký. Vui lòng chờ trong giây lát...'; } else if (mode === 'reset-otp') { title.textContent = 'Đang cấp lại mã OTP'; text.textContent = 'Đang tạo mã OTP mới cho báo cáo và cập nhật nhật ký. Vui lòng chờ trong giây lát...'; } else { title.textContent = 'Đang tạo báo cáo tiến độ'; text.textContent = 'Đang dựng biểu đồ Gantt và xuất liên kết báo cáo. Vui lòng chờ trong giây lát...'; } } el.style.display = show ? 'flex' : 'none'; }
         function showError(message) { message = message || 'Tạo báo cáo không thành công. Vui lòng thử lại.'; if (w.toastr && typeof w.toastr.error === 'function') { w.toastr.error(message); return; } var old = document.getElementById('shareProgressErrorToast'); if (old) old.remove(); var toast = document.createElement('div'); toast.id = 'shareProgressErrorToast'; toast.className = 'share-progress-error-toast'; toast.setAttribute('role', 'alert'); var icon = document.createElement('i'); icon.className = 'fas fa-exclamation-circle'; var span = document.createElement('span'); span.textContent = message; var x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Đóng thông báo lỗi'); x.onclick = function () { toast.remove(); }; toast.appendChild(icon); toast.appendChild(span); toast.appendChild(x); document.body.appendChild(toast); w.setTimeout(function () { if (toast.parentNode) toast.remove(); }, 8500); }
         function showSaved(message) { message = message || 'Đã lưu cấu hình công việc cho dự án này.'; if (w.toastr && typeof w.toastr.success === 'function') { w.toastr.success(message); return; } var old = document.getElementById('shareProgressSavedToast'); if (old) old.remove(); var toast = document.createElement('div'); toast.id = 'shareProgressSavedToast'; toast.className = 'share-progress-saved-toast'; toast.setAttribute('role', 'status'); toast.textContent = message; document.body.appendChild(toast); w.setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500); }
         function root() { return document.getElementById('shareProgressTaskList'); }
@@ -548,36 +548,31 @@
             }
             syncProgressHistoryScroll();
         }
+        // Bao cao moi: link cong khai, khong co OTP. Bao cao cu giu OTP trong nhat ky.
         w.shareProgressSendCreatedCustomer = function (e) {
             if (e && e.preventDefault) e.preventDefault();
             var dialog = getModal('modalCreated');
             var reportLink = dialog ? dialog.querySelector('a[id$="lnkReportFile"]') : null;
             var reportName = dialog ? dialog.querySelector('.share-progress-file-name') : null;
-            var otpField = getField('hdfOtp');
             var name = reportName ? reportName.textContent.trim() : 'Báo cáo tiến độ dự án';
             var url = reportLink ? reportLink.href : '';
-            var otp = otpField ? otpField.value.trim() : '';
-            if (!url || !/^\d{6}$/.test(otp)) {
-                showError('Thiếu liên kết hoặc mã OTP để gửi khách hàng.');
-                return false;
-            }
+            if (!url) { showError('Chưa có liên kết báo cáo để gửi.'); return false; }
             var subject = 'Báo cáo tiến độ: ' + name;
-            var body = 'Xin chào,\n\nTôi gửi báo cáo tiến độ dự án để anh/chị tham khảo.\n\nBáo cáo: ' + name + '\nLiên kết: ' + url + '\nMã OTP: ' + otp + '\n\nTrân trọng.';
+            var body = 'Xin chào,\n\nTôi gửi báo cáo tiến độ dự án để tham khảo.\n\nBáo cáo: ' + name + '\nLiên kết: ' + url + '\n\nCó thể mở trực tiếp bằng liên kết, không cần OTP.\n\nTrân trọng.';
             w.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
             return false;
         };
+        // Nhat ky ho tro ca bao cao public moi va bao cao OTP cu.
         w.shareProgressSendCustomer = function (button) {
-            var row = button && button.closest('.share-progress-history-row');
+            var row = button && button.closest ? button.closest('.share-progress-history-row') : null;
             if (!row) return false;
             var name = row.getAttribute('data-report-name') || 'Báo cáo tiến độ dự án';
             var link = row.querySelector('.share-progress-history-link-hidden');
             var otp = row.querySelector('input.share-progress-history-value.is-otp');
-            if (!link || !link.value || !otp || !/^\d{6}$/.test(otp.value)) {
-                showError('Báo cáo chưa có đầy đủ liên kết hoặc mã OTP.'); return false;
-            }
+            if (!link || !link.value) { showError('Báo cáo chưa có liên kết.'); return false; }
+            var legacyOtp = otp && /^\d{6}$/.test(otp.value) ? '\nMã OTP: ' + otp.value : '';
             var subject = 'Báo cáo tiến độ: ' + name;
-            var body = 'Xin chào,\n\nTôi gửi báo cáo tiến độ dự án để anh/chị tham khảo.\n\nBáo cáo: ' + name + '\nLiên kết: ' + link.value + '\nMã OTP: ' + otp.value + '\n\nTrân trọng.';
-            // Opens the user's email composer; does not send mail without their approval.
+            var body = 'Xin chào,\n\nTôi gửi báo cáo tiến độ dự án để tham khảo.\n\nBáo cáo: ' + name + '\nLiên kết: ' + link.value + legacyOtp + '\n\nTrân trọng.';
             w.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
             return false;
         };

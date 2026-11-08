@@ -9,6 +9,8 @@ using SweetSoft.QLDA.Core.ResourceTexts;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Web.Script.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -174,13 +176,10 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
 
                 if (endDay <= startDay) endDay = startDay + 1;
 
-                string status = "todo";
-                if (row["TrangThai"] != DBNull.Value)
-                {
-                    int dbTrangThai = Convert.ToInt32(row["TrangThai"]);
-                    if (dbTrangThai == 2) status = "done";
-                    else if (dbTrangThai == 1) status = "doing";
-                }
+                int dbTrangThai = row["TrangThai"] == DBNull.Value ? 0 : Convert.ToInt32(row["TrangThai"]);
+                bool isLateCompleted = dbTrangThai == 3;
+                string status = (dbTrangThai == 2 || dbTrangThai == 3) ? "done" :
+                    dbTrangThai == 1 ? "doing" : "todo";
 
                 taskList.Add(new GanttTaskItem
                 {
@@ -194,6 +193,7 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
                     StartDay = startDay,
                     EndDay = endDay,
                     StatusClass = status,
+                    IsLateCompleted = isLateCompleted,
                     AlertCount = totalAlerts,
                     IssueCount = explicitIssueCount
                 });
@@ -205,7 +205,29 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
             rptChartTracks.DataSource = taskList;
             rptChartTracks.DataBind();
 
+            // Ban trinh bay khach hang: snapshot dung de chinh sua ao tren trinh duyet; KHONG ghi SQL.
+            var customerTasks = new List<object>();
+            foreach (DataRow r in dtTasks.Rows)
+            {
+                DateTime start = r["NgayBatDau"] == DBNull.Value ? DateTime.Today : Convert.ToDateTime(r["NgayBatDau"]);
+                DateTime end = r["NgayKetThuc"] == DBNull.Value ? start.AddDays(1) : Convert.ToDateTime(r["NgayKetThuc"]);
+                int status = r["TrangThai"] == DBNull.Value ? 0 : Convert.ToInt32(r["TrangThai"]);
+                customerTasks.Add(new
+                {
+                    Id = Convert.ToString(r["IdCongViec"]),
+                    Code = Convert.ToString(r["MaCongViec"]),
+                    Name = Convert.ToString(r["TenCongViec"]),
+                    Assignee = Convert.ToString(r["NhanVienThucHien"]),
+                    StartDate = start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    EndDate = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    Status = status,
+                    DependencyId = dtTasks.Columns.Contains("IdCongViecPhuThuoc") ? Convert.ToString(r["IdCongViecPhuThuoc"]) : ""
+                });
+            }
+            // JavaScriptStringEncode ngan chuoi script co the chua </script> tu ten cong viec.
+            string customerJson = new JavaScriptSerializer { MaxJsonLength = 2097152 }.Serialize(customerTasks).Replace("<", "\\u003c");
             string jsConfig = $@"
+                var GANTT_CUSTOMER_SOURCE = {customerJson};
                 var GANTT_TOTAL_DAYS = {totalDays};
                 var GANTT_TODAY_INDEX = {todayIndex};
                 var GANTT_DATE_LABELS = {jsDateLabels};
@@ -335,20 +357,21 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         protected string GetTaskStatusText(int status)
         {
             if (status == 1) return "Đang làm";
-            if (status == 2) return "Hoàn thành";
+            if (status == 2 || status == 3) return "Hoàn thành";
             return "Chưa bắt đầu";
         }
 
         protected string GetTaskStatusBadge(int status)
         {
             if (status == 1) return "gantt-badge-doing";
-            if (status == 2) return "gantt-badge-done";
+            if (status == 2 || status == 3) return "gantt-badge-done";
             return "gantt-badge-todo";
         }
 
         protected string GetTaskWarningHtml(object trangThaiObj, object ngayKetThucObj)
         {
             int status = trangThaiObj != DBNull.Value ? Convert.ToInt32(trangThaiObj) : 0;
+            if (status == 3) return "<span class='gantt-late-completion-text'>Trễ hạn</span>";
             if (status == 2) return "";
 
             if (ngayKetThucObj != DBNull.Value)
@@ -393,6 +416,7 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         public int StartDay { get; set; }
         public int EndDay { get; set; }
         public string StatusClass { get; set; }
+        public bool IsLateCompleted { get; set; }
         public int AlertCount { get; set; }
         public int IssueCount { get; set; }
     }
