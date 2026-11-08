@@ -205,6 +205,50 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
 .today-schedule-preference-note { color:#477457;font-size:10.5px; }
 @media(max-width:390px) { .today-schedule-flip-row .today-schedule-flip-face { padding:7px; } .today-schedule-flip-action { padding:5px; } }
 @media(prefers-reduced-motion:reduce) { .today-schedule-flip-row .today-schedule-flip-inner { transition:none!important; } }
+
+/* V35: Chữ rõ hơn nhưng KHÔNG thay chiều cao 116px của 3 bảng và 453px của khung. */
+.today-schedule-block-head strong { font-size:14px; }
+.today-schedule-block-head small { font-size:11.5px; }
+.today-schedule-item { height:116px;min-height:116px;max-height:116px;flex:0 0 116px; }
+.today-schedule-task-top .today-schedule-task-title,.today-schedule-task-top .today-schedule-task-title strong { font-size:13.7px; }
+.today-schedule-task-top .today-schedule-task-status { font-size:11px; }
+.today-schedule-task-details .today-schedule-deadline { font-size:11.5px; }
+.today-schedule-task-details .today-schedule-task-alert { font-size:10.7px; }
+.today-schedule-task-code { font-size:13.7px; }
+.today-schedule-name { font-size:14px; }
+.today-schedule-code,.today-schedule-time { font-size:11.3px; }
+.today-schedule-meta,.today-schedule-meta .today-schedule-project-link { font-size:12px; }
+.today-schedule-page span { font-size:12px; }
+.today-schedule-task-top .today-schedule-task-title { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+/* Icon calendar bị .today-schedule-intro span ghi đè display/margin và font-size. */
+.today-schedule-intro .today-schedule-intro-icon { display:grid;place-items:center;flex:0 0 50px;width:50px;height:50px;margin:0;border-radius:12px;background:#eadbfc;color:#6230a0; }
+.today-schedule-intro .today-schedule-intro-icon svg { display:block;width:25px;height:25px;stroke:currentColor; }
+/* Checkbox nằm chung footer gốc với nút Đóng, không tạo một hàng riêng dưới nội dung. */
+.today-schedule-preference { display:none;align-items:center;justify-content:flex-start;flex:1 1 auto;min-width:0;margin:0 auto 0 0;padding:0;border:0;background:transparent;color:#5a397c;font-size:12.5px; }
+.today-schedule-preference-check { display:inline-flex;align-items:center;gap:8px;margin:0;white-space:nowrap;font-size:12.5px;font-weight:750;cursor:pointer; }
+.today-schedule-preference-check input { width:17px;height:17px;margin:0;accent-color:#6730a5;cursor:pointer; }
+#<%= mdlTodaySchedule.ClientID %> .modal-footer .today-schedule-preference { display:flex; }
+#<%= mdlTodaySchedule.ClientID %> .modal-footer { display:flex;align-items:center;flex-wrap:wrap;gap:9px; }
+@media(max-width:760px) { .today-schedule-task-top .today-schedule-task-title,.today-schedule-task-top .today-schedule-task-title strong { font-size:13.5px; } .today-schedule-preference-check { font-size:11.5px; } }
+
+/* V36: mặt sau compact: tên cùng cỡ mặt trước, chỉ icon, tooltip nổi độc lập không bị cắt bởi 3D. */
+.today-schedule-flip-back-title { font-size:13.7px;font-weight:800;line-height:1.4; }
+.today-schedule-flip-actions { display:flex;align-items:center;justify-content:center;gap:11px;width:100%;max-width:100%; }
+.today-schedule-flip-action { flex:0 0 42px;width:42px;max-width:42px;min-width:42px;height:37px;min-height:37px;padding:0;border-radius:9px;overflow:visible;box-sizing:border-box; }
+.today-schedule-flip-action i { font-size:16px;pointer-events:none; }
+.today-schedule-flip-action .today-schedule-flip-label { position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important; }
+.today-schedule-flip-tooltip { position:fixed;z-index:2147483200;max-width:min(260px,calc(100vw - 20px));padding:7px 11px;border:1px solid #99beee;border-radius:8px;background:#f0f7ff;color:#1951a7;box-shadow:0 12px 26px rgba(34,50,90,.18);font-size:12px;font-weight:800;line-height:1.35;white-space:normal;overflow-wrap:anywhere;pointer-events:none; }
+.today-schedule-flip-tooltip.is-time { background:#f6f0ff;border-color:#d0b7ed;color:#642c9e; }
+.today-schedule-flip-tooltip.is-project { background:#f9f2ff;border-color:#d9c4ee;color:#592794; }
+.today-schedule-flip-tooltip.is-overdue { background:#fff1f2;border-color:#f5b6c0;color:#ad3342; }
+/* Nút lưu lựa chọn thuần client, không thay đổi input WebForms và không phát sinh cảnh báo rời trang. */
+.today-schedule-preference-check { appearance:none;display:inline-flex;align-items:center;gap:8px;padding:5px 2px;border:0;border-radius:7px;background:transparent;color:#5a397c;font-family:inherit;font-size:12.5px;font-weight:750;white-space:nowrap;cursor:pointer; }
+.today-schedule-preference-check:hover { color:#4e1c83; }
+.today-schedule-preference-check:focus-visible { outline:2px solid #9363ce;outline-offset:3px; }
+.today-schedule-preference-square { display:grid;place-items:center;flex:0 0 17px;width:17px;height:17px;border:1.5px solid #92909a;border-radius:4px;background:#fff;color:transparent;transition:background .16s,border-color .16s; }
+.today-schedule-preference-check[aria-pressed="true"] .today-schedule-preference-square { background:#6332a1;border-color:#6332a1;color:#fff; }
+.today-schedule-preference-square i { font-size:10px;line-height:1; }
+@media(max-width:760px) { .today-schedule-flip-back-title { font-size:13.5px; } .today-schedule-preference-check { font-size:11.5px; } }
 </style>
 <SweetSoft:ExtraModal runat="server" ID="mdlTodaySchedule" Type="Primary" Size="Large" Title="Lịch trình hôm nay">
     <ContentTemplate>
@@ -215,10 +259,9 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
                 <asp:Literal runat="server" ID="litTodaySchedule" Text="&lt;div class='today-schedule-empty'&gt;Nhấn Q hoặc chọn Lịch trình hôm nay để tải dữ liệu.&lt;/div&gt;" />
             </ContentTemplate>
         </asp:UpdatePanel>
+        <%-- Checkbox được chuyển vào footer gốc của ExtraModal khi hiển thị, giữ nguyên nút Đóng và nút X. --%>
         <div class="today-schedule-preference" data-today-preference data-today-user="<%= SweetContext.Current.UserId.ToString("N") %>">
-            <label class="today-schedule-preference-check"><input type="checkbox" data-today-suppress-choice /> <span>Không hiện lại hôm nay</span></label>
-            <button type="button" class="today-schedule-preference-save" data-today-save-choice><i class="far fa-save" aria-hidden="true"></i> Lưu lựa chọn</button>
-            <span class="today-schedule-preference-note" role="status" aria-live="polite" data-today-preference-note></span>
+            <button type="button" class="today-schedule-preference-check" data-today-suppress-choice aria-pressed="false" aria-label="Không hiện lại hôm nay"><span class="today-schedule-preference-square" aria-hidden="true"><i class="fas fa-check"></i></span><span>Không hiện lại hôm nay</span></button>
         </div>
         <%-- Async trigger nằm ngoài panel danh sách, tránh reset scroll và phân trang. --%>
         <asp:HiddenField runat="server" ID="hfTodayOpenKind" />
@@ -297,7 +340,7 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             if (!link || !link.closest('.today-schedule-content')) return;
             var row = link.closest('.today-schedule-flip-row');
             if (row) row.classList.add('today-schedule-flip-reset');
-            link.blur();
+            link.blur(); hideFlipTip();
         }, true);
         window.addEventListener('pagehide', resetScheduleFlips);
         window.addEventListener('pageshow', function (event) { if (event.persisted) resetScheduleFlips(); });
@@ -352,12 +395,18 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             if (robotObservedModal === el) return;
             if (robotVisibilityObserver) robotVisibilityObserver.disconnect();
             robotObservedModal = el;
-            robotVisibilityObserver = new MutationObserver(function () { if (isVisible()) revealRobotWithModal(); });
+            var wasVisible = isVisible();
+            robotVisibilityObserver = new MutationObserver(function () {
+                var visibleNow = isVisible();
+                if (visibleNow) revealRobotWithModal();
+                else if (wasVisible) savePreference(); // ExtraModal tự đóng không phát event Bootstrap.
+                wasVisible = visibleNow;
+            });
             robotVisibilityObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
         }
         function onScheduleOpening() { resetScheduleFlips(); hideRobot(); robotReady = false; syncData(); syncPreference(); prepareRobot(); observeModalOpen(); }
-        function onScheduleOpened() { syncData(); syncPreference(); revealRobotWithModal(); }
-        function onScheduleClosing() { resetScheduleFlips(); hideRobot(); robotReady = false; }
+        function onScheduleOpened() { syncData(); mountPreferenceInFooter(); revealRobotWithModal(); }
+        function onScheduleClosing() { savePreference(); hideFlipTip(); resetScheduleFlips(); hideRobot(); robotReady = false; }
         function niceDay(dateString) {
             var raw = String(dateString || '');
             var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
@@ -397,6 +446,7 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             if (isVisible()) positionBot();
         }
         function syncData() {
+            mountPreferenceInFooter();
             var data = document.querySelector('.today-schedule-content[data-tasks]'); if (!data) return;
             syncScheduleLayout();
             var tasks = document.getElementById('todaySpeechTaskCount'), meetings = document.getElementById('todaySpeechMeetCount');
@@ -410,6 +460,7 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
         }
         function show() {
             var el = modal(); if (!el) return;
+            mountPreferenceInFooter();
             syncData(); // Chốt ngay chiều rộng popup 2/3 bảng, trước khi đo vị trí Hibrid.
             if (isVisible()) { revealRobotWithModal(); return; }
             hideRobot(); robotReady = false; prepareRobot(); observeModalOpen();
@@ -420,6 +471,7 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
         }
         function hide() {
             var el = modal(); if (!el) return;
+            savePreference(); // Q hoặc nút đóng qua API cũng ghi nhận lựa chọn.
             hideRobot(); // Hibrid tắt NGAY KHI popup bắt đầu đóng, không đợi hidden.bs.modal.
             if (window.bootstrap && window.bootstrap.Modal) window.bootstrap.Modal.getOrCreateInstance(el).hide();
             else if (window.jQuery && window.jQuery.fn.modal) window.jQuery(el).modal('hide');
@@ -493,11 +545,56 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             if (!button) return;
             var block = button.closest('[data-today-block]');
             if (!block || !block.closest('.today-schedule-content')) return;
-            e.preventDefault();
+            hideFlipTip(); e.preventDefault();
             if (button.disabled) return;
             var current = Number(block.getAttribute('data-today-page')) || 1;
             applySchedulePage(block, current + (button.getAttribute('data-today-page-action') === 'next' ? 1 : -1));
         });
+        // Tooltip cho 3 icon mặt sau: lấy đúng nhãn hiện tại (kể cả tên dự án), nổi ngoài 3D / scroll.
+        var flipTip = null, flipTipSource = null;
+        function hideFlipTip() {
+            if (flipTip && flipTip.parentNode) flipTip.parentNode.removeChild(flipTip);
+            flipTip = null; flipTipSource = null;
+        }
+        function placeFlipTip() {
+            if (!flipTip || !flipTipSource || !document.body.contains(flipTipSource)) { hideFlipTip(); return; }
+            var r = flipTipSource.getBoundingClientRect(), w = flipTip.offsetWidth, h = flipTip.offsetHeight, pad = 10;
+            var left = Math.max(pad, Math.min(window.innerWidth - w - pad, r.left + (r.width - w) / 2));
+            var top = r.top - h - 9;
+            if (top < pad) top = Math.min(window.innerHeight - h - pad, r.bottom + 9);
+            flipTip.style.left = Math.round(left) + 'px'; flipTip.style.top = Math.round(top) + 'px';
+        }
+        function showFlipTip(target) {
+            if (!target || !target.closest('.today-schedule-content') || !isVisible()) return;
+            if (flipTipSource === target) return;
+            var label = target.querySelector('.today-schedule-flip-label');
+            var text = label ? label.textContent.trim() : '';
+            if (!text) return;
+            if (target.hasAttribute('title')) { target.setAttribute('data-today-native-title', target.getAttribute('title')); target.removeAttribute('title'); }
+            hideFlipTip(); flipTipSource = target;
+            flipTip = document.createElement('div');
+            flipTip.className = 'today-schedule-flip-tooltip';
+            if (target.classList.contains('is-time')) flipTip.classList.add('is-time');
+            else if (target.classList.contains('is-project')) flipTip.classList.add('is-project');
+            else if (target.closest('.today-schedule-block--overdue')) flipTip.classList.add('is-overdue');
+            flipTip.textContent = text; flipTip.setAttribute('role', 'tooltip');
+            document.body.appendChild(flipTip); placeFlipTip();
+        }
+        document.addEventListener('mouseover', function (e) {
+            var icon = e.target.closest && e.target.closest('.today-schedule-flip-action');
+            if (icon) showFlipTip(icon);
+        });
+        document.addEventListener('mouseout', function (e) {
+            if (flipTipSource && (e.target === flipTipSource || flipTipSource.contains(e.target)) &&
+                (!e.relatedTarget || !flipTipSource.contains(e.relatedTarget))) hideFlipTip();
+        });
+        document.addEventListener('focusin', function (e) {
+            var icon = e.target.closest && e.target.closest('.today-schedule-flip-action');
+            if (icon) showFlipTip(icon);
+        });
+        document.addEventListener('focusout', function (e) { if (e.target === flipTipSource) hideFlipTip(); });
+        document.addEventListener('scroll', hideFlipTip, true);
+        window.addEventListener('resize', hideFlipTip);
         // Tooltip for due/overdue days: floated under body to avoid clipping inside scrollable rows.
         var scheduleTip = null, scheduleTipSource = null;
         function hideScheduleTip() { if (scheduleTip && scheduleTip.parentNode) scheduleTip.parentNode.removeChild(scheduleTip); scheduleTip = null; scheduleTipSource = null; }
@@ -531,27 +628,37 @@ body.today-schedule-detail-layer .modal-backdrop:last-of-type { z-index:2100!imp
             try { var key = preferenceKey(); return !!(key && window.localStorage.getItem(key) === dayStamp()); }
             catch (e) { return false; }
         }
+        function mountPreferenceInFooter() {
+            var el = modal(), root = preferenceRoot();
+            if (!el || !root) return;
+            var footer = el.querySelector('.modal-footer');
+            if (footer && root.parentNode !== footer) footer.insertBefore(root, footer.firstChild);
+        }
         function syncPreference() {
-            var root = preferenceRoot(), input = root && root.querySelector('[data-today-suppress-choice]');
-            if (input) input.checked = isAutoSuppressed();
-            var note = root && root.querySelector('[data-today-preference-note]'); if (note) note.textContent = '';
+            mountPreferenceInFooter();
+            var root = preferenceRoot(), toggleButton = root && root.querySelector('[data-today-suppress-choice]');
+            if (toggleButton) toggleButton.setAttribute('aria-pressed', isAutoSuppressed() ? 'true' : 'false');
         }
         function savePreference() {
-            var root = preferenceRoot(); if (!root) return;
-            var input = root.querySelector('[data-today-suppress-choice]'), note = root.querySelector('[data-today-preference-note]'), key = preferenceKey();
-            if (!input || !key) return;
+            var root = preferenceRoot(), toggleButton = root && root.querySelector('[data-today-suppress-choice]'), key = preferenceKey();
+            if (!toggleButton || !key) return;
             try {
-                if (input.checked) window.localStorage.setItem(key, dayStamp());
+                if (toggleButton.getAttribute('aria-pressed') === 'true') window.localStorage.setItem(key, dayStamp());
                 else window.localStorage.removeItem(key);
-                if (note) note.textContent = input.checked ? 'Đã lưu: hôm nay không tự mở lại.' : 'Đã bật lại tự mở lịch trình.';
-            } catch (e) { if (note) note.textContent = 'Không lưu được tùy chọn trên trình duyệt này.'; }
+            } catch (e) { /* Nếu trình duyệt chặn localStorage, vẫn cho đóng modal bình thường. */ }
         }
         function autoOpenEmployee() {
             if (!document.getElementById('edEmployeeDashboard') || isAutoSuppressed()) return false;
             if (document.querySelector('.modal.show,.modal.in')) return false;
             openDate(''); return true;
         }
-        document.addEventListener('click', function (e) { var b = e.target && e.target.closest && e.target.closest('[data-today-save-choice]'); if (b) { e.preventDefault(); savePreference(); } });
+        document.addEventListener('click', function (e) {
+            var toggleButton = e.target && e.target.closest && e.target.closest('[data-today-suppress-choice]');
+            if (!toggleButton || !toggleButton.closest('[data-today-preference]')) return;
+            e.preventDefault(); e.stopPropagation();
+            toggleButton.setAttribute('aria-pressed', toggleButton.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+            savePreference(); // Lưu ngay tại client, không PostBack / reload trang.
+        });
         window.TodayScheduleUI = { toggle: toggle, openDate: openDate, show: show, hide: hide, isVisible: isVisible, autoOpenEmployee: autoOpenEmployee };
         document.addEventListener('keydown', function (event) {
             if (String(event.key || '').toLowerCase() !== 'q' || event.altKey || event.ctrlKey || event.metaKey || event.repeat || event.isComposing) return;

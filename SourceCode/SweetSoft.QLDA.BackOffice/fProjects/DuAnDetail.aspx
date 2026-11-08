@@ -161,7 +161,7 @@
         @media(max-width:560px) { .pd-view-switcher { width:100%; } .pd-view-button { flex:1 1 50%; padding:9px 7px; } .pd-head-main strong { font-size:12px; } .pd-head-actions small { display:none; } }
 
         /* Tận dụng chiều cao trống: tối ưu ~5 bản ghi ở màn hình desktop thay vì ép 408px. */
-        .pd-personal-grid { --pd-available-card-height:600px; align-items:stretch; }
+        .pd-personal-grid { --pd-available-card-height:510px; align-items:stretch; }
         .pd-personal-grid .pd-personal-card { height:var(--pd-available-card-height); }
         .pd-personal-card .pd-personal-list { min-height:0; max-height:none; overflow-y:auto; }
         .pd-personal-card .pd-personal-card-footer { margin-top:auto; }
@@ -196,7 +196,7 @@
         .pd-collapsed-rail { display:flex; flex-direction:column; gap:8px; box-sizing:border-box; min-width:0; width:100%; padding:0; border:0 solid transparent; border-radius:13px; background:transparent; visibility:hidden; opacity:0; overflow:hidden; pointer-events:none; }
         .pd-personal-layout.has-collapsed .pd-collapsed-rail { visibility:visible; opacity:1; pointer-events:auto; padding:7px; border:1px solid #e7dbee; background:#faf7ff; box-shadow:0 3px 12px rgba(65,33,103,.035); }
         .pd-personal-grid { display:grid; grid-template-columns:repeat(var(--pd-open-columns,4),minmax(0,1fr)); align-items:stretch; gap:13px; min-width:0; }
-        .pd-personal-grid > .pd-personal-card { width:auto; min-width:0; max-width:none; height:var(--pd-available-card-height,600px); transition:box-shadow .22s ease; }
+        .pd-personal-grid > .pd-personal-card { width:auto; min-width:0; max-width:none; height:var(--pd-available-card-height,510px); transition:box-shadow .22s ease; }
         .pd-collapsed-rail > .pd-personal-card.pd-unpinned { display:block; width:100%; height:52px!important; min-height:52px!important; max-height:52px!important; overflow:hidden; box-shadow:0 2px 7px rgba(83,33,142,.035); }
         .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-personal-card-head { display:flex; align-items:center; justify-content:space-between; gap:5px; height:50px; min-height:50px; padding:7px 7px 7px 9px; border-bottom:0; }
         .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main { flex:1 1 auto; min-width:0; gap:7px; white-space:nowrap; }
@@ -744,8 +744,8 @@
         @keyframes pdTargetLaborPulse { 0%,100% { background-color:#fff;box-shadow:inset 0 0 0 0 transparent; } 25%,65% { background-color:#fff8d6;box-shadow:inset 0 0 0 2px #f3bd26; } 45%,85% { background-color:#fff0ad;box-shadow:inset 0 0 0 3px #efac0b; } }
         .modal:has(#pdPersonalDetailModalBody) .pd-ds-table tr.pd-task-focus td { animation:pdTargetLaborPulse 1.75s ease-in-out 1 both; }
         @media(prefers-reduced-motion:reduce) { .modal:has(#pdPersonalDetailModalBody) .pd-ds-table tr.pd-task-focus td { animation:none;box-shadow:inset 0 0 0 2px #f3bd26;background:#fff8d6; } }
-        /* Ba bang ca nhan: cung chieu cao tung dong, gio cong tren - trang thai duoi. Khong cham popup chi tiet. */
-        #projectPersonalView .pd-personal-tasks .pd-personal-item, #projectPersonalView .pd-personal-meetings .pd-personal-item, #projectPersonalView .pd-personal-issues .pd-personal-item { box-sizing:border-box;height:116px;min-height:116px;max-height:116px;padding:9px 12px;overflow:hidden; }
+        /* Ba bang ca nhan: 98px / dong, gio cong tren - trang thai duoi. Khong cham popup chi tiet. */
+        #projectPersonalView .pd-personal-tasks .pd-personal-item, #projectPersonalView .pd-personal-meetings .pd-personal-item, #projectPersonalView .pd-personal-issues .pd-personal-item { box-sizing:border-box;height:98px;min-height:98px;max-height:98px;padding:8px 12px;overflow:hidden; }
         #projectPersonalView .pd-personal-tasks .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading, #projectPersonalView .pd-personal-issues .pd-personal-task-header, #projectPersonalView .pd-personal-issues .pd-personal-issue-heading { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:8px;min-width:0; }
         #projectPersonalView .pd-personal-tasks .pd-personal-task-title, #projectPersonalView .pd-personal-meetings .pd-personal-task-title, #projectPersonalView .pd-personal-meetings .pd-personal-item-title, #projectPersonalView .pd-personal-issues .pd-personal-task-title, #projectPersonalView .pd-personal-issues .pd-personal-item-title { flex:1 1 0;min-width:0; }
         #projectPersonalView .pd-personal-status-stack { display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:5px;min-width:0;margin-left:auto;white-space:nowrap; }
@@ -782,6 +782,64 @@
         #projectPersonalView .pd-personal-task-code,#projectTeamHoursView .pd-team-record-code,.modal:has(#pdPersonalDetailModalBody) .pd-team-record-code,.modal:has(#pdPersonalDetailModalBody) .pd-personal-task-code { display:inline;margin:0 4px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:inherit;font:inherit;line-height:inherit;vertical-align:baseline; }
         #projectPersonalView .pd-personal-task-name.pd-view-object-link:hover,#projectTeamHoursView .pd-team-record-title .pd-view-object-link:hover { color:#2563eb!important;text-decoration:none!important; }
         .pd-ds-hover-trigger.pd-view-object-link:hover,.pd-ds-hover-trigger.pd-view-object-link:focus-visible { border-bottom:0!important;text-decoration:none!important; }
+
+        /* Bảng Công thành viên 5 cột, không thay các card Phần việc của tôi. */
+        #projectTeamHoursView .pd-team-matrix-shell { display:flex;flex-direction:column;min-width:0;height:var(--pd-team-available-height,600px);min-height:0;border:1px solid #e3dbea;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 3px 12px rgba(56,27,89,.035); }
+        #projectTeamHoursView .pd-team-matrix-toolbar { flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;padding:10px 15px;border-bottom:1px solid #e8e1ee;background:#faf8fd; }
+        #projectTeamHoursView .pd-team-matrix-heading { display:flex;align-items:center;gap:9px;min-width:0;color:#46226f;font-size:16px; }
+        #projectTeamHoursView .pd-team-matrix-heading strong { white-space:nowrap;font-weight:800; }
+        #projectTeamHoursView .pd-team-matrix-heading small { border:1px solid #e3d5f1;border-radius:7px;background:#fff;padding:4px 8px;color:#66369b;font-size:12px;font-weight:800;white-space:nowrap; }
+        #projectTeamHoursView .pd-team-search { display:block;flex:0 1 420px;min-width:180px;max-width:420px;margin:0; }
+        #projectTeamHoursView .pd-team-search input { font-size:14px; }
+        #projectTeamHoursView .pd-team-matrix-data { flex:1 1 auto;min-height:0;display:flex;flex-direction:column; }
+        #projectTeamHoursView .pd-team-matrix-scroll { flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto;scrollbar-width:thin;overscroll-behavior:contain; }
+        #projectTeamHoursView .pd-team-matrix { width:100%;min-width:930px;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:14px;color:#3b3048; }
+        #projectTeamHoursView .pd-team-col-person { width:27%; }
+        #projectTeamHoursView .pd-team-col-metric { width:17%; }
+        #projectTeamHoursView .pd-team-col-total { width:22%; }
+        #projectTeamHoursView .pd-team-matrix thead th { position:sticky;top:0;z-index:3;height:51px;padding:12px 14px;background:#f1f0f7;border-bottom:1px solid #dfe0e9;color:#59288e;text-align:center;font-size:14px;font-weight:800;white-space:nowrap; }
+        #projectTeamHoursView .pd-team-matrix thead th:first-child { text-align:left; }
+        #projectTeamHoursView .pd-team-matrix thead th:not(:last-child),#projectTeamHoursView .pd-team-matrix tbody td:not(:last-child) { border-right:1px solid #f0ecf5; }
+        #projectTeamHoursView .pd-team-matrix tbody td { height:82px;box-sizing:border-box;padding:10px 13px;border-bottom:1px solid #edeaf1;vertical-align:middle;text-align:center; }
+        #projectTeamHoursView .pd-team-matrix tbody td:first-child { text-align:left; }
+        #projectTeamHoursView .pd-team-matrix tbody tr:nth-child(even) { background:#fcfbfe; }
+        #projectTeamHoursView .pd-team-matrix tbody tr:hover { background:#f8f3ff; }
+        #projectTeamHoursView .pd-team-matrix tbody tr[hidden] { display:none!important; }
+        #projectTeamHoursView .pd-team-matrix-person { display:flex;align-items:center;gap:10px;min-width:0; }
+        #projectTeamHoursView .pd-team-matrix-person .pd-team-person-info { display:block;min-width:0;flex:1 1 auto; }
+        #projectTeamHoursView .pd-team-matrix-person .pd-team-person-name { font-size:15px;line-height:1.4; }
+        #projectTeamHoursView .pd-team-matrix-person .pd-team-person-email { font-size:12.5px;line-height:1.35; }
+        #projectTeamHoursView .pd-team-matrix-action { display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;width:100%;max-width:250px;min-height:61px;margin:0 auto;padding:8px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#5c2b91;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s; }
+        #projectTeamHoursView .pd-team-matrix-action strong { color:#5a2494;font-size:16px;font-weight:850;white-space:nowrap;font-variant-numeric:tabular-nums; }
+        #projectTeamHoursView .pd-team-matrix-action small { color:#7c7391;font-size:12.5px;font-weight:650;white-space:nowrap; }
+        #projectTeamHoursView .pd-team-matrix-action:hover { background:#f4ebff;border-color:#d9c3ef;box-shadow:0 2px 9px rgba(86,37,136,.08); }
+        #projectTeamHoursView .pd-team-matrix-action.is-total { background:#f5edff;border-color:#e2d2f7; }
+        #projectTeamHoursView .pd-team-matrix-action.is-total:hover { background:#ebe0fc;border-color:#c3a8e7; }
+        #projectTeamHoursView .pd-team-matrix-action:disabled { opacity:.8;cursor:default;background:#f8f8fa;border-color:#eee; }
+        #projectTeamHoursView .pd-team-matrix-action:disabled strong { color:#8893a6;font-size:15px; }
+        #projectTeamHoursView .pd-team-matrix-empty { text-align:center!important;padding:34px!important;color:#91879d; }
+        #projectTeamHoursView .pd-team-matrix-warning { padding:9px 15px;flex:0 0 auto;color:#a46b13;background:#fffaf1;border-top:1px solid #f2e8d2;font-size:11px; }
+        #projectTeamHoursView .pd-team-no-match { padding:12px 15px;flex:0 0 auto;border-top:1px solid #eee8f5; }
+        @media(max-width:800px) { #projectTeamHoursView .pd-team-matrix-toolbar { align-items:stretch;flex-wrap:wrap; } #projectTeamHoursView .pd-team-search { max-width:none;flex:1 1 100%; } #projectTeamHoursView .pd-team-matrix-shell { height:min(560px,75vh); } }
+
+        /* Vien can bang: hang 98px du cho ten 2 dong + lich + trang thai + progress, khong tao khoang trang thua. */
+        #projectPersonalView .pd-personal-card-head .pd-head-main strong { font-size:14px;line-height:1.3; }
+        #projectPersonalView .pd-personal-card-head .pd-head-main > i { font-size:14px; }
+        #projectPersonalView .pd-personal-card-head .pd-head-actions small { font-size:11px; }
+        #projectPersonalView .pd-personal-card-head .pd-compact-filter { font-size:11px; }
+        #projectPersonalView .pd-personal-tasks .pd-personal-item-title,#projectPersonalView .pd-personal-meetings .pd-personal-item-title,#projectPersonalView .pd-personal-issues .pd-personal-item-title { font-size:14.3px;line-height:1.33; }
+        #projectPersonalView .pd-personal-tasks .pd-personal-task-name,#projectPersonalView .pd-personal-meetings .pd-personal-task-name,#projectPersonalView .pd-personal-issues .pd-personal-task-name { font-size:inherit;line-height:inherit; }
+        #projectPersonalView .pd-personal-task-code { font-size:inherit;line-height:inherit; }
+        #projectPersonalView .pd-personal-due,#projectPersonalView .pd-personal-meta,#projectPersonalView .pd-personal-schedule-line,#projectPersonalView .pd-personal-meeting-line { font-size:12.4px;line-height:1.35; }
+        #projectPersonalView .pd-personal-hours { font-size:11.8px;line-height:1.25; }
+        #projectPersonalView .pd-personal-status-stack > .pd-personal-tag,#projectPersonalView .pd-personal-meeting-flags .pd-personal-tag,#projectPersonalView .pd-personal-issues .pd-personal-tag { font-size:10.9px;line-height:1.2; }
+        #projectPersonalView .pd-personal-card-footer .pd-detail-btn { font-size:11.8px; }
+        /* Chi bang Gio cong cua ban: su dung chieu cao con trong, khong tang chieu cao card. */
+        #projectPersonalView .pd-personal-time .pd-personal-summary { gap:12px;padding:14px; }
+        #projectPersonalView .pd-personal-time .pd-summary-row { box-sizing:border-box;min-height:76px;padding:12px 13px;gap:9px; }
+        #projectPersonalView .pd-personal-time .pd-summary-row strong { font-size:14.5px;line-height:1.35; }
+        #projectPersonalView .pd-personal-time .pd-summary-row span { font-size:15.5px;line-height:1.35;white-space:nowrap; }
+        @media(max-width:1450px) { #projectPersonalView .pd-personal-card-head .pd-head-main strong { font-size:13.3px; } #projectPersonalView .pd-personal-tasks .pd-personal-item-title,#projectPersonalView .pd-personal-meetings .pd-personal-item-title,#projectPersonalView .pd-personal-issues .pd-personal-item-title { font-size:13.7px; } #projectPersonalView .pd-personal-time .pd-summary-row strong { font-size:13.6px; } #projectPersonalView .pd-personal-time .pd-summary-row span { font-size:14.5px; } }
 </style>
     <script type="text/javascript">
         // Delegated handlers survive WebForms UpdatePanel re-rendering.
@@ -1016,7 +1074,7 @@
                             </div>
                             <div id="projectDetailViewSwitcher" class="pd-view-switcher" role="tablist" aria-label="Chế độ xem dự án">
                                 <asp:PlaceHolder runat="server" ID="phTeamHoursTab"><button type="button" id="btnProjectTeamHours" class="pd-view-button" data-project-view="team" role="tab" aria-selected="false" aria-controls="projectTeamHoursView" title="Quản lý giờ công các thành viên trong dự án - chỉ PM và Admin"><i class="far fa-clock"></i><span>Công của thành viên</span></button></asp:PlaceHolder>
-                                <button type="button" id="btnProjectMyView" class="pd-view-button is-active" data-project-view="mine" role="tab" aria-selected="true" aria-controls="projectPersonalView" title="Công việc, cuộc họp và vấn đề được giao cho bạn trong dự án này"><i class="fas fa-user-check"></i><span>Phần việc của tôi</span></button>
+                                <button type="button" id="btnProjectMyView" class="pd-view-button is-active" data-project-view="mine" role="tab" aria-selected="true" aria-controls="projectPersonalView" title="Công việc, cuộc họp và vấn đề được giao cho bạn trong dự án này"><i class="fas fa-user-check"></i><span>Việc của tôi</span></button>
                                 <button type="button" id="btnProjectInfoView" class="pd-view-button" data-project-view="project" role="tab" aria-selected="false" aria-controls="projectInfoView" title="Xem thông tin, tiến độ và thành viên dự án"><i class="fas fa-info-circle"></i><span>Thông tin dự án</span></button>
                             </div>
                         </div>
@@ -1287,19 +1345,16 @@
                         <%-- Chỉ render cho PM/Admin: cả tab và nội dung đều được ẩn phía server. --%>
                         <asp:PlaceHolder runat="server" ID="phTeamHoursPanel">
                             <div id="projectTeamHoursView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectTeamHours" hidden>
-                                <div class="pd-team-layout">
-                                    <section class="pd-team-side" aria-label="Danh sách nhân viên dự án">
-                                        <div class="pd-team-side-head"><strong><i class="fas fa-users me-2" style="color:#6b34ac"></i>Nhân sự dự án</strong><small id="pdTeamMemberCount">Thành viên</small></div>
-                                        <label class="pd-team-search"><i class="fas fa-search" aria-hidden="true"></i><input type="search" id="pdTeamSearch" placeholder="Tìm theo tên hoặc email..." autocomplete="off" aria-label="Tìm nhân viên" /></label>
-                                        <div class="pd-team-people" id="pdTeamPeople"><asp:Literal ID="litProjectTeamMembers" runat="server" EnableViewState="false" /></div>
-                                        <div class="pd-team-no-match" id="pdTeamNoMatch" hidden>Không tìm thấy nhân viên phù hợp.</div>
-                                    </section>
-                                    <section class="pd-team-detail" aria-label="Bảng công nhân viên được chọn">
-                                        <asp:HiddenField runat="server" ID="hfTeamHoursMember" />
-                                        <asp:LinkButton runat="server" ID="lbtLoadTeamHours" OnClick="lbtLoadTeamHours_Click" CausesValidation="false" Style="display:none;" />
-                                        <asp:Literal ID="litProjectTeamHours" runat="server" EnableViewState="false" />
-                                    </section>
-                                </div>
+                                <section class="pd-team-matrix-shell" aria-label="Bảng công các thành viên">
+                                    <div class="pd-team-matrix-toolbar">
+                                        <div class="pd-team-matrix-heading"><i class="far fa-clock"></i><strong>Bảng công thành viên</strong><small id="pdTeamMemberCount">Thành viên</small></div>
+                                        <label class="pd-team-search"><i class="fas fa-search" aria-hidden="true"></i><input type="search" id="pdTeamSearch" placeholder="Tìm theo tên hoặc email nhân viên..." autocomplete="off" aria-label="Tìm nhân viên trong bảng công" /></label>
+                                    </div>
+                                    <asp:HiddenField runat="server" ID="hfTeamHoursMember" />
+                                    <asp:LinkButton runat="server" ID="lbtLoadTeamHours" OnClick="lbtLoadTeamHours_Click" CausesValidation="false" Style="display:none;" />
+                                    <div id="pdTeamPeople" class="pd-team-matrix-data"><asp:Literal ID="litProjectTeamMembers" runat="server" EnableViewState="false" /><asp:Literal ID="litProjectTeamHours" runat="server" EnableViewState="false" /></div>
+                                    <div class="pd-team-no-match" id="pdTeamNoMatch" hidden>Không tìm thấy nhân viên phù hợp.</div>
+                                </section>
                             </div>
                         </asp:PlaceHolder>
                         <div id="projectPersonalView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectMyView">
@@ -1531,7 +1586,7 @@
                     grid.style.removeProperty('--pd-available-card-height');
                     return;
                 }
-                grid.style.setProperty('--pd-available-card-height', getDetailContentHeight(grid) + 'px');
+                grid.style.setProperty('--pd-available-card-height', Math.min(510, getDetailContentHeight(grid)) + 'px');
             }
             function schedulePersonalHeightFit() {
                 if (pdHeightRaf) window.cancelAnimationFrame(pdHeightRaf);
@@ -1543,15 +1598,13 @@
             var pdTeamHeightRaf = 0;
             function fitTeamHoursToViewport() {
                 var view = document.getElementById('projectTeamHoursView');
-                var layout = view && view.querySelector('.pd-team-layout');
-                if (!layout || view.hidden) return;
-                if (window.matchMedia && window.matchMedia('(max-width:680px)').matches) {
-                    layout.style.removeProperty('--pd-team-available-height');
-                    var detail = layout.querySelector('.pd-team-detail');
-                    if (detail) detail.style.setProperty('--pd-team-mobile-detail-height', Math.max(330, Math.floor(window.innerHeight * 0.52)) + 'px');
+                var shell = view && view.querySelector('.pd-team-matrix-shell');
+                if (!shell || view.hidden) return;
+                if (window.matchMedia && window.matchMedia('(max-width:800px)').matches) {
+                    shell.style.removeProperty('--pd-team-available-height');
                     return;
                 }
-                layout.style.setProperty('--pd-team-available-height', getDetailContentHeight(layout) + 'px');
+                shell.style.setProperty('--pd-team-available-height', getDetailContentHeight(shell) + 'px');
             }
             function scheduleTeamHoursHeightFit() {
                 if (pdTeamHeightRaf) window.cancelAnimationFrame(pdTeamHeightRaf);
@@ -1703,6 +1756,11 @@
                 var detailButton = event.target.closest ? event.target.closest('[data-pd-detail-source]') : null;
                 if (detailButton) {
                     event.preventDefault();
+                    var rowMember = detailButton.getAttribute('data-pd-detail-member');
+                    if (rowMember) {
+                        var memberField = document.getElementById('<%= hfTeamHoursMember.ClientID %>');
+                        if (memberField) memberField.value = rowMember;
+                    }
                     var detailSource = detailButton.getAttribute('data-pd-detail-source');
                     if (detailSource === 'pdPersonalMeetingDetail' || detailSource === 'pdTeamDetail-meeting') {
                         if (window.QLDAProjectMeetingPopup) window.QLDAProjectMeetingPopup.open(detailButton);
@@ -1714,7 +1772,7 @@
                 if (!event.target || event.target.id !== 'pdTeamSearch') return;
                 var text = String(event.target.value || '').trim().toLocaleLowerCase('vi-VN');
                 var visible = 0;
-                Array.prototype.forEach.call(document.querySelectorAll('#pdTeamPeople [data-pd-team-member]'), function (person) {
+                Array.prototype.forEach.call(document.querySelectorAll('#pdTeamPeople [data-pd-team-row]'), function (person) {
                     var match = (person.getAttribute('data-pd-search') || '').indexOf(text) >= 0;
                     person.hidden = !match;
                     if (match) visible++;
@@ -1724,7 +1782,7 @@
             });
             // Ghim/bỏ ghim: control cá nhân được render lại sau UpdatePanel, nên lắp nút idempotent.
             var pdPinStorageKey = 'qlda-project-pins:' + window.location.pathname + window.location.search;
-            var pdPinNames = { task: 'Công việc được giao', meeting: 'Cuộc họp của tôi', issue: 'Vấn đề được giao' };
+            var pdPinNames = { task: 'Công việc', meeting: 'Cuộc họp', issue: 'Vấn đề' };
             var pdPinSelectors = { task: '#pdPersonalTaskCard', meeting: '#pdPersonalMeetingCard', issue: '#pdPersonalIssueCard' };
             function readPinnedCards() {
                 var result = { task: true, meeting: true, issue: true };

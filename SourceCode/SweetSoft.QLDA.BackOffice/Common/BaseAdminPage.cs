@@ -534,6 +534,20 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 }
             }
         }
+        public string ProjectName
+        {
+            get
+            {
+                try
+                {
+                    return DuAnManager.Instance.GetDuAnById(this.CurrentProjectId).TenDuAn;
+                }
+                catch
+                {
+                    return string.Empty;
+                }
+            }
+        }
         public bool IsView
         {
             get

@@ -37,6 +37,9 @@
     .meet-view-time-dash { color: #64748b; padding: 0 2px; }
 
     .meet-view-location i { color: #64748b; font-size: 12px; }
+    .meet-view-chair-label { display:inline-flex;align-items:center;gap:6px;min-width:0;color:#5b338d;font-size:12px;font-weight:700;line-height:1.35; }
+    .meet-view-chair-label i { color:#d59b16;font-size:12px;flex:0 0 auto; }
+    .meet-view-chair-label span { white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .meet-view-status { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-top: 1px; padding: 5px 8px; border: 1px solid transparent; border-radius: 999px; font-size: 10px; font-weight: 750; line-height: 1.2; white-space: nowrap; }
     .meet-view-status::before { content: ""; width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: currentColor; }
     .meet-view-status-0 { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
@@ -145,6 +148,7 @@
                                 </div>
                                 <div class="meet-view-summary-meta">
                                     <div class="meet-view-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><asp:Literal runat="server" ID="lblMeetRoom"></asp:Literal></div>
+                                    <div class="meet-view-chair-label"><i class="fas fa-crown" aria-hidden="true"></i><span>Chủ trì: <asp:Literal runat="server" ID="lblMeetChair" /></span></div>
                                 </div>
                                 <div class="meet-view-time-pair" aria-label="Thời gian dự kiến và thực tế của cuộc họp">
                                     <div class="meet-view-time-block"><span class="meet-view-time-caption"><i class="far fa-calendar-alt" aria-hidden="true"></i> Dự kiến</span><div class="meet-view-time-inline"><asp:Literal runat="server" ID="lblMeetStart"></asp:Literal></div></div>

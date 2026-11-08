@@ -474,15 +474,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.PlaceHolder phTeamHoursPanel;
 
         /// <summary>
-        /// litProjectTeamMembers control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litProjectTeamMembers;
-
-        /// <summary>
         /// hfTeamHoursMember control.
         /// </summary>
         /// <remarks>
@@ -499,6 +490,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lbtLoadTeamHours;
+
+        /// <summary>
+        /// litProjectTeamMembers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litProjectTeamMembers;
 
         /// <summary>
         /// litProjectTeamHours control.

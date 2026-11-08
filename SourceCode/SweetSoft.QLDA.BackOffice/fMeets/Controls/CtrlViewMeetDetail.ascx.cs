@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Managers;
@@ -40,6 +40,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             lblMeetName.Text = HtmlEncodeValue(meet.TenCuocHop);
             lblMeetRoom.Text = HtmlEncodeValue(meet.DiaDiemHop);
+            SetLiteralText("lblMeetChair", GetMeetChairName(meet));
             lblMeetStart.Text = FormatMeetInterval(meet.ThoiGianBatDau, meet.ThoiGianKetThuc);
             try { SetLiteralText("lblMeetActual", ReadActualMeetInterval(meet.IdLichHop)); }
             catch (Exception ex) { System.Diagnostics.Trace.TraceError("CtrlViewMeetDetail.ReadActualMeetInterval: " + ex); SetLiteralText("lblMeetActual", "<span class='meet-view-time-missing'>Chưa thể đọc giờ thực tế</span>"); }
@@ -48,6 +49,31 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
             BindParticipants(meet.IdLichHop);
             BindMeetingLabor(meet);
+        }
+
+        private static string GetMeetChairName(TblLichHop meet)
+        {
+            try
+            {
+                ConnectionStringSettings config = ConfigurationManager.ConnectionStrings["SweetSoft.QLDA.BackOffice"];
+                if (config == null || string.IsNullOrWhiteSpace(config.ConnectionString))
+                    foreach (ConnectionStringSettings candidate in ConfigurationManager.ConnectionStrings)
+                        if (candidate != null && !string.IsNullOrWhiteSpace(candidate.ConnectionString) &&
+                            candidate.ConnectionString.IndexOf("SweetSoft_QLDA", StringComparison.OrdinalIgnoreCase) >= 0)
+                        { config = candidate; break; }
+                if (config == null) return "Chưa xác định";
+                using (SqlConnection db = new SqlConnection(config.ConnectionString))
+                using (SqlCommand cmd = new SqlCommand(@"SELECT COALESCE(NULLIF(LTRIM(RTRIM(u.DisplayName)),N''),
+NULLIF(LTRIM(RTRIM(u.UserName)),N''),N'Chưa xác định')
+FROM dbo.TblLichHop m LEFT JOIN dbo.aspnet_Users u ON u.UserId=COALESCE(m.IdChuTri,m.IdNguoiTao)
+WHERE m.IdLichHop=@MeetId", db))
+                {
+                    cmd.Parameters.Add("@MeetId", SqlDbType.UniqueIdentifier).Value = meet.IdLichHop;
+                    db.Open();
+                    return HttpUtility.HtmlEncode(Convert.ToString(cmd.ExecuteScalar()) ?? "Chưa xác định");
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("Meet detail chair: " + ex); return "Chưa thể đọc chủ trì"; }
         }
 
         private static string ReadActualMeetInterval(Guid meetId)
@@ -242,14 +268,17 @@ WITH DanhSach AS (
     SELECT DISTINCT p.IdNhanVien FROM dbo.TblLichHop_NhanVien p
     WHERE p.IdLichHop=@IdLichHop AND p.IdNhanVien IS NOT NULL
     UNION
-    SELECT m.IdNguoiTao FROM dbo.TblLichHop m
-    WHERE m.IdLichHop=@IdLichHop AND m.IdNguoiTao IS NOT NULL
+    SELECT COALESCE(m.IdChuTri,m.IdNguoiTao) FROM dbo.TblLichHop m
+    WHERE m.IdLichHop=@IdLichHop AND COALESCE(m.IdChuTri,m.IdNguoiTao) IS NOT NULL
+    UNION
+    SELECT g.IdNhanVien FROM dbo.TblLichHopGioCong g
+    WHERE g.IdLichHop=@IdLichHop AND g.IdNhanVien IS NOT NULL
 )
 SELECT d.IdNhanVien,
     COALESCE(NULLIF(LTRIM(RTRIM(u.DisplayName)),N''),
              NULLIF(LTRIM(RTRIM(u.UserName)),N''),CONVERT(NVARCHAR(36),d.IdNhanVien)) AS TenNhanVien,
     COALESCE(NULLIF(LTRIM(RTRIM(mu.Email)),N''),N'') AS Email,
-    CASE WHEN d.IdNhanVien=m.IdNguoiTao THEN 1 ELSE 0 END AS LaChuTri,
+    CASE WHEN d.IdNhanVien=COALESCE(m.IdChuTri,m.IdNguoiTao) THEN 1 ELSE 0 END AS LaChuTri,
     ISNULL(CAST(g.DaThamGia AS INT),
            ISNULL((SELECT MAX(CAST(ISNULL(p.XacNhanThamGia,0) AS INT))
                    FROM dbo.TblLichHop_NhanVien p

@@ -12,6 +12,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
 using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Globalization;
@@ -41,6 +43,141 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         }
         private T UI<T>(string id) where T : Control { return FindChild(this, id) as T; }
         protected DropDownList MeetingTypeSelect => UI<DropDownList>("ddlHinhThucHop");
+        private DropDownList MeetChairSelect => UI<DropDownList>("ddlMeetChair");
+        protected string MeetChairClientId => MeetChairSelect == null ? string.Empty : MeetChairSelect.ClientID;
+
+        // TblLichHop.IdChuTri duoc ghi bang ADO.NET de khong can regenerate SubSonic.
+        private static string MeetDbConnectionString()
+        {
+            ConnectionStringSettings config = ConfigurationManager.ConnectionStrings["SweetSoft.QLDA.BackOffice"];
+            if (config != null && !string.IsNullOrWhiteSpace(config.ConnectionString)) return config.ConnectionString;
+            foreach (ConnectionStringSettings entry in ConfigurationManager.ConnectionStrings)
+                if (entry != null && !string.IsNullOrWhiteSpace(entry.ConnectionString) &&
+                    entry.ConnectionString.IndexOf("SweetSoft_QLDA", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return entry.ConnectionString;
+            throw new ConfigurationErrorsException("Không tìm thấy kết nối SweetSoft_QLDA.");
+        }
+
+        private static Guid ReadMeetChair(Guid meetingId, Guid creatorId)
+        {
+            if (meetingId == Guid.Empty) return creatorId;
+            using (SqlConnection connection = new SqlConnection(MeetDbConnectionString()))
+            using (SqlCommand command = new SqlCommand(@"SELECT COALESCE(IdChuTri,IdNguoiTao)
+FROM dbo.TblLichHop WHERE IdLichHop=@MeetId", connection))
+            {
+                command.Parameters.Add("@MeetId", SqlDbType.UniqueIdentifier).Value = meetingId;
+                connection.Open();
+                object value = command.ExecuteScalar();
+                return value == null || value == DBNull.Value ? creatorId : (Guid)value;
+            }
+        }
+
+        private static void SaveMeetChair(Guid meetingId, Guid projectId, Guid chairId)
+        {
+            using (SqlConnection connection = new SqlConnection(MeetDbConnectionString()))
+            using (SqlCommand command = new SqlCommand(@"UPDATE dbo.TblLichHop SET IdChuTri=@ChairId
+WHERE IdLichHop=@MeetId AND IdDuAn=@ProjectId AND ISNULL(DaXoa,0)=0", connection))
+            {
+                command.Parameters.Add("@MeetId", SqlDbType.UniqueIdentifier).Value = meetingId;
+                command.Parameters.Add("@ProjectId", SqlDbType.UniqueIdentifier).Value = projectId;
+                command.Parameters.Add("@ChairId", SqlDbType.UniqueIdentifier).Value = chairId;
+                connection.Open();
+                if (command.ExecuteNonQuery() != 1) throw new DataException("Không lưu được người chủ trì cho cuộc họp.");
+            }
+        }
+
+        private static string MeetCreatorName(Guid creatorId)
+        {
+            if (creatorId == Guid.Empty) return "Chưa xác định";
+            AspnetUser user = UserManager.Instance.GetUserById(creatorId);
+            if (user == null) return creatorId.ToString("D");
+            return !string.IsNullOrWhiteSpace(user.DisplayName) ? user.DisplayName : user.UserName;
+        }
+
+        private void BindMeetChairChoices(Guid creatorId, Guid chosenId)
+        {
+            DropDownList list = MeetChairSelect;
+            if (list == null) throw new InvalidOperationException("Thiếu ô chọn chủ trì trong giao diện cuộc họp.");
+            list.Items.Clear();
+            DataTable members = ThanhVienDuAnManager.Instance.GetThanhVienDuAnDetail(CurrentProjectId);
+            int colorIndex = 0;
+            if (members != null)
+                foreach (DataRow row in members.Rows)
+                {
+                    if (row["UserId"] == DBNull.Value) continue;
+                    Guid id = (Guid)row["UserId"];
+                    if (id == Guid.Empty || list.Items.FindByValue(id.ToString("D")) != null) continue;
+                    string displayName = members.Columns.Contains("DisplayName") && row["DisplayName"] != DBNull.Value ? Convert.ToString(row["DisplayName"]) : string.Empty;
+                    string email = members.Columns.Contains("Email") && row["Email"] != DBNull.Value ? Convert.ToString(row["Email"]) : string.Empty;
+                    string avatar = members.Columns.Contains("Avatar") && row["Avatar"] != DBNull.Value ? Convert.ToString(row["Avatar"]) : string.Empty;
+                    string userName = members.Columns.Contains("UserName") && row["UserName"] != DBNull.Value ? Convert.ToString(row["UserName"]) : string.Empty;
+                    string name = !string.IsNullOrWhiteSpace(displayName) ? displayName : (!string.IsNullOrWhiteSpace(userName) ? userName : (!string.IsNullOrWhiteSpace(email) ? email : id.ToString("D")));
+                    ListItem item = new ListItem(name, id.ToString("D"));
+                    FillMeetChairAvatarAttributes(item, name, email, avatar, colorIndex++);
+                    list.Items.Add(item);
+                }
+            // Vẫn giữ người tạo hoặc chủ trì cũ nếu họ không còn nằm trong danh sách dự án.
+            if (creatorId != Guid.Empty && list.Items.FindByValue(creatorId.ToString("D")) == null)
+                AddMeetChairFallback(list, creatorId, colorIndex++);
+            if (chosenId != Guid.Empty && list.Items.FindByValue(chosenId.ToString("D")) == null)
+                AddMeetChairFallback(list, chosenId, colorIndex++);
+            string selected = chosenId == Guid.Empty ? creatorId.ToString("D") : chosenId.ToString("D");
+            ListItem option = list.Items.FindByValue(selected);
+            if (option != null) { list.ClearSelection(); option.Selected = true; }
+        }
+
+        private static string MeetChairInitials(string name)
+        {
+            string[] parts = (name ?? string.Empty).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) return "?";
+            string first = parts.Length > 1 ? parts[parts.Length - 2].Substring(0, 1) : string.Empty;
+            return (first + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
+        }
+
+        private string MeetChairAvatarUrl(string avatar)
+        {
+            if (string.IsNullOrWhiteSpace(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase)) return string.Empty;
+            avatar = avatar.Trim();
+            if (avatar.StartsWith("~/", StringComparison.Ordinal)) return ResolveUrl(avatar);
+            if (avatar.StartsWith("/", StringComparison.Ordinal) && !avatar.StartsWith("//", StringComparison.Ordinal)) return avatar;
+            if (Uri.TryCreate(avatar, UriKind.Absolute, out Uri url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps)) return avatar;
+            if (avatar.IndexOf(':') < 0 && !avatar.StartsWith("\\", StringComparison.Ordinal)) return ResolveUrl("~/" + avatar.TrimStart('/'));
+            return string.Empty;
+        }
+
+        private void FillMeetChairAvatarAttributes(ListItem item, string name, string email, string avatar, int index)
+        {
+            string[] colors = { "#7c3aed", "#2563eb", "#059669", "#d97706", "#db2777" };
+            item.Attributes["data-name"] = name ?? string.Empty;
+            item.Attributes["data-email"] = string.IsNullOrWhiteSpace(email) ? "Chưa cập nhật email" : email;
+            item.Attributes["data-avatar"] = MeetChairAvatarUrl(avatar);
+            item.Attributes["data-initials"] = MeetChairInitials(name);
+            item.Attributes["data-color"] = colors[index % colors.Length];
+        }
+
+        private void AddMeetChairFallback(DropDownList list, Guid id, int colorIndex)
+        {
+            AspnetUser user = null;
+            try { user = UserManager.Instance.GetUserById(id); } catch { }
+            string name = user == null ? id.ToString("D") : (!string.IsNullOrWhiteSpace(user.DisplayName) ? user.DisplayName : user.UserName);
+            string email = string.Empty;
+            if (user != null && !string.IsNullOrWhiteSpace(user.UserName))
+            {
+                try { System.Web.Security.MembershipUser account = System.Web.Security.Membership.GetUser(user.UserName); if (account != null) email = account.Email; } catch { }
+            }
+            ListItem item = new ListItem(name, id.ToString("D"));
+            FillMeetChairAvatarAttributes(item, name, email, user == null ? string.Empty : user.Avatar, colorIndex);
+            list.Items.Add(item);
+        }
+
+        private bool IsValidMeetChairSelection(Guid chosenId, Guid creatorId, Guid originalChairId)
+        {
+            if (chosenId == Guid.Empty) return false;
+            if (chosenId == creatorId || (MeetId != Guid.Empty && chosenId == originalChairId)) return true;
+            DataTable members = ThanhVienDuAnManager.Instance.GetThanhVienDuAnDetail(CurrentProjectId);
+            return members != null && members.Rows.Cast<DataRow>().Any(row =>
+                row["UserId"] != DBNull.Value && (Guid)row["UserId"] == chosenId);
+        }
         private HiddenField JoinMeetingIdField => UI<HiddenField>("hfMeetJoinId");
         protected HiddenField JoinMeetingIdClientField => JoinMeetingIdField;
         protected HiddenField JoinReminderPendingField => UI<HiddenField>("hfMeetJoinPending");
@@ -74,7 +211,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     return;
                 }
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.MEETING_LIST));
-                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.MEETING_LIST);
+                Navigation1.MainTitle = this.ProjectName;
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
                 {
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
@@ -87,7 +224,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
         private void ApplyControlsText()
         {
-            ddlTrangThai.PlaceHolder = "--";
             dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
             btnXacNhanNhanVien.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
             txtThoiGianKetThuc.PlaceHolder = "--";
@@ -139,6 +275,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         private void NewMeetingAction(object sender, EventArgs e)
         {
             RefreshMeetingInfo();
+            ClearSelectedNhanVienDisplay();
             SetRecommendedMeetingStart();
             // Nút + trong Calendar truyền ngày đã chọn vào callback thêm mới.
             if (sender is DateTime)
@@ -173,6 +310,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             }
 
             this.MeetId = meet.IdLichHop;
+            Guid existingChair = ReadMeetChair(meet.IdLichHop, meet.IdNguoiTao);
+            BindMeetChairChoices(meet.IdNguoiTao, existingChair);
             txtTenCuocHop.Text = meet.TenCuocHop;
             txtNoiDungCuocHop.Text = meet.NoiDungCuocHop;
             txtDiaDiemHop.Text = meet.DiaDiemHop;
@@ -210,18 +349,27 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 }
             }
 
-            if (meet.TrangThai != null)
-                ddlTrangThai.SelectedValue = meet.TrangThai.ToString();
+            SetMeetStatusDisplay(Convert.ToInt32(meet.TrangThai, CultureInfo.InvariantCulture));
 
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT) ?? "Thông tin cuộc họp";
             dlDetail.OpenModal(true, IsPostBack ? 0 : 1000);
         }
 
+        private void SetMeetStatusDisplay(int status)
+        {
+            if (status < 0 || status > 3) status = 0;
+            string[] labels = { "Đã lên lịch", "Sắp diễn ra", "Đang diễn ra", "Đã kết thúc" };
+            HiddenField state = FindChild(this, "hfMeetStatus") as HiddenField;
+            Label label = FindChild(this, "lblMeetStatus") as Label;
+            if (state != null) state.Value = status.ToString(CultureInfo.InvariantCulture);
+            if (label != null) label.Text = labels[status];
+        }
+
         private void RefreshMeetingInfo()
         {
             ControlHelpers controlHelpers = new ControlHelpers();
-            controlHelpers.BindTrangThaiLichHop(ddlTrangThai);
+            SetMeetStatusDisplay(0);
             txtTenCuocHop.Text = txtNoiDungCuocHop.Text = txtDiaDiemHop.Text = "";
             MeetingTypeSelect.SelectedValue = "0";
             txtNgayBatDau.DateValue = null;
@@ -230,11 +378,9 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtThoiGianKetThuc.Text = "";
             txtNhanVienThamGia.Text = "";
             hdfNhanVienIds.Value = "";
-            ClearSelectedNhanVienDisplay();
             lbtSubmit.Visible = false;
-            if (ddlTrangThai.Items.Count > 0)
-                ddlTrangThai.SelectedIndex = 0;
             this.MeetId = Guid.Empty;
+            BindMeetChairChoices(SweetContext.Current.UserId, SweetContext.Current.UserId);
         }
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
@@ -293,6 +439,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 meetDto.ThoiGianBatDau = startDateTime;
                 meetDto.ThoiGianKetThuc = endDateTime;
 
+                Guid chosenChair;
+                if (MeetChairSelect == null ||
+                    !Guid.TryParse(MeetChairSelect.SelectedValue, out chosenChair) || chosenChair == Guid.Empty)
+                { ShowNotify("Vui lòng chọn người chủ trì cuộc họp.", MSGType.Error); return; }
+                Guid originalCreator = isNew ? SweetContext.Current.UserId : TblLichHop.FetchByID(MeetId).IdNguoiTao;
+                Guid originalChair = isNew ? originalCreator : ReadMeetChair(MeetId, originalCreator);
+                if (!IsValidMeetChairSelection(chosenChair, originalCreator, originalChair))
+                { ShowNotify("Người chủ trì phải thuộc nhân sự dự án.", MSGType.Error); return; }
+
                 string nhanVienIds = hdfNhanVienIds.Value;
                 List<Guid> previouslyConfirmed = isNew ? new List<Guid>() : ReadConfirmedMembers(MeetId);
 
@@ -306,6 +461,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
                 // Lưu sau MeetManager.CreateOrUpdate: không phụ thuộc SubSonic model đã được sinh lại hay chưa.
                 SaveMeetingType(savedMeet.IdLichHop, isOnline);
+                SaveMeetChair(savedMeet.IdLichHop, CurrentProjectId, chosenChair);
                 RestoreConfirmedMembers(savedMeet.IdLichHop, previouslyConfirmed);
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
@@ -359,9 +515,11 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
                 if (hdfUserId != null && chkSelect != null)
                 {
-                    string[] selectedIds = hdfNhanVienIds.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (Array.Exists(selectedIds, id => id == hdfUserId.Value))
-                        chkSelect.Checked = true;
+                    Guid rowId;
+                    if (Guid.TryParse(hdfUserId.Value, out rowId))
+                        chkSelect.Checked = (hdfNhanVienIds.Value ?? string.Empty)
+                            .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Any(value => Guid.TryParse(value.Trim(), out Guid selectedId) && selectedId == rowId);
                 }
             }
         }
@@ -391,7 +549,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtNhanVienThamGia.Text = strNames;
             BindSelectedNhanVienDisplay();
             string safeIds = System.Web.HttpUtility.JavaScriptStringEncode(strIds);
-            string script = $@"setTimeout(function() {{ $('#{hdfNhanVienIds.ClientID}').val('{safeIds}'); }}, 100);";
+            string script = $@"$('#{hdfNhanVienIds.ClientID}').val('{safeIds}');";
             ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "UpdateNhanVienIds", script, true);
             dlChonNhanVien.CloseModal();
         }
@@ -444,18 +602,23 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ? "<div class='selected-meeting-members-empty'><i class='fas fa-user-friends'></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>"
                 : "<div class='selected-meeting-members-list'>" + string.Join(string.Empty, memberHtml) + "</div>";
 
+            Literal selectedOutput = FindChild(this, "litSelectedMeetingMembers") as Literal;
+            if (selectedOutput != null) selectedOutput.Text = content;
             string safeHtml = System.Web.HttpUtility.JavaScriptStringEncode(content);
-            string script = $@"setTimeout(function() {{ var display = $('#selectedMeetingMembers'); if (display.length) display.html('{safeHtml}'); }}, 50);";
+            string script = $@"var display = $('#selectedMeetingMembers'); if (display.length) display.html('{safeHtml}');";
             ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "UpdateSelectedMeetingMembers", script, true);
         }
 
         private void ClearSelectedNhanVienDisplay()
         {
+            Literal selectedOutput = FindChild(this, "litSelectedMeetingMembers") as Literal;
+            if (selectedOutput != null)
+                selectedOutput.Text = "<div class='selected-meeting-members-empty'><i class='fas fa-user-friends'></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>";
             ScriptManager.RegisterStartupScript(
                 this.Page,
                 this.Page.GetType(),
                 "ClearSelectedMeetingMembers",
-                "setTimeout(function(){ var display = $('#selectedMeetingMembers'); if(display.length) display.html(\"<div class='selected-meeting-members-empty'><i class='fas fa-user-friends'></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>\"); }, 50);",
+                "var display = $('#selectedMeetingMembers'); if(display.length) display.html(\"<div class='selected-meeting-members-empty'><i class='fas fa-user-friends'></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>\");",
                 true);
         }
 
@@ -577,7 +740,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ignoreSql +
                 "AND ISNULL(m.DaXoa,0)=0 AND m.ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) " +
                 "AND m.ThoiGianKetThuc>GETDATE() " +
-                "AND (m.IdNguoiTao='" + SqlGuid(userId) + "' OR EXISTS " +
+                "AND (COALESCE(m.IdChuTri,m.IdNguoiTao)='" + SqlGuid(userId) + "' OR EXISTS " +
                 "(SELECT 1 FROM dbo.TblLichHop_NhanVien p WHERE p.IdLichHop=m.IdLichHop " +
                 "AND p.IdNhanVien='" + SqlGuid(userId) + "' AND ISNULL(p.XacNhanThamGia,0)=0)) " +
                 "AND NOT EXISTS (SELECT 1 FROM dbo.TblLichHop_NhanVien confirmed " +
@@ -665,7 +828,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 // Server xác thực lại dự án, người tham gia/chủ trì, thời gian họp.
                 // Không tin tưởng các giá trị ID được gửi từ JavaScript.
                 string sql = "SELECT TOP 1 m.LaHopOnline,m.DiaDiemHop," +
-                    " CASE WHEN m.IdNguoiTao='" + SqlGuid(userId) + "' THEN 1 ELSE 0 END AS LaChuTri," +
+                    " CASE WHEN COALESCE(m.IdChuTri,m.IdNguoiTao)='" + SqlGuid(userId) + "' THEN 1 ELSE 0 END AS LaChuTri," +
                     " CASE WHEN EXISTS (SELECT 1 FROM dbo.TblLichHop_NhanVien p WHERE p.IdLichHop=m.IdLichHop" +
                     " AND p.IdNhanVien='" + SqlGuid(userId) + "') THEN 1 ELSE 0 END AS LaThanhVien " +
                     "FROM dbo.TblLichHop m WHERE m.IdLichHop='" + SqlGuid(meeting) + "'" +
@@ -747,7 +910,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 {
                     // Người chủ trì không nhất thiết nằm trong TblLichHop_NhanVien.
                     string hostSql = "SELECT TOP 1 IdLichHop FROM dbo.TblLichHop WHERE IdLichHop='" + SqlGuid(meetingId) + "' " +
-                        "AND IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND IdNguoiTao='" + SqlGuid(SweetContext.Current.UserId) + "' " +
+                        "AND IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND COALESCE(IdChuTri,IdNguoiTao)='" + SqlGuid(SweetContext.Current.UserId) + "' " +
                         "AND ISNULL(DaXoa,0)=0 AND ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) AND ThoiGianKetThuc>GETDATE()";
                     bool hostCanConfirm;
                     using (IDataReader reader = new InlineQuery().ExecuteReader(hostSql)) hostCanConfirm = reader.Read();

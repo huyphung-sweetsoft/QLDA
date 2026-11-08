@@ -55,6 +55,12 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                 ShowNotify("Bạn không có quyền thao tác báo cáo này.", MSGType.Error);
                 return;
             }
+            // New public links do not support reset OTP; old protected reports still do.
+            if (!delete && string.IsNullOrWhiteSpace(record.OtpHash))
+            {
+                ShowNotify("Báo cáo này chia sẻ trực tiếp bằng liên kết, không sử dụng OTP.", MSGType.Warning);
+                return;
+            }
             if (Page.User == null || Page.User.Identity == null || !Page.User.Identity.IsAuthenticated || SweetContext.Current.UserId == Guid.Empty)
             {
                 ShowNotify("Bạn cần đăng nhập để thực hiện thao tác này.", MSGType.Error);
@@ -182,6 +188,8 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                         !string.Equals(history.ReportId, safeId, StringComparison.OrdinalIgnoreCase) ||
                         !string.Equals(record.Id, safeId, StringComparison.OrdinalIgnoreCase))
                         throw new UnauthorizedAccessException("Báo cáo không thuộc dự án đang xem.");
+                    if (string.IsNullOrWhiteSpace(record.OtpHash))
+                        throw new InvalidOperationException("Báo cáo công khai không sử dụng OTP.");
                     otp = GenerateOtp();
                     string salt = GenerateSalt();
                     record.OtpSalt = salt;
@@ -281,7 +289,7 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                     catch (Exception cleanupError) { System.Diagnostics.Trace.TraceError("Báo cáo đã vô hiệu hóa nhưng không thể dọn file tạm: " + cleanupError); }
                 }
                 statusField.Value = "success";
-                messageField.Value = "Đã xóa báo cáo. Liên kết và OTP cũ không còn sử dụng được.";
+                messageField.Value = "Đã xóa báo cáo. Liên kết chia sẻ không còn sử dụng được.";
             }
             catch (Exception ex)
             {
@@ -362,6 +370,8 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                     string made = date.AddHours(7).ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("vi-VN"));
                     string otp = null;
                     bool canRenew = false;
+                    bool hasValidRecord = false;
+                    bool isPublicReport = false;
                     try
                     {
                         string recordPath = Server.MapPath("~/App_Data/ProgressReports/" + entry.ReportId + ".json");
@@ -372,8 +382,10 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                             if (record != null && Guid.TryParse(record.ProjectId, out recordProject) && recordProject == ProjectId &&
                                 string.Equals(record.Id, entry.ReportId, StringComparison.OrdinalIgnoreCase))
                             {
-                                canRenew = true;
-                                otp = UnprotectReportOtp(record.OtpProtected);
+                                hasValidRecord = true;
+                                isPublicReport = string.IsNullOrWhiteSpace(record.OtpHash);
+                                canRenew = !isPublicReport;
+                                if (canRenew) otp = UnprotectReportOtp(record.OtpProtected);
                             }
                         }
                     }
@@ -399,7 +411,7 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                         html.Append("<a class='share-progress-history-open' href='").Append(urlAttr)
                             .Append("' target='_blank' rel='noopener noreferrer' aria-label='Mở file báo cáo' title='Mở file báo cáo'><i class='fas fa-file-export' aria-hidden='true'></i></a>");
                     else html.Append("<span class='share-progress-history-open is-missing' title='Không còn file' aria-label='Không còn file'><i class='fas fa-file-export' aria-hidden='true'></i></span>");
-                    if (canRenew && CanDeleteProgressReport(entry))
+                    if (hasValidRecord && CanDeleteProgressReport(entry))
                         html.Append("<button type='button' class='share-progress-history-delete' aria-label='Xóa báo cáo' title='Xóa báo cáo' data-report-id='")
                             .Append(HttpUtility.HtmlAttributeEncode(entry.ReportId))
                             .Append("' onclick='return shareProgressDeleteHistoryReport(event,this);'><i class='far fa-trash-alt' aria-hidden='true'></i></button>");
@@ -413,19 +425,29 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
                             .Append("' target='_blank' rel='noopener noreferrer'><i class='fas fa-link'></i> Mở báo cáo <i class='fas fa-external-link-alt'></i></a>")
                             .Append("<button type='button' class='share-progress-history-icon' onclick=\"return copyProgressHistoryValue(this,'link');\" title='Sao chép liên kết'><i class='far fa-copy'></i></button></div>");
                     }
-                    html.Append("<div class='share-progress-history-share-line is-otp-line'><label>Mã OTP</label><span class='share-progress-history-otp-slot'>");
-                    if (!string.IsNullOrEmpty(otp))
-                        html.Append("<input class='share-progress-history-value is-otp' type='text' readonly value='")
-                            .Append(HttpUtility.HtmlAttributeEncode(otp))
-                            .Append("' aria-label='Mã OTP báo cáo'/><button type='button' class='share-progress-history-icon' onclick=\"return copyProgressHistoryValue(this,'otp');\" title='Sao chép OTP'><i class='far fa-copy'></i></button>");
-                    else html.Append("<span class='share-progress-history-reissue'>Chưa có OTP khả dụng</span>");
-                    html.Append("</span>");
-                    if (canRenew)
-                        html.Append("<button type='button' class='share-progress-history-icon share-progress-history-reset' data-report-id='")
-                            .Append(HttpUtility.HtmlAttributeEncode(entry.ReportId))
-                            .Append("' onclick='return shareProgressResetHistoryOtp(event,this);'><i class='fas fa-key'></i> Cấp lại OTP</button>");
-                    if (exists && canRenew)
-                        html.Append("<button type='button' class='share-progress-history-icon share-progress-history-send' onclick='return shareProgressSendCustomer(this);'><i class='fas fa-paper-plane'></i> Gửi khách hàng</button>");
+                    if (isPublicReport)
+                    {
+                        html.Append("<div class='share-progress-history-share-line'><label>Truy cập</label><span>Liên kết trực tiếp · Không cần OTP</span>");
+                        if (exists && hasValidRecord)
+                            html.Append("<button type='button' class='share-progress-history-icon share-progress-history-send' onclick='return shareProgressSendCustomer(this);'><i class='fas fa-paper-plane'></i> Gửi khách hàng</button>");
+                        html.Append("</div>");
+                    }
+                    else
+                    {
+                        html.Append("<div class='share-progress-history-share-line is-otp-line'><label>Mã OTP</label><span class='share-progress-history-otp-slot'>");
+                        if (!string.IsNullOrEmpty(otp))
+                            html.Append("<input class='share-progress-history-value is-otp' type='text' readonly value='")
+                                .Append(HttpUtility.HtmlAttributeEncode(otp))
+                                .Append("' aria-label='Mã OTP báo cáo'/><button type='button' class='share-progress-history-icon' onclick=\"return copyProgressHistoryValue(this,'otp');\" title='Sao chép OTP'><i class='far fa-copy'></i></button>");
+                        else html.Append("<span class='share-progress-history-reissue'>Chưa có OTP khả dụng</span>");
+                        html.Append("</span>");
+                        if (canRenew)
+                            html.Append("<button type='button' class='share-progress-history-icon share-progress-history-reset' data-report-id='")
+                                .Append(HttpUtility.HtmlAttributeEncode(entry.ReportId))
+                                .Append("' onclick='return shareProgressResetHistoryOtp(event,this);'><i class='fas fa-key'></i> Cấp lại OTP</button>");
+                        if (exists && canRenew)
+                            html.Append("<button type='button' class='share-progress-history-icon share-progress-history-send' onclick='return shareProgressSendCustomer(this);'><i class='fas fa-paper-plane'></i> Gửi khách hàng</button>");
+                    }
                     // Thu gon/mo rong bang cach bam vao ten bao cao, khong can nut mui ten.
                     html.Append("</div></div>"); // dong dong OTP va vung chia se
                     html.Append("</div></div></div>"); // dong inner details, details va item
